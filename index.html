@@ -88,13 +88,13 @@
     .btn {
       margin-top: 20px;
       padding: 12px 36px;
-      font-size: 18px;
+      font-size: 24px;
       border: 2px solid #6c8e7c;
       border-radius: 999px;
       background: #6c8e7c;
       color: #fff;
       cursor: pointer;
-      transition: transform 0.6s ease, opacity 0.5s ease;
+      transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0.8;
     }
 
@@ -125,16 +125,19 @@
       </div>
     </div>
   </div>
-  <button id="soundBtn" class="btn breathe">🔊 開啟聲音</button>
-  <button id="mapBtn" class="btn breathe">📍 查看地址</button>
+  <div>
+    <button id="audioRestartBtn" class="btn">▶️</button>
+    <button id="audioToggleBtn" class="btn">⏯️</button>
+  </div>
+  <button id="mapBtn" class="btn breathe">📍</button>
 
-  <audio id="audioTrack" src="audio.m4a"></audio>
+  <audio id="audioTrack" src="audio.m4a?ver=2" loop></audio>
 
   <script>
   const card = document.getElementById('flipCard');
-  const videos = document.querySelectorAll('video');
   const audioTrack = document.getElementById('audioTrack');
-  const soundBtn = document.getElementById('soundBtn');
+  const audioRestartBtn = document.getElementById('audioRestartBtn');
+  const audioToggleBtn = document.getElementById('audioToggleBtn');
   const mapBtn = document.getElementById('mapBtn');
   const instruction = document.getElementById('instruction');
   let startX = 0;
@@ -181,18 +184,16 @@
   document.body.addEventListener('mousedown', handleDragStart);
   document.body.addEventListener('mouseup', handleDragEnd);
 
-  soundBtn.addEventListener('click', () => {
+  audioRestartBtn.addEventListener('click', () => {
+    audioTrack.currentTime = 0;
+    audioTrack.play();
+  });
+
+  audioToggleBtn.addEventListener('click', () => {
     if (audioTrack.paused) {
-      audioTrack.currentTime = 0;
       audioTrack.play();
-      soundBtn.textContent = '🔇 關閉聲音';
-      soundBtn.classList.remove('breathe');
-      soundBtn.style.opacity = '0.8';
     } else {
       audioTrack.pause();
-      soundBtn.textContent = '🔊 開啟聲音';
-      soundBtn.classList.add('breathe');
-      soundBtn.style.opacity = '1';
     }
   });
 
