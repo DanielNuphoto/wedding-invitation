@@ -112,8 +112,6 @@
   // 點擊翻面
   card.addEventListener('click', () => {
     card.classList.toggle('is-flipped');
-    if (card.classList.contains('is-flipped')) video.pause();
-    else video.play();
   });
 
   // 手機滑動翻面
@@ -125,8 +123,6 @@
     let endX = e.changedTouches[0].clientX;
     if (Math.abs(endX - startX) > 50) {
       card.classList.toggle('is-flipped');
-      if (card.classList.contains('is-flipped')) video.pause();
-      else video.play();
     }
   });
 
@@ -136,11 +132,11 @@
     video.play();
 
     if (video.muted) {
-      soundBtn.textContent = '🔇 靜音';
+      soundBtn.textContent = '🔊 有聲';
       soundBtn.classList.add('breathe');
       soundBtn.style.opacity = '1';
     } else {
-      soundBtn.textContent = '🔊 有聲';
+      soundBtn.textContent = '🔇 靜音';
       soundBtn.classList.remove('breathe');
       soundBtn.style.opacity = '0.8';
     }
