@@ -16,15 +16,9 @@
     }
 
     .card-container {
-      width: 60vw;
-      aspect-ratio: 4/3;
+      width: 300px;
+      height: 400px;
       perspective: 1000px;
-    }
-
-    @media (max-aspect-ratio: 1/1)  {
-      .card-container {
-        width: 80vw;
-      }
     }
 
     .card {
@@ -64,40 +58,75 @@
       height: 100%;
       object-fit: cover;
     }
+    @keyframes breathe {
+      0% { transform: scale(1.1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1.1); }
+    }
+    .breathe {
+      animation: breathe 1.5s infinite ease-in-out;
+    }
   </style>
 </head>
 <body>
   <div class="card-container">
     <div class="card" id="flipCard">
       <div class="card-face front">
-        <video src="video.mp4" autoplay loop inline></video>
+        
+        <video src="video.mp4" autoplay loop muted playsinline></video>
       </div>
       <div class="card-face back">
         <img src="image.png" alt="image" />
+            <button id="soundBtn" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); padding:16px 24px; font-size:20px; border:none; border-radius:12px; background:#ff4444; color:#fff; cursor:pointer; z-index:10;">🔊 開啟聲音</button>
       </div>
     </div>
   </div>
 
   <script>
-    const card = document.getElementById('flipCard');
-    let startX = 0;
+  const card = document.getElementById('flipCard');
+  const video = document.querySelector('video');
+  const soundBtn = document.getElementById('soundBtn');
+  let startX = 0;
 
-    // 點擊翻面
-    card.addEventListener('click', () => {
+  // 點擊翻面
+  card.addEventListener('click', () => {
+    card.classList.toggle('is-flipped');
+    if (card.classList.contains('is-flipped')) video.pause();
+    else video.play();
+  });
+
+  // 手機滑動翻面
+  card.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+  });
+
+  card.addEventListener('touchend', (e) => {
+    let endX = e.changedTouches[0].clientX;
+    if (Math.abs(endX - startX) > 50) {
       card.classList.toggle('is-flipped');
-    });
+      if (card.classList.contains('is-flipped')) video.pause();
+      else video.play();
+    }
+  });
 
-    // 手機滑動翻面
-    card.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].clientX;
-    });
+  // 聲音按鈕（先保持原樣）
+  soundBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    video.play();
+  
+    if (video.muted) {
+      soundBtn.textContent = '🔇 靜音';
+      soundBtn.classList.add('breathe');
+      soundBtn.style.transform = 'scale(1.25)';
+      soundBtn.style.opacity = '1';
+    } else {
+      soundBtn.textContent = '🔊 有聲';
+      soundBtn.classList.remove('breathe');
+      soundBtn.style.transform = 'scale(1)';
+      soundBtn.style.opacity = '0.5';
+    }
+  });
 
-    card.addEventListener('touchend', (e) => {
-      let endX = e.changedTouches[0].clientX;
-      if (Math.abs(endX - startX) > 50) {
-        card.classList.toggle('is-flipped');
-      }
-    });
-  </script>
+</script>
 </body>
 </html>
