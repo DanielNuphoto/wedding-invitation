@@ -84,7 +84,7 @@
       object-fit: cover;
     }
 
-    #soundBtn {
+    .btn {
       margin-top: 20px;
       padding: 12px 36px;
       font-size: 18px;
@@ -120,27 +120,27 @@
       </div>
     </div>
   </div>
-  <button id="soundBtn" class="breathe">🔊 開啟聲音</button>
+  <button id="soundBtn" class="btn breathe">🔊 開啟聲音</button>
+  <button id="mapBtn" class="btn">📍 查看地址</button>
 
   <script>
   const card = document.getElementById('flipCard');
   const video = document.querySelector('video');
   const soundBtn = document.getElementById('soundBtn');
+  const mapBtn = document.getElementById('mapBtn');
   const instruction = document.getElementById('instruction');
   let startX = 0;
   let rotation = 0;
   let isDragging = false;
-  let dragHandled = false; // 新增旗標防止點擊與滑動同時觸發
+  let dragHandled = false;
 
-  // Instruction shrink after 3 seconds
   setTimeout(() => {
     instruction.classList.add('shrink');
   }, 3000);
 
-  // 點擊翻面
   card.addEventListener('click', () => {
     if (dragHandled) {
-      dragHandled = false; // 滑動已處理，取消點擊效果
+      dragHandled = false;
       return;
     }
     rotation += 180;
@@ -158,7 +158,7 @@
     isDragging = false;
     let endX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
     if (Math.abs(endX - startX) > 50) {
-      dragHandled = true; // 標記滑動已處理
+      dragHandled = true;
       if (endX < startX) {
         rotation -= 180;
       } else {
@@ -173,7 +173,6 @@
   document.body.addEventListener('mousedown', handleDragStart);
   document.body.addEventListener('mouseup', handleDragEnd);
 
-  // 聲音按鈕 toggle + 呼吸動畫
   soundBtn.addEventListener('click', () => {
     video.muted = !video.muted;
     video.play();
@@ -186,6 +185,10 @@
       soundBtn.classList.remove('breathe');
       soundBtn.style.opacity = '0.8';
     }
+  });
+
+  mapBtn.addEventListener('click', () => {
+    window.open('https://www.google.com/maps/dir//708台南市安平區城平路1號/@22.9918224,120.069466,12z/data=!4m8!4m7!1m0!1m5!1m1!1s0x346dd8acbf1b4465:0xf4ab14aaf3caa61c!2m2!1d120.1518676!2d22.9918437?entry=ttu', '_blank');
   });
   </script>
 </body>
