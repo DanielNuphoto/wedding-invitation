@@ -98,7 +98,18 @@
       opacity: 0.8;
     }
 
-    .btn:hover {
+    .btn-icon {
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 24px;
+      border: 2px solid #6c8e7c;
+      border-radius: 999px;
+      background: #6c8e7c;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn:hover, .btn-icon:hover {
       background: #749d87;
     }
 
@@ -126,10 +137,10 @@
     </div>
   </div>
   <div>
-    <button id="audioRestartBtn" class="btn">▶️</button>
-    <button id="audioToggleBtn" class="btn">⏯️</button>
+    <button id="audioRestartBtn" class="btn-icon" style="margin-right: 20px">▶️</button>
+    <button id="audioToggleBtn" class="btn-icon">⏯️</button>
   </div>
-  <button id="mapBtn" class="btn breathe">📍</button>
+  <button id="mapBtn" class="btn breathe">📍 查看地址</button>
 
   <audio id="audioTrack" src="audio.m4a?ver=2" loop></audio>
 
