@@ -10,15 +10,23 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      overflow: hidden;
       background: #f2f2f2;
       margin: 0;
       font-family: sans-serif;
     }
 
     .card-container {
-      width: 300px;
-      height: 400px;
+      width: 50vw;
+      aspect-ratio: 4/3;
       perspective: 1000px;
+      overflow: hidden;
+    }
+
+    @media (max-aspect-ratio: 1/1) {
+      .card-container {
+        width: 80vw;
+      }
     }
 
     .card {
