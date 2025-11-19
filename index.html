@@ -11,20 +11,41 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      overflow: hidden;
       background: #5a7d9a; /* 莫蘭迪藍 */
       margin: 0;
       font-family: sans-serif;
+      position: relative;
+    }
+
+    .instruction {
+      width: 100%;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      font-size: 24px;
+      color: #ffffff;
+      text-align: center;
+      transition: font-size 1s ease, opacity 1s ease;
+      opacity: 1;
+      transform-origin: top center;
+    }
+
+    .instruction.shrink {
+      font-size: 20px;
+      opacity: 0.7;
     }
 
     .card-container {
+      position: relative;
       width: 50vw;
       aspect-ratio: 4/3;
       perspective: 1000px;
+      z-index: 1;
     }
 
     @media (max-aspect-ratio: 1/1) {
       .card-container {
-        width: 80vw;
+        width: 90vw;
       }
     }
 
@@ -35,10 +56,7 @@
       transform-style: preserve-3d;
       transition: transform 0.8s;
       cursor: pointer;
-    }
-
-    .card.is-flipped {
-      transform: rotateY(180deg);
+      transform: rotateY(0deg);
     }
 
     .card-face {
@@ -70,8 +88,8 @@
       margin-top: 20px;
       padding: 12px 36px;
       font-size: 18px;
-      border: 2px solid #6c8e7c; /* 莫蘭迪綠 */
-      border-radius: 999px; /* 膠囊形 */
+      border: 2px solid #6c8e7c;
+      border-radius: 999px;
       background: #6c8e7c;
       color: #fff;
       cursor: pointer;
@@ -92,51 +110,79 @@
 </head>
 <body>
   <div class="card-container">
+    <div class="instruction" id="instruction">點擊或滑動卡片即可翻面</div>
     <div class="card" id="flipCard">
       <div class="card-face front">
         <video src="video.mp4" autoplay loop muted playsinline></video>
       </div>
       <div class="card-face back">
-        <img src="image.png" alt="image" />
+        <video src="video-back.mp4" autoplay loop muted playsinline></video>
       </div>
     </div>
   </div>
-  <button id="soundBtn" class="breathe">🔊 有聲</button>
+  <button id="soundBtn" class="breathe">🔊 開啟聲音</button>
 
   <script>
   const card = document.getElementById('flipCard');
   const video = document.querySelector('video');
   const soundBtn = document.getElementById('soundBtn');
+  const instruction = document.getElementById('instruction');
   let startX = 0;
+  let rotation = 0;
+  let isDragging = false;
+  let dragHandled = false; // 新增旗標防止點擊與滑動同時觸發
+
+  // Instruction shrink after 3 seconds
+  setTimeout(() => {
+    instruction.classList.add('shrink');
+  }, 3000);
 
   // 點擊翻面
   card.addEventListener('click', () => {
-    card.classList.toggle('is-flipped');
-  });
-
-  // 手機滑動翻面
-  card.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-  });
-
-  card.addEventListener('touchend', (e) => {
-    let endX = e.changedTouches[0].clientX;
-    if (Math.abs(endX - startX) > 50) {
-      card.classList.toggle('is-flipped');
+    if (dragHandled) {
+      dragHandled = false; // 滑動已處理，取消點擊效果
+      return;
     }
+    rotation += 180;
+    card.style.transform = `rotateY(${rotation}deg)`;
   });
+
+  function handleDragStart(e) {
+    isDragging = true;
+    dragHandled = false;
+    startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+  }
+
+  function handleDragEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    let endX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+    if (Math.abs(endX - startX) > 50) {
+      dragHandled = true; // 標記滑動已處理
+      if (endX < startX) {
+        rotation -= 180;
+      } else {
+        rotation += 180;
+      }
+      card.style.transform = `rotateY(${rotation}deg)`;
+    }
+  }
+
+  document.body.addEventListener('touchstart', handleDragStart);
+  document.body.addEventListener('touchend', handleDragEnd);
+  document.body.addEventListener('mousedown', handleDragStart);
+  document.body.addEventListener('mouseup', handleDragEnd);
 
   // 聲音按鈕 toggle + 呼吸動畫
   soundBtn.addEventListener('click', () => {
     video.muted = !video.muted;
     video.play();
-
     if (video.muted) {
-      soundBtn.textContent = '🔊 有聲';
+      soundBtn.textContent = '🔊 開啟聲音';
       soundBtn.classList.add('breathe');
       soundBtn.style.opacity = '1';
     } else {
-      soundBtn.textContent = '🔇 靜音';
+      soundBtn.textContent = '🔇 關閉聲音';
       soundBtn.classList.remove('breathe');
       soundBtn.style.opacity = '0.8';
     }
