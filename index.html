@@ -128,9 +128,12 @@
   <button id="soundBtn" class="btn breathe">🔊 開啟聲音</button>
   <button id="mapBtn" class="btn breathe">📍 查看地址</button>
 
+  <audio id="audioTrack" src="audio.m4a"></audio>
+
   <script>
   const card = document.getElementById('flipCard');
-  const video = document.querySelector('video');
+  const videos = document.querySelectorAll('video');
+  const audioTrack = document.getElementById('audioTrack');
   const soundBtn = document.getElementById('soundBtn');
   const mapBtn = document.getElementById('mapBtn');
   const instruction = document.getElementById('instruction');
@@ -179,16 +182,17 @@
   document.body.addEventListener('mouseup', handleDragEnd);
 
   soundBtn.addEventListener('click', () => {
-    video.muted = !video.muted;
-    video.play();
-    if (video.muted) {
-      soundBtn.textContent = '🔊 開啟聲音';
-      soundBtn.classList.add('breathe');
-      soundBtn.style.opacity = '1';
-    } else {
+    if (audioTrack.paused) {
+      audioTrack.currentTime = 0;
+      audioTrack.play();
       soundBtn.textContent = '🔇 關閉聲音';
       soundBtn.classList.remove('breathe');
       soundBtn.style.opacity = '0.8';
+    } else {
+      audioTrack.pause();
+      soundBtn.textContent = '🔊 開啟聲音';
+      soundBtn.classList.add('breathe');
+      soundBtn.style.opacity = '1';
     }
   });
 
