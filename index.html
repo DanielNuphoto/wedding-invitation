@@ -171,6 +171,28 @@
     .breathe {
       animation: breathe 1.2s infinite ease-in-out;
     }
+
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -200,6 +222,8 @@
   </div>
   <button id="mapBtn" class="btn breathe">📍 查看地址</button>
 
+  <div id="toast" class="toast"></div>
+
   <audio id="audioTrack" src="audio.m4a?ver=2" loop></audio>
 
   <script>
@@ -211,11 +235,23 @@
   const audioSoundBtn = document.getElementById('audioSoundBtn');
   const mapBtn = document.getElementById('mapBtn');
   const instruction = document.getElementById('instruction');
+  const toast = document.getElementById('toast');
   let startX = 0;
   let rotation = 0;
   let isDragging = false;
   let dragHandled = false;
   let initial = true;
+  let toastTimeout;
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 1000);
+  }
 
   setTimeout(() => {
     instruction.classList.add('shrink');
@@ -285,6 +321,7 @@
     audioTrack.play();
     audioToggleBtnInner.textContent = 'pause';
     audioToggleBtn.title = '暫停';
+    showToast('重新播放');
   });
 
   audioToggleBtn.addEventListener('click', () => {
@@ -292,10 +329,12 @@
       audioTrack.play();
       audioToggleBtnInner.textContent = 'pause';
       audioToggleBtn.title = '暫停';
+      showToast('繼續播放');
     } else {
       audioTrack.pause();
       audioToggleBtnInner.textContent = 'play_arrow';
       audioToggleBtn.title = '播放';
+      showToast('已暫停');
     }
   });
 
