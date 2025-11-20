@@ -26,6 +26,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      gap: 20px;
       overflow: hidden;
       margin: 0;
       font-family: sans-serif;
@@ -317,75 +318,6 @@
         bottom: 30px;
         font-size: 14px;
         padding: 10px 20px;
-      }
-    }
-
-    /* Large landscape devices - more vertical space */
-    @media (min-height: 601px) and (orientation: landscape) {
-      .container {
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 25px;
-        padding: 30px;
-        box-sizing: border-box;
-      }
-
-      .card-container {
-        width: auto;
-        height: 75vh;
-        aspect-ratio: 4/3;
-        flex-shrink: 0;
-      }
-
-      .instruction {
-        font-size: 20px;
-        bottom: calc(100% + 8px);
-      }
-
-      .instruction.shrink {
-        font-size: 18px;
-      }
-
-      .controls-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 16px;
-        flex-shrink: 0;
-      }
-
-      .btns {
-        margin-top: 0;
-      }
-
-      .btn {
-        margin-top: 0;
-        padding: 12px 32px;
-        font-size: 20px;
-      }
-
-      .btn-icon {
-        margin-top: 0;
-        height: 54px;
-      }
-
-      .btn-icon.visible {
-        width: 54px;
-        margin-right: 16px;
-      }
-
-      .btn-icon div {
-        width: 30px;
-        height: 30px;
-        font-size: 30px;
-      }
-
-      .toast {
-        bottom: 40px;
-        font-size: 16px;
-        padding: 12px 24px;
       }
     }
 
