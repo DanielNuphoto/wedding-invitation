@@ -31,8 +31,8 @@
       margin: 0;
       font-family: sans-serif;
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 100dvw;
+      height: 100dvh;
     }
 
     .instruction {
@@ -54,16 +54,10 @@
 
     .card-container {
       position: relative;
-      width: 50vw;
+      width: 50dvw;
       aspect-ratio: 4/3;
       perspective: 1000px;
       z-index: 1;
-    }
-
-    @media (max-aspect-ratio: 1/1) {
-      .card-container {
-        width: 90vw;
-      }
     }
 
     .card {
@@ -265,7 +259,7 @@
 
       .card-container {
         width: auto;
-        height: 80vh;
+        height: 80dvh;
         aspect-ratio: 4/3;
         flex-shrink: 0;
       }
@@ -324,7 +318,7 @@
     /* Extra small landscape devices */
     @media (max-height: 450px) and (orientation: landscape) {
       .card-container {
-        height: 80vh;
+        height: 80dvh;
       }
 
       .instruction {
