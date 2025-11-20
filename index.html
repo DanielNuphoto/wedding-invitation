@@ -93,19 +93,18 @@
 
     .btns {
       display: flex;
-      gap: 20px;
+      transition: all 0.5s ease;
     }
 
     .btn {
       margin-top: 20px;
       padding: 12px 36px;
       font-size: 24px;
-      border: 2px solid #6c8e7c;
       border-radius: 999px;
       background: #6c8e7c;
       color: #fff;
       cursor: pointer;
-      transition: transform 0.3s ease, opacity 0.3s ease;
+      transition: all 0.5s ease;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
@@ -113,11 +112,16 @@
       opacity: 0.8;
     }
 
+    button {
+      padding: 0;
+      border: none;
+    }
+
     .btn-icon {
       margin-top: 20px;
-      width: 63px;
+      margin-right: 0;
+      width: 0;
       height: 63px;
-      border: 2px solid #6c8e7c;
       border-radius: 999px;
       background: #6c8e7c;
       color: #fff;
@@ -125,7 +129,21 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0);
+      transition: opacity 0.5s ease, transform 0.5s ease, width 0.5s ease, height 0.5s ease, margin 0.5s ease, border-width 0.5s ease, box-shadow 0.5s ease;
+      opacity: 0;
+      transform: scale(0.5) rotateY(-180deg);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .btn-icon.visible {
+      width: 63px;
+      margin-right: 20px;
+      opacity: 1;
+      transform: scale(1) rotateY(0deg);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      pointer-events: auto;
     }
 
     .btn-icon div {
@@ -137,7 +155,6 @@
     @media (min-width: 992px) {
       .btn:hover, .btn-icon:hover {
         background: #749d87;
-        border: 2px solid #749d87;
       }
     }
 
@@ -169,12 +186,12 @@
     </div>
   </div>
   <div class="btns">
-    <button id="audioRestartBtn" class="btn-icon hidden">
+    <button id="audioRestartBtn" class="btn-icon" title="重新播放">
       <div class="material-symbols-outlined">
         play_circle
       </div>
     </button>
-    <button id="audioToggleBtn" class="btn-icon hidden">
+    <button id="audioToggleBtn" class="btn-icon" title="播放">
       <div id="audioToggleBtnInner" class="material-symbols-outlined">
         play_arrow
       </div>
@@ -242,11 +259,12 @@
   audioSoundBtn.addEventListener('click', () => {
     if (initial) {
       initial = false;
-      audioRestartBtn.classList.remove('hidden')
-      audioToggleBtn.classList.remove('hidden')
+      audioRestartBtn.classList.add('visible')
+      audioToggleBtn.classList.add('visible')
       audioTrack.currentTime = 0;
       audioTrack.play();
       audioToggleBtnInner.textContent = 'pause';
+      audioToggleBtn.title = '暫停';
       audioSoundBtn.classList.remove('breathe')
       audioSoundBtn.classList.add('fade')
       audioSoundBtn.textContent = '🔇 關閉聲音'
@@ -266,15 +284,18 @@
     audioTrack.currentTime = 0;
     audioTrack.play();
     audioToggleBtnInner.textContent = 'pause';
+    audioToggleBtn.title = '暫停';
   });
 
   audioToggleBtn.addEventListener('click', () => {
     if (audioTrack.paused) {
       audioTrack.play();
       audioToggleBtnInner.textContent = 'pause';
+      audioToggleBtn.title = '暫停';
     } else {
       audioTrack.pause();
       audioToggleBtnInner.textContent = 'play_arrow';
+      audioToggleBtn.title = '播放';
     }
   });
 
