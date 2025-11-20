@@ -640,6 +640,7 @@
   });
 
   function downloadICS() {
+    showToast('建議使用 Google 行事曆');
     const event = {
       title: '顏朱府囍宴',
       start: '20260117T113000',
@@ -679,7 +680,6 @@
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
-    showToast('已加入行事曆');
   }
 
   calendarBtn.addEventListener('click', downloadICS);
