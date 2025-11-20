@@ -188,7 +188,7 @@
     }
 
     .breathe {
-      /* animation: breathe 1.2s infinite ease-in-out; */
+      animation: breathe 1.2s infinite ease-in-out;
     }
 
     .toast {
@@ -211,6 +211,46 @@
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    .credits {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: right;
+      line-height: 1.6;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .credits > div {
+      margin-bottom: 2px;
+    }
+
+    .credits .vivipic-link {
+      display: inline-block;
+      pointer-events: auto;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+
+    .credits .vivipic-link:hover {
+      opacity: 1;
+    }
+
+    .credits .vivipic-link:hover .vivipic-logo {
+      transform: scale(1.1);
+    }
+
+    .credits .vivipic-logo {
+      display: inline-block;
+      vertical-align: middle;
+      height: 12px;
+      width: auto;
+      margin-left: 3px;
     }
 
     /* Mobile Portrait - Reduce sizes for better balance */
@@ -250,6 +290,37 @@
         bottom: 60px;
         font-size: 14px;
         padding: 10px 20px;
+      }
+
+      .credits {
+        font-size: 7px;
+        bottom: 8px;
+        right: 8px;
+        left: 8px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .credits > div {
+        margin-bottom: 0;
+        white-space: nowrap;
+      }
+
+      .credits > div:not(:last-child)::after {
+        content: '|';
+        margin-left: 8px;
+        opacity: 0.5;
+      }
+
+      .credits .vivipic-logo {
+        height: 9px;
+        width: auto;
+        margin-left: 2px;
+        margin-bottom: 1px;
       }
     }
 
@@ -319,6 +390,28 @@
         font-size: 14px;
         padding: 10px 20px;
       }
+
+      .credits {
+        font-size: 8px;
+        bottom: 8px;
+        right: 8px;
+        display: block;
+        text-align: right;
+      }
+
+      .credits > div {
+        margin-bottom: 2px;
+      }
+
+      .credits > div:not(:last-child)::after {
+        content: none;
+      }
+
+      .credits .vivipic-logo {
+        height: 10px;
+        width: auto;
+        margin-left: 3px;
+      }
     }
 
     /* Extra small landscape devices */
@@ -358,6 +451,28 @@
       .controls-container {
         gap: 12px;
       }
+
+      .credits {
+        font-size: 7px;
+        bottom: 6px;
+        right: 6px;
+        display: block;
+        text-align: right;
+      }
+
+      .credits > div {
+        margin-bottom: 2px;
+      }
+
+      .credits > div:not(:last-child)::after {
+        content: none;
+      }
+
+      .credits .vivipic-logo {
+        height: 8px;
+        width: auto;
+        margin-left: 3px;
+      }
     }
   </style>
 </head>
@@ -392,6 +507,17 @@
     </div>
   </div>
   <div id="toast" class="toast"></div>
+
+  <div class="credits">
+    <div>Created by 顏廷安</div>
+    <div>Reviewed by 朱紋緣</div>
+    <div>
+      Powered by 
+      <a href="https://vivipic.com" target="_blank" rel="noopener noreferrer" class="vivipic-link">
+        <img src="logo.svg" alt="Vivipic" class="vivipic-logo">
+      </a>
+    </div>
+  </div>
 
   <audio id="audioTrack" src="audio.m4a?ver=2" loop></audio>
 
