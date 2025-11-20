@@ -60,6 +60,12 @@
       z-index: 1;
     }
 
+    @media (max-width: 992px) {
+      .card-container {
+        width: 90dvw;
+      }
+    }
+
     .card {
       width: 100%;
       height: 100%;
@@ -209,10 +215,6 @@
 
     /* Mobile Portrait - Reduce sizes for better balance */
     @media (max-aspect-ratio: 1/1) and (max-width: 768px) {
-      .card-container {
-        width: 90dvw;
-      }
-      
       .instruction {
         font-size: 18px;
         bottom: calc(100% + 5px);
