@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>顏朱府囍宴喜帖</title>
+  <meta property="og:title" content="顏朱府囍宴喜帖" />
+  <meta property="og:description" content="邀請大家一起來見證我們的幸福時刻" />
+  <meta property="og:image" content="https://danielnuphoto.github.io/image.png" >
   <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
   <style>
     body {
       display: flex;
@@ -85,6 +89,11 @@
       object-fit: cover;
     }
 
+    .btns {
+      display: flex;
+      gap: 20px;
+    }
+
     .btn {
       margin-top: 20px;
       padding: 12px 36px;
@@ -95,22 +104,43 @@
       color: #fff;
       cursor: pointer;
       transition: transform 0.3s ease, opacity 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .fade {
       opacity: 0.8;
     }
 
     .btn-icon {
       margin-top: 20px;
-      padding: 12px;
-      font-size: 24px;
+      width: 63px;
+      height: 63px;
       border: 2px solid #6c8e7c;
       border-radius: 999px;
       background: #6c8e7c;
       color: #fff;
       cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
-    .btn:hover, .btn-icon:hover {
-      background: #749d87;
+    .btn-icon div {
+      width: 36px;
+      height: 36px;
+      font-size: 36px;
+    }
+
+    @media (min-width: 992px) {
+      .btn:hover, .btn-icon:hover {
+        background: #749d87;
+        border: 2px solid #749d87;
+      }
+    }
+
+    .hidden {
+      display: none;
     }
 
     @keyframes breathe {
@@ -136,9 +166,18 @@
       </div>
     </div>
   </div>
-  <div>
-    <button id="audioRestartBtn" class="btn-icon" style="margin-right: 20px">▶️</button>
-    <button id="audioToggleBtn" class="btn-icon">⏯️</button>
+  <div class="btns">
+    <button id="audioRestartBtn" class="btn-icon hidden">
+      <div class="material-symbols-outlined">
+        play_circle
+      </div>
+    </button>
+    <button id="audioToggleBtn" class="btn-icon hidden">
+      <div id="audioToggleBtnInner" class="material-symbols-outlined">
+        play_arrow
+      </div>
+    </button>
+    <button id="audioSoundBtn" class="btn breathe">🔊 開啟聲音</button>
   </div>
   <button id="mapBtn" class="btn breathe">📍 查看地址</button>
 
@@ -149,12 +188,15 @@
   const audioTrack = document.getElementById('audioTrack');
   const audioRestartBtn = document.getElementById('audioRestartBtn');
   const audioToggleBtn = document.getElementById('audioToggleBtn');
+  const audioToggleBtnInner = document.getElementById('audioToggleBtnInner');
+  const audioSoundBtn = document.getElementById('audioSoundBtn');
   const mapBtn = document.getElementById('mapBtn');
   const instruction = document.getElementById('instruction');
   let startX = 0;
   let rotation = 0;
   let isDragging = false;
   let dragHandled = false;
+  let initial = true;
 
   setTimeout(() => {
     instruction.classList.add('shrink');
@@ -195,16 +237,42 @@
   document.body.addEventListener('mousedown', handleDragStart);
   document.body.addEventListener('mouseup', handleDragEnd);
 
+  audioSoundBtn.addEventListener('click', () => {
+    if (initial) {
+      initial = false;
+      audioRestartBtn.classList.remove('hidden')
+      audioToggleBtn.classList.remove('hidden')
+      audioTrack.currentTime = 0;
+      audioTrack.play();
+      audioToggleBtnInner.textContent = 'pause';
+      audioSoundBtn.classList.remove('breathe')
+      audioSoundBtn.classList.add('fade')
+      audioSoundBtn.textContent = '🔇 關閉聲音'
+    } else {
+      audioTrack.muted = !audioTrack.muted
+      audioSoundBtn.classList.toggle('fade')
+      audioSoundBtn.classList.toggle('breathe')
+      if (audioTrack.muted) {
+        audioSoundBtn.textContent = '🔊 開啟聲音'
+      } else {
+        audioSoundBtn.textContent = '🔇 關閉聲音'
+      }
+    }
+  });
+
   audioRestartBtn.addEventListener('click', () => {
     audioTrack.currentTime = 0;
     audioTrack.play();
+    audioToggleBtnInner.textContent = 'pause';
   });
 
   audioToggleBtn.addEventListener('click', () => {
     if (audioTrack.paused) {
       audioTrack.play();
+      audioToggleBtnInner.textContent = 'pause';
     } else {
       audioTrack.pause();
+      audioToggleBtnInner.textContent = 'play_arrow';
     }
   });
 
