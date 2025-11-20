@@ -213,6 +213,69 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: #6c8e7c;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      transform: scale(0.8);
+      transition: transform 0.3s ease;
+      max-width: 80%;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-text {
+      font-size: 28px;
+      color: white;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .modal-content {
+        padding: 30px 40px;
+      }
+
+      .modal-text {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-content {
+        padding: 25px 30px;
+      }
+
+      .modal-text {
+        font-size: 18px;
+      }
+    }
+
     .credits {
       position: fixed;
       bottom: 15px;
@@ -509,6 +572,12 @@
   </div>
   <div id="toast" class="toast"></div>
 
+  <div id="modal" class="modal-overlay">
+    <div class="modal-content">
+      <p class="modal-text">建議使用 Google 行事曆</p>
+    </div>
+  </div>
+
   <div class="credits">
     <div>Created by 顏廷安</div>
     <div>Reviewed by 朱紋緣</div>
@@ -533,6 +602,7 @@
   const calendarBtn = document.getElementById('calendarBtn');
   const instruction = document.getElementById('instruction');
   const toast = document.getElementById('toast');
+  const modal = document.getElementById('modal');
   let startX = 0;
   let rotation = 0;
   let isDragging = false;
@@ -549,6 +619,21 @@
       toast.classList.remove('show');
     }, 1000);
   }
+
+  function showModal(callback) {
+    modal.classList.add('show');
+    setTimeout(() => {
+      modal.classList.remove('show');
+      if (callback) callback();
+    }, 2000);
+  }
+
+  // Close modal when clicking on overlay
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('show');
+    }
+  });
 
   setTimeout(() => {
     instruction.classList.add('shrink');
@@ -640,46 +725,47 @@
   });
 
   function downloadICS() {
-    showToast('建議使用 Google 行事曆');
-    const event = {
-      title: '顏朱府囍宴',
-      start: '20260117T113000',
-      end: '20260117T150000',
-      location: 'https://maps.app.goo.gl/P4R37WntSKMsvqw77',
-      description: '顏朱府囍宴 https://danielnuphoto.github.io/wedding-invitation/',
-      URL: 'https://danielnuphoto.github.io/wedding-invitation/'
-    };
+    showModal(() => {
+      const event = {
+        title: '顏朱府囍宴',
+        start: '20260117T113000',
+        end: '20260117T150000',
+        location: 'https://maps.app.goo.gl/P4R37WntSKMsvqw77',
+        description: '顏朱府囍宴 https://danielnuphoto.github.io/wedding-invitation/',
+        URL: 'https://danielnuphoto.github.io/wedding-invitation/'
+      };
 
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Wedding Invitation//NONSGML v1.0//EN',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'X-WR-CALNAME:顏朱府囍宴',
-      'X-WR-TIMEZONE:Asia/Taipei',
-      'BEGIN:VEVENT',
-      `DTSTART:${event.start}`,
-      `DTEND:${event.end}`,
-      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
-      `SUMMARY:${event.title}`,
-      `LOCATION:${event.location}`,
-      `URL:${event.URL}`,
-      `DESCRIPTION:${event.description}`,
-      'STATUS:CONFIRMED',
-      'SEQUENCE:0',
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\r\n');
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Wedding Invitation//NONSGML v1.0//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:顏朱府囍宴',
+        'X-WR-TIMEZONE:Asia/Taipei',
+        'BEGIN:VEVENT',
+        `DTSTART:${event.start}`,
+        `DTEND:${event.end}`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+        `SUMMARY:${event.title}`,
+        `LOCATION:${event.location}`,
+        `URL:${event.URL}`,
+        `DESCRIPTION:${event.description}`,
+        'STATUS:CONFIRMED',
+        'SEQUENCE:0',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
 
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = '顏朱府囍宴.ics';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = '顏朱府囍宴.ics';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    });
   }
 
   calendarBtn.addEventListener('click', downloadICS);
