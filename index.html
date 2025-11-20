@@ -504,6 +504,7 @@
         <button id="audioSoundBtn" class="btn breathe">🔊 開啟聲音</button>
       </div>
       <button id="mapBtn" class="btn breathe">📍 查看地址</button>
+      <button id="calendarBtn" class="btn breathe">📅 加入行事曆</button>
     </div>
   </div>
   <div id="toast" class="toast"></div>
@@ -529,6 +530,7 @@
   const audioToggleBtnInner = document.getElementById('audioToggleBtnInner');
   const audioSoundBtn = document.getElementById('audioSoundBtn');
   const mapBtn = document.getElementById('mapBtn');
+  const calendarBtn = document.getElementById('calendarBtn');
   const instruction = document.getElementById('instruction');
   const toast = document.getElementById('toast');
   let startX = 0;
@@ -636,6 +638,51 @@
   mapBtn.addEventListener('click', () => {
     window.open('https://www.google.com/maps/dir//708台南市安平區城平路1號/@22.9918224,120.069466,12z/data=!4m8!4m7!1m0!1m5!1m1!1s0x346dd8acbf1b4465:0xf4ab14aaf3caa61c!2m2!1d120.1518676!2d22.9918437?entry=ttu', '_blank');
   });
+
+  function downloadICS() {
+    const event = {
+      title: '顏朱府囍宴',
+      start: '20260117T113000',
+      end: '20260117T150000',
+      location: 'https://maps.app.goo.gl/P4R37WntSKMsvqw77',
+      description: '顏朱府囍宴 https://danielnuphoto.github.io/wedding-invitation/',
+      URL: 'https://danielnuphoto.github.io/wedding-invitation/'
+    };
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Wedding Invitation//NONSGML v1.0//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:顏朱府囍宴',
+      'X-WR-TIMEZONE:Asia/Taipei',
+      'BEGIN:VEVENT',
+      `DTSTART:${event.start}`,
+      `DTEND:${event.end}`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      `SUMMARY:${event.title}`,
+      `LOCATION:${event.location}`,
+      `URL:${event.URL}`,
+      `DESCRIPTION:${event.description}`,
+      'STATUS:CONFIRMED',
+      'SEQUENCE:0',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '顏朱府囍宴.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    showToast('已加入行事曆');
+  }
+
+  calendarBtn.addEventListener('click', downloadICS);
   </script>
 </body>
 </html>
