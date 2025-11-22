@@ -11,6 +11,8 @@
   <meta property="og:image:height" content="540" >
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" />
   <style>
     html, body {
       width: 100%;
@@ -19,6 +21,7 @@
       padding: 0;
       overflow: hidden;
       background: #5a7d9a; /* 莫蘭迪藍 */
+      font-family: Wix Madefor Text, Noto Sans TC;
     }
 
     .container {
@@ -175,6 +178,22 @@
       .btn:hover, .btn-icon:hover {
         background: #749d87;
       }
+
+      .credits .vivipic-link:hover {
+        opacity: 1;
+      }
+
+      .credits .vivipic-link:hover .vivipic-logo {
+        transform: scale(1.1);
+      }
+
+      .credits .vivisticker-link:hover {
+        opacity: 1;
+      }
+
+      .credits .vivisticker-link:hover .vivisticker-logo {
+        transform: scale(1.1);
+      }
     }
 
     .hidden {
@@ -300,14 +319,6 @@
       transition: opacity 0.2s ease;
     }
 
-    .credits .vivipic-link:hover {
-      opacity: 1;
-    }
-
-    .credits .vivipic-link:hover .vivipic-logo {
-      transform: scale(1.1);
-    }
-
     .credits .vivipic-logo {
       display: inline-block;
       vertical-align: middle;
@@ -323,14 +334,6 @@
       cursor: pointer;
       opacity: 0.8;
       transition: opacity 0.2s ease;
-    }
-
-    .credits .vivisticker-link:hover {
-      opacity: 1;
-    }
-
-    .credits .vivisticker-link:hover .vivisticker-logo {
-      transform: scale(1.1);
     }
 
     .credits .vivisticker-logo {
