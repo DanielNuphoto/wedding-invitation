@@ -280,7 +280,7 @@
       position: fixed;
       bottom: 15px;
       right: 15px;
-      font-size: 10px;
+      font-size: 12px;
       color: rgba(255, 255, 255, 0.6);
       text-align: right;
       line-height: 1.6;
@@ -311,9 +311,42 @@
     .credits .vivipic-logo {
       display: inline-block;
       vertical-align: middle;
-      height: 12px;
+      height: 14px;
       width: auto;
       margin-left: 3px;
+    }
+
+    /* second logo (vivisticker) - shares similar behavior */
+    .credits .vivisticker-link {
+      display: inline-block;
+      pointer-events: auto;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s ease;
+    }
+
+    .credits .vivisticker-link:hover {
+      opacity: 1;
+    }
+
+    .credits .vivisticker-link:hover .vivisticker-logo {
+      transform: scale(1.1);
+    }
+
+    .credits .vivisticker-logo {
+      display: inline-block;
+      vertical-align: middle;
+      height: 13px;
+      width: auto;
+      margin-left: 3px;
+    }
+
+    /* container to control logo stacking/inline behavior */
+    .credits .logos {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     /* Mobile Portrait - Reduce sizes for better balance */
@@ -384,6 +417,19 @@
         width: auto;
         margin-left: 2px;
         margin-bottom: 1px;
+      }
+
+      /* in narrow/portrait (vertical) layout, stack logos vertically */
+      .credits .logos {
+        flex-direction: row;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .credits .vivisticker-logo {
+        height: 8.5px;
+        margin-left: 2px;
+        margin-bottom: 2px;
       }
     }
 
@@ -475,6 +521,19 @@
         width: auto;
         margin-left: 3px;
       }
+
+      /* in landscape/horizontal layout, show logos inline (row) */
+      .credits .logos {
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .credits .vivisticker-logo {
+        height: 9px;
+        width: auto;
+        margin-left: 3px;
+      }
     }
 
     /* Extra small landscape devices */
@@ -536,6 +595,12 @@
         width: auto;
         margin-left: 3px;
       }
+
+      .credits .vivisticker-logo {
+        height: 7px;
+        width: auto;
+        margin-left: 3px;
+      }
     }
   </style>
 </head>
@@ -582,10 +647,15 @@
     <div>Created by 顏廷安</div>
     <div>Reviewed by 朱紋緣</div>
     <div>
-      Powered by 
-      <a href="https://vivipic.com" target="_blank" rel="noopener noreferrer" class="vivipic-link">
-        <img src="logo.svg" alt="Vivipic" class="vivipic-logo">
-      </a>
+      Powered by
+      <div class="logos">
+        <a href="https://vivipic.com" target="_blank" rel="noopener noreferrer" class="vivipic-link">
+          <img src="logo.svg" alt="Vivipic" class="vivipic-logo">
+        </a>
+        <a href="https://vivisticker.com/" target="_blank" rel="noopener noreferrer" class="vivisticker-link">
+          <img src="logo2.svg" alt="Vivisticker" class="vivisticker-logo">
+        </a>
+      </div>
     </div>
   </div>
 
