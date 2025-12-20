@@ -758,7 +758,11 @@
       </div>
       <button class="filter-btn" id="photoFilterBtn">
         <span class="material-symbols-outlined">photo_camera</span>
-        只顯示有照片
+        只顯示照片
+      </button>
+      <button class="filter-btn" id="textFilterBtn">
+        <span class="material-symbols-outlined">chat</span>
+        只顯示文字
       </button>
       <button class="refresh-btn" id="refreshBtn">
         <span class="material-symbols-outlined">refresh</span>
@@ -847,6 +851,7 @@
     let allBlessings = [];
     let filteredBlessings = [];
     let photoFilterActive = false;
+    let textFilterActive = false;
     let searchQuery = '';
     let pendingDeleteId = null;
     let pendingDeletePhotoURL = null;
@@ -864,6 +869,7 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const searchInput = document.getElementById('searchInput');
     const photoFilterBtn = document.getElementById('photoFilterBtn');
+    const textFilterBtn = document.getElementById('textFilterBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const blessingsList = document.getElementById('blessingsList');
@@ -1131,7 +1137,10 @@
     function filterAndRender() {
       filteredBlessings = allBlessings.filter(b => {
         // Photo filter
+        // Photo filter - show only blessings with photos
         if (photoFilterActive && !b.photoURL) return false;
+        // Text filter - show only blessings without photos
+        if (textFilterActive && b.photoURL) return false;
         
         // Search filter
         if (searchQuery) {
@@ -1154,7 +1163,23 @@
 
     photoFilterBtn.addEventListener('click', () => {
       photoFilterActive = !photoFilterActive;
+      // Disable text filter when photo filter is active (mutually exclusive)
+      if (photoFilterActive) {
+        textFilterActive = false;
+        textFilterBtn.classList.remove('active');
+      }
       photoFilterBtn.classList.toggle('active', photoFilterActive);
+      filterAndRender();
+    });
+
+    textFilterBtn.addEventListener('click', () => {
+      textFilterActive = !textFilterActive;
+      // Disable photo filter when text filter is active (mutually exclusive)
+      if (textFilterActive) {
+        photoFilterActive = false;
+        photoFilterBtn.classList.remove('active');
+      }
+      textFilterBtn.classList.toggle('active', textFilterActive);
       filterAndRender();
     });
 
@@ -1190,20 +1215,21 @@
 
       blessingsList.innerHTML = filteredBlessings.map((blessing, index) => `
         <div class="blessing-item" data-id="${blessing.id}" data-index="${index}">
+          ${blessing.photoURL ? `
           <div class="blessing-photo">
-            ${blessing.photoURL 
-              ? `<img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage(${index})">`
-              : `<span class="material-symbols-outlined no-photo">hide_image</span>`
-            }
+            <img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage(${index})">
           </div>
+          ` : ''}
           <div class="blessing-content">
             <div class="blessing-header">
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
               <span class="blessing-time">${formatTime(blessing.timestamp)}</span>
             </div>
-            <div class="blessing-message ${!blessing.message ? 'empty' : ''}">
-              ${blessing.message ? escapeHtml(blessing.message) : '(無文字祝福)'}
+            ${blessing.message ? `
+            <div class="blessing-message">
+              ${escapeHtml(blessing.message)}
             </div>
+            ` : ''}
             <div class="blessing-actions">
               <button class="delete-btn" onclick="window.confirmDelete(${index})">
                 <span class="material-symbols-outlined">delete</span>
