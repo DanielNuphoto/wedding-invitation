@@ -17,7 +17,7 @@
 
     html, body {
       width: 100%;
-      min-height: 100%;
+      min-height: 100vh;
       margin: 0;
       padding: 0;
       background: linear-gradient(135deg, #d4a8a8 0%, #c89898 50%, #b88888 100%);
@@ -179,6 +179,69 @@
       position: relative;
     }
 
+    .photo-upload-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .photo-upload-divider {
+      text-align: center;
+      color: #a99999;
+      font-size: 13px;
+      position: relative;
+    }
+
+    .photo-upload-divider::before,
+    .photo-upload-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: calc(50% - 20px);
+      height: 1px;
+      background: #e0d5d5;
+    }
+
+    .photo-upload-divider::before {
+      left: 0;
+    }
+
+    .photo-upload-divider::after {
+      right: 0;
+    }
+
+    .camera-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      background: linear-gradient(135deg, #d49898, #c08080);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(192, 128, 128, 0.3);
+    }
+
+    .camera-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(192, 128, 128, 0.4);
+    }
+
+    .camera-btn:active {
+      transform: translateY(0);
+    }
+
+    .camera-btn .material-symbols-outlined {
+      font-size: 24px;
+    }
+
     .photo-upload-area {
       border: 2px dashed #d0c5c5;
       border-radius: 12px;
@@ -223,6 +286,8 @@
     .photo-preview {
       display: none;
       position: relative;
+      margin-top: 15px;
+      margin-bottom: 20px;
     }
 
     .photo-preview.show {
@@ -255,6 +320,93 @@
 
     .photo-preview .remove-btn:hover {
       background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Camera Modal */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .camera-modal.show {
+      display: flex;
+    }
+
+    .camera-container {
+      width: 100%;
+      max-width: 640px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .camera-video {
+      width: 100%;
+      display: block;
+      background: #000;
+    }
+
+    .camera-controls {
+      display: flex;
+      gap: 15px;
+      padding: 20px;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .camera-btn-control {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .camera-btn-control.capture {
+      width: 70px;
+      height: 70px;
+      background: #fff;
+      border-color: #fff;
+    }
+
+    .camera-btn-control.capture:hover {
+      transform: scale(1.1);
+    }
+
+    .camera-btn-control.close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      border: 2px solid #fff;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .camera-btn-control .material-symbols-outlined {
+      color: #fff;
+      font-size: 28px;
+    }
+
+    .camera-btn-control.capture .material-symbols-outlined {
+      color: #000;
+      font-size: 32px;
     }
 
     /* Submit Section */
@@ -509,10 +661,17 @@
         <div class="tab-content" id="photoContent">
           <div class="form-group photo-upload">
             <label>選擇照片 *</label>
-            <div class="photo-upload-area" id="uploadArea">
-              <div class="material-symbols-outlined icon">add_photo_alternate</div>
-              <div class="text">點擊或拖曳上傳照片</div>
-              <div class="subtext">支援 JPG、PNG，最大 10MB</div>
+            <div class="photo-upload-options">
+              <div class="photo-upload-area" id="uploadArea">
+                <div class="material-symbols-outlined icon">add_photo_alternate</div>
+                <div class="text">點擊或拖曳上傳照片</div>
+                <div class="subtext">支援 JPG、PNG，最大 10MB</div>
+              </div>
+              <div class="photo-upload-divider">或</div>
+              <button type="button" class="camera-btn" id="cameraBtn">
+                <span class="material-symbols-outlined">camera_alt</span>
+                <span>使用相機拍照</span>
+              </button>
             </div>
             <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp">
             <div class="photo-preview" id="photoPreview">
@@ -551,6 +710,22 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <!-- Camera Modal -->
+  <div class="camera-modal" id="cameraModal">
+    <div class="camera-container">
+      <button type="button" class="camera-btn-control close" id="closeCameraBtn">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
+      <canvas id="cameraCanvas" style="display: none;"></canvas>
+      <div class="camera-controls">
+        <button type="button" class="camera-btn-control capture" id="captureBtn">
+          <span class="material-symbols-outlined">camera</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -608,6 +783,14 @@
     const messageInput = document.getElementById('message');
     const nameCount = document.getElementById('nameCount');
     const messageCount = document.getElementById('messageCount');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraModal = document.getElementById('cameraModal');
+    const cameraVideo = document.getElementById('cameraVideo');
+    const cameraCanvas = document.getElementById('cameraCanvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const closeCameraBtn = document.getElementById('closeCameraBtn');
+    
+    let cameraStream = null;
 
     // ============================================
     // Toast Notification
@@ -660,6 +843,7 @@
         messageCount.textContent = '0';
       } else {
         clearPhoto();
+        stopCamera(); // Stop camera if switching away from photo tab
       }
 
       // Update tab state
@@ -725,9 +909,90 @@
       photoInput.value = '';
       photoPreview.classList.remove('show');
       uploadArea.style.display = 'block';
+      stopCamera(); // Stop camera if clearing photo
     }
 
     removePhotoBtn.addEventListener('click', clearPhoto);
+
+    // ============================================
+    // Camera Functionality
+    // ============================================
+    async function startCamera() {
+      try {
+        // Request camera access
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: 'environment', // Prefer back camera on mobile
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        
+        cameraVideo.srcObject = cameraStream;
+        cameraModal.classList.add('show');
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          showToast('需要相機權限才能使用此功能', 'error', 4000);
+        } else if (error.name === 'NotFoundError') {
+          showToast('找不到可用的相機', 'error', 4000);
+        } else {
+          showToast('無法開啟相機，請稍後再試', 'error', 4000);
+        }
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      cameraVideo.srcObject = null;
+      cameraModal.classList.remove('show');
+    }
+
+    function capturePhoto() {
+      const videoWidth = cameraVideo.videoWidth;
+      const videoHeight = cameraVideo.videoHeight;
+      
+      // Set canvas size to match video
+      cameraCanvas.width = videoWidth;
+      cameraCanvas.height = videoHeight;
+      
+      // Draw video frame to canvas
+      const ctx = cameraCanvas.getContext('2d');
+      ctx.drawImage(cameraVideo, 0, 0, videoWidth, videoHeight);
+      
+      // Convert canvas to blob
+      cameraCanvas.toBlob((blob) => {
+        if (blob) {
+          // Create a File object from the blob
+          const file = new File([blob], `camera_${Date.now()}.jpg`, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          
+          // Use the same handler as file upload
+          handleFileSelect(file);
+          
+          // Stop camera and close modal
+          stopCamera();
+        } else {
+          showToast('拍照失敗，請重試', 'error');
+        }
+      }, 'image/jpeg', 0.9); // 90% quality
+    }
+
+    cameraBtn.addEventListener('click', startCamera);
+    captureBtn.addEventListener('click', capturePhoto);
+    closeCameraBtn.addEventListener('click', stopCamera);
+    
+    // Close camera when clicking outside
+    cameraModal.addEventListener('click', (e) => {
+      if (e.target === cameraModal) {
+        stopCamera();
+      }
+    });
 
     // ============================================
     // Form Submission
