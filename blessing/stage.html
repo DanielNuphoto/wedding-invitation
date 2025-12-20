@@ -752,14 +752,27 @@
     // ============================================
     function getAvailableLane() {
       const now = Date.now();
+      const cooldownTime = 2000; // 2 seconds cooldown between same lane
+      
+      // Find lanes that are available (not used recently)
+      const availableLanes = [];
+      for (let i = 0; i < DANMAKU_LANES; i++) {
+        if (now - laneLastUsed[i] > cooldownTime) {
+          availableLanes.push(i);
+        }
+      }
+      
+      // If we have available lanes, pick a random one
+      if (availableLanes.length > 0) {
+        const lane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+        laneLastUsed[lane] = now;
+        return lane;
+      }
+      
+      // All lanes busy, find the oldest one
       let bestLane = 0;
       let oldestTime = laneLastUsed[0];
-      
-      for (let i = 0; i < DANMAKU_LANES; i++) {
-        if (now - laneLastUsed[i] > 2000) {
-          laneLastUsed[i] = now;
-          return i;
-        }
+      for (let i = 1; i < DANMAKU_LANES; i++) {
         if (laneLastUsed[i] < oldestTime) {
           oldestTime = laneLastUsed[i];
           bestLane = i;
@@ -775,8 +788,27 @@
       activeDanmakuIds.add(blessing.id);
       
       const lane = getAvailableLane();
-      const laneHeight = (danmakuContainer.offsetHeight - 100) / DANMAKU_LANES;
-      const topPosition = 50 + lane * laneHeight;
+      
+      // Calculate available height (container height minus top/bottom padding)
+      const containerHeight = danmakuContainer.offsetHeight || (window.innerHeight - 80);
+      const topPadding = 50;
+      
+      // Estimate danmaku height based on current text scale
+      const textScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--text-scale')) || 1;
+      const estimatedDanmakuHeight = (72 * textScale) + (30 * textScale * 2); // font size + top/bottom padding
+      
+      // Calculate safe bottom boundary (container height - danmaku height - margin)
+      const bottomBoundary = containerHeight - estimatedDanmakuHeight - 20; // 20px safety margin
+      const availableHeight = bottomBoundary - topPadding;
+      
+      // Distribute lanes evenly across available height
+      const laneSpacing = availableHeight / Math.max(1, DANMAKU_LANES - 1);
+      
+      // Calculate top position, clamped to ensure it doesn't exceed bottom boundary
+      const topPosition = Math.min(
+        topPadding + (lane * laneSpacing),
+        bottomBoundary
+      );
 
       const danmaku = document.createElement('div');
       danmaku.className = 'danmaku';

@@ -266,6 +266,30 @@
       background: rgba(76, 175, 80, 0.3);
     }
 
+    .test-data-btn {
+      background: rgba(156, 39, 176, 0.2);
+      border: 1px solid rgba(156, 39, 176, 0.3);
+      color: #ba68c8;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .test-data-btn:hover {
+      background: rgba(156, 39, 176, 0.3);
+    }
+
+    .test-data-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     .delete-all-btn {
       background: rgba(255, 107, 107, 0.15);
       border: 1px solid rgba(255, 107, 107, 0.3);
@@ -768,6 +792,10 @@
         <span class="material-symbols-outlined">refresh</span>
         重新載入
       </button>
+      <button class="test-data-btn" id="testDataBtn">
+        <span class="material-symbols-outlined">science</span>
+        加入測試資料
+      </button>
       <button class="delete-all-btn" id="deleteAllBtn">
         <span class="material-symbols-outlined">delete_sweep</span>
         全部刪除
@@ -824,8 +852,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, remove, query, orderByChild } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-    import { getStorage, ref as storageRef, deleteObject } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+    import { getDatabase, ref, onValue, remove, query, orderByChild, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getStorage, ref as storageRef, deleteObject, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
     // ============================================
     // 🔥 Firebase Configuration
@@ -871,6 +899,7 @@
     const photoFilterBtn = document.getElementById('photoFilterBtn');
     const textFilterBtn = document.getElementById('textFilterBtn');
     const refreshBtn = document.getElementById('refreshBtn');
+    const testDataBtn = document.getElementById('testDataBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const blessingsList = document.getElementById('blessingsList');
     const loadingState = document.getElementById('loadingState');
@@ -1187,6 +1216,126 @@
       loadBlessings();
       showToast('已重新載入', 'success');
     });
+
+    // ============================================
+    // Test Data Generation
+    // ============================================
+    async function createTestImage(color, text) {
+      // Create a canvas with a colored background and text
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+      
+      // Draw gradient background
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, adjustColor(color, -20));
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add text
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+      
+      // Convert to blob
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.9);
+      });
+    }
+
+    function adjustColor(color, amount) {
+      // Simple color adjustment for gradient
+      const num = parseInt(color.replace('#', ''), 16);
+      const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+      const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+      return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+    }
+
+    async function addTestData() {
+      testDataBtn.disabled = true;
+      testDataBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 建立中...';
+
+      const textBlessings = [
+        { name: '王小明', message: '恭喜你們！祝你們百年好合，永浴愛河！💕' },
+        { name: '李美麗', message: '看到你們這麼幸福，真的很開心！祝新婚快樂！' },
+        { name: '張三', message: '願你們的愛情像美酒一樣，越陳越香！' },
+        { name: '陳小華', message: '祝福新人白頭偕老，早生貴子！🎉' },
+        { name: '林志明', message: '恭喜恭喜！希望你們永遠這麼甜蜜！' },
+        { name: '黃淑芬', message: '祝你們新婚愉快，幸福美滿！' },
+        { name: '吳建國', message: '看到你們在一起真的很開心，祝你們永遠幸福！' },
+        { name: '劉雅婷', message: '願你們的愛情永遠像今天一樣美好！💖' }
+      ];
+
+      const photoColors = ['#d4a8a8', '#c89898', '#b88888', '#a87878', '#986868'];
+      const photoTexts = ['祝福', '恭喜', '幸福', '快樂', '甜蜜'];
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      try {
+        // Add text blessings
+        for (const blessing of textBlessings) {
+          try {
+            await push(ref(db, 'blessings'), {
+              name: blessing.name,
+              message: blessing.message,
+              timestamp: Date.now() - Math.random() * 86400000, // Random time in last 24h
+              type: 'text'
+            });
+            successCount++;
+          } catch (error) {
+            console.error('Error adding text blessing:', error);
+            errorCount++;
+          }
+        }
+
+        // Add photo blessings
+        for (let i = 0; i < 5; i++) {
+          try {
+            const blob = await createTestImage(photoColors[i], photoTexts[i]);
+            const fileName = `test_${Date.now()}_${i}.jpg`;
+            const imageRef = storageRef(storage, `blessings/${fileName}`);
+            
+            await uploadBytes(imageRef, blob);
+            const photoURL = await getDownloadURL(imageRef);
+            
+            await push(ref(db, 'blessings'), {
+              name: `測試用戶${i + 1}`,
+              message: '',
+              timestamp: Date.now() - Math.random() * 86400000,
+              type: 'photo',
+              photoURL: photoURL,
+              fileSize: blob.size
+            });
+            successCount++;
+          } catch (error) {
+            console.error('Error adding photo blessing:', error);
+            errorCount++;
+          }
+        }
+
+        if (errorCount > 0) {
+          showToast(`已建立 ${successCount} 則測試資料，${errorCount} 則失敗`, 'warning');
+        } else {
+          showToast(`已成功建立 ${successCount} 則測試資料`, 'success');
+        }
+      } catch (error) {
+        console.error('Error creating test data:', error);
+        showToast('建立測試資料失敗', 'error');
+      } finally {
+        testDataBtn.disabled = false;
+        testDataBtn.innerHTML = '<span class="material-symbols-outlined">science</span> 加入測試資料';
+      }
+    }
+
+    testDataBtn.addEventListener('click', addTestData);
 
     // ============================================
     // Render Blessings
