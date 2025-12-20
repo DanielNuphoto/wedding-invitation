@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>送上祝福 | 顏朱府囍宴</title>
+  <meta property="og:title" content="送上祝福 | 顏朱府囍宴" />
+  <meta property="og:description" content="留下您的祝福，與我們分享這份喜悅" />
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #b39090 0%, #a08080 50%, #8a7070 100%);
+      font-family: 'Wix Madefor Text', 'Noto Sans TC', sans-serif;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .form-card {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #5a4a4a;
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid #e0d5d5;
+      border-radius: 12px;
+      background: #faf8f8;
+      color: #4a3a3a;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #b39090;
+      box-shadow: 0 0 0 3px rgba(179, 144, 144, 0.2);
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #a99999;
+    }
+
+    .char-counter {
+      text-align: right;
+      font-size: 12px;
+      color: #a99999;
+      margin-top: 5px;
+    }
+
+    .char-counter.warning {
+      color: #e67e22;
+    }
+
+    .char-counter.limit {
+      color: #c0392b;
+    }
+
+    .photo-upload {
+      position: relative;
+    }
+
+    .photo-upload-area {
+      border: 2px dashed #d0c5c5;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #faf8f8;
+    }
+
+    .photo-upload-area:hover {
+      border-color: #b39090;
+      background: #f5f0f0;
+    }
+
+    .photo-upload-area.dragover {
+      border-color: #b39090;
+      background: rgba(179, 144, 144, 0.1);
+    }
+
+    .photo-upload-area .icon {
+      font-size: 48px;
+      color: #b39090;
+      margin-bottom: 10px;
+    }
+
+    .photo-upload-area .text {
+      font-size: 14px;
+      color: #7a6a6a;
+    }
+
+    .photo-upload-area .subtext {
+      font-size: 12px;
+      color: #a99999;
+      margin-top: 5px;
+    }
+
+    .photo-upload input[type="file"] {
+      display: none;
+    }
+
+    .photo-preview {
+      display: none;
+      position: relative;
+      margin-top: 15px;
+    }
+
+    .photo-preview.show {
+      display: block;
+    }
+
+    .photo-preview img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .photo-preview .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 0, 0, 0.6);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+
+    .photo-preview .remove-btn:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      font-family: inherit;
+      background: linear-gradient(135deg, #b39090, #958282);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(149, 130, 130, 0.4);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(149, 130, 130, 0.5);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .submit-btn .loading {
+      display: none;
+    }
+
+    .submit-btn.loading .loading {
+      display: inline;
+    }
+
+    .submit-btn.loading .text {
+      display: none;
+    }
+
+    /* Success state */
+    .success-card {
+      display: none;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 50px 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .success-card.show {
+      display: block;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .success-card .icon {
+      font-size: 64px;
+      color: #7cb342;
+      margin-bottom: 20px;
+    }
+
+    .success-card h2 {
+      font-size: 24px;
+      color: #4a3a3a;
+      margin: 0 0 10px 0;
+    }
+
+    .success-card p {
+      font-size: 16px;
+      color: #7a6a6a;
+      margin: 0 0 25px 0;
+    }
+
+    .success-card .another-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 500;
+      font-family: inherit;
+      background: transparent;
+      color: #958282;
+      border: 2px solid #958282;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .success-card .another-btn:hover {
+      background: #958282;
+      color: #fff;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      background: rgba(198, 40, 40, 0.9);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    .footer a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 15px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .form-card {
+        padding: 25px 20px;
+      }
+
+      .photo-upload-area {
+        padding: 25px 15px;
+      }
+
+      .photo-upload-area .icon {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💕 送上您的祝福</h1>
+      <p>留下溫暖的話語，與我們分享這份喜悅</p>
+    </div>
+
+    <div class="form-card" id="formCard">
+      <form id="blessingForm">
+        <div class="form-group">
+          <label for="name">您的稱呼 *</label>
+          <input type="text" id="name" name="name" placeholder="例如：王小明" required maxlength="50">
+          <div class="char-counter"><span id="nameCount">0</span>/50</div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">祝福話語</label>
+          <textarea id="message" name="message" placeholder="寫下您對新人的祝福..." maxlength="500"></textarea>
+          <div class="char-counter"><span id="messageCount">0</span>/500</div>
+        </div>
+
+        <div class="form-group photo-upload">
+          <label>附上照片（可選）</label>
+          <div class="photo-upload-area" id="uploadArea">
+            <div class="material-symbols-outlined icon">add_photo_alternate</div>
+            <div class="text">點擊或拖曳上傳照片</div>
+            <div class="subtext">支援 JPG、PNG，最大 10MB</div>
+          </div>
+          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp">
+          <div class="photo-preview" id="photoPreview">
+            <img id="previewImg" src="" alt="Preview">
+            <button type="button" class="remove-btn" id="removePhoto">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span class="text">送出祝福 💝</span>
+          <span class="loading">傳送中...</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="success-card" id="successCard">
+      <div class="material-symbols-outlined icon">check_circle</div>
+      <h2>祝福已送達！</h2>
+      <p>感謝您的溫暖祝福 ❤️</p>
+      <button class="another-btn" id="anotherBtn">再送一個祝福</button>
+    </div>
+
+    <div class="footer">
+      <a href="../">← 返回喜帖</a>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // ============================================
+    // 🔥 Firebase Configuration
+    // TODO: Replace with your Firebase project config
+    // Get this from Firebase Console > Project Settings > Your Apps
+    // ============================================
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
+        authDomain: "wedding-e335c.firebaseapp.com",
+        databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "wedding-e335c",
+        storageBucket: "wedding-e335c.firebasestorage.app",
+        messagingSenderId: "89341612270",
+        appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // ============================================
+    // DOM Elements
+    // ============================================
+    const form = document.getElementById('blessingForm');
+    const formCard = document.getElementById('formCard');
+    const successCard = document.getElementById('successCard');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadArea = document.getElementById('uploadArea');
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+    const previewImg = document.getElementById('previewImg');
+    const removePhotoBtn = document.getElementById('removePhoto');
+    const anotherBtn = document.getElementById('anotherBtn');
+    const toast = document.getElementById('toast');
+
+    let selectedFile = null;
+
+    // ============================================
+    // Validation Constants (must match Firebase rules)
+    // ============================================
+    const MAX_NAME_LENGTH = 50;
+    const MAX_MESSAGE_LENGTH = 500;
+
+    // ============================================
+    // Character Counters
+    // ============================================
+    const nameInput = document.getElementById('name');
+    const messageInput = document.getElementById('message');
+    const nameCount = document.getElementById('nameCount');
+    const messageCount = document.getElementById('messageCount');
+
+    function updateCounter(input, counter, max) {
+      const len = input.value.length;
+      counter.textContent = len;
+      const counterParent = counter.parentElement;
+      counterParent.classList.remove('warning', 'limit');
+      if (len >= max) {
+        counterParent.classList.add('limit');
+      } else if (len >= max * 0.8) {
+        counterParent.classList.add('warning');
+      }
+    }
+
+    nameInput.addEventListener('input', () => updateCounter(nameInput, nameCount, MAX_NAME_LENGTH));
+    messageInput.addEventListener('input', () => updateCounter(messageInput, messageCount, MAX_MESSAGE_LENGTH));
+
+    // ============================================
+    // Toast Notification
+    // ============================================
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // ============================================
+    // Photo Upload Handling
+    // ============================================
+    uploadArea.addEventListener('click', () => photoInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        handleFileSelect(file);
+      }
+    });
+
+    photoInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFileSelect(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelect(file) {
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('照片大小不能超過 10MB', true);
+        return;
+      }
+
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        photoPreview.classList.add('show');
+        uploadArea.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removePhotoBtn.addEventListener('click', () => {
+      selectedFile = null;
+      photoInput.value = '';
+      photoPreview.classList.remove('show');
+      uploadArea.style.display = 'block';
+    });
+
+    // ============================================
+    // Form Submission
+    // ============================================
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      // Validation (must match Firebase security rules)
+      if (!name) {
+        showToast('請填寫您的稱呼', true);
+        return;
+      }
+
+      if (name.length > MAX_NAME_LENGTH) {
+        showToast(`稱呼不能超過 ${MAX_NAME_LENGTH} 個字`, true);
+        return;
+      }
+
+      if (message.length > MAX_MESSAGE_LENGTH) {
+        showToast(`祝福話語不能超過 ${MAX_MESSAGE_LENGTH} 個字`, true);
+        return;
+      }
+
+      if (!message && !selectedFile) {
+        showToast('請填寫祝福或上傳照片', true);
+        return;
+      }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        let photoURL = null;
+
+        // Upload photo if selected
+        if (selectedFile) {
+          const timestamp = Date.now();
+          const fileName = `${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+          const imageRef = storageRef(storage, `blessings/${fileName}`);
+          
+          await uploadBytes(imageRef, selectedFile);
+          photoURL = await getDownloadURL(imageRef);
+        }
+
+        // Save blessing to database
+        // Data structure must match Firebase security rules
+        const blessingData = {
+          name: name,
+          message: message || '',
+          timestamp: Date.now()
+        };
+        
+        // Only add photoURL if it exists (can be null or string in rules)
+        if (photoURL) {
+          blessingData.photoURL = photoURL;
+        }
+        
+        await push(ref(db, 'blessings'), blessingData);
+
+        // Show success
+        formCard.style.display = 'none';
+        successCard.classList.add('show');
+
+      } catch (error) {
+        console.error('Error submitting blessing:', error);
+        showToast('送出失敗，請稍後再試', true);
+      } finally {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    });
+
+    // ============================================
+    // Reset Form for Another Blessing
+    // ============================================
+    anotherBtn.addEventListener('click', () => {
+      form.reset();
+      selectedFile = null;
+      photoPreview.classList.remove('show');
+      uploadArea.style.display = 'block';
+      successCard.classList.remove('show');
+      formCard.style.display = 'block';
+      messageCount.textContent = '0';
+      nameCount.textContent = '0';
+    });
+  </script>
+</body>
+</html>
+

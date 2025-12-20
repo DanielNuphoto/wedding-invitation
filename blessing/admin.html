@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理後台 | 祝福牆</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: #1a1a2e;
+      font-family: 'Wix Madefor Text', 'Noto Sans TC', sans-serif;
+      color: #e0e0e0;
+    }
+
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+    }
+
+    .login-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .login-box h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .login-box p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 30px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-family: inherit;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      margin-bottom: 20px;
+      transition: border-color 0.3s ease;
+    }
+
+    .login-box input:focus {
+      border-color: #b39090;
+    }
+
+    .login-box input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      background: linear-gradient(135deg, #b39090, #958282);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .login-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(179, 144, 144, 0.4);
+    }
+
+    .login-error {
+      color: #ff6b6b;
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .login-error.show {
+      display: block;
+    }
+
+    /* Main Admin Panel */
+    .admin-panel {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .admin-panel.show {
+      display: block;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .stats-badge {
+      background: rgba(179, 144, 144, 0.2);
+      color: #e8c4c4;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    .logout-btn {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 107, 107, 0.3);
+    }
+
+    /* Search & Filter */
+    .toolbar {
+      padding: 20px 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 45px;
+      font-size: 14px;
+      font-family: inherit;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-box input:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .search-box .icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 20px;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-btn.active {
+      background: rgba(179, 144, 144, 0.2);
+      border-color: rgba(179, 144, 144, 0.4);
+    }
+
+    .refresh-btn {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #81c784;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(76, 175, 80, 0.3);
+    }
+
+    /* Blessings List */
+    .blessings-list {
+      padding: 0 30px 30px;
+    }
+
+    .blessing-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      gap: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .blessing-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .blessing-item.deleting {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .blessing-photo {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .blessing-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .blessing-photo img:hover {
+      transform: scale(1.05);
+    }
+
+    .blessing-photo .no-photo {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 40px;
+    }
+
+    .blessing-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .blessing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .blessing-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .blessing-time {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+    }
+
+    .blessing-message {
+      font-size: 15px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.8);
+      word-wrap: break-word;
+    }
+
+    .blessing-message.empty {
+      color: rgba(255, 255, 255, 0.4);
+      font-style: italic;
+    }
+
+    .blessing-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .delete-btn {
+      background: rgba(255, 107, 107, 0.15);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      background: rgba(255, 107, 107, 0.25);
+    }
+
+    .delete-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-state .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Loading */
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #b39090;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Image Modal */
+    .image-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .image-modal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .image-modal .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.3s ease;
+    }
+
+    .image-modal .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Confirm Dialog */
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .confirm-dialog.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .confirm-box {
+      background: #2d2d44;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .confirm-box h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #fff;
+    }
+
+    .confirm-box p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 25px;
+    }
+
+    .confirm-box .buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .confirm-box .cancel-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .confirm-box .cancel-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .confirm-box .confirm-btn {
+      background: #ff6b6b;
+      border: none;
+      color: #fff;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .confirm-box .confirm-btn:hover {
+      background: #ff5252;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 4000;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      background: rgba(76, 175, 80, 0.9);
+    }
+
+    .toast.error {
+      background: rgba(244, 67, 54, 0.9);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 15px 20px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .toolbar {
+        padding: 15px 20px;
+      }
+
+      .blessings-list {
+        padding: 0 20px 20px;
+      }
+
+      .blessing-item {
+        flex-direction: column;
+        padding: 15px;
+      }
+
+      .blessing-photo {
+        width: 100%;
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-box">
+      <h1>🔐 管理後台</h1>
+      <p>請輸入管理密碼</p>
+      <input type="password" id="passwordInput" placeholder="密碼" autocomplete="off">
+      <button id="loginBtn">登入</button>
+      <div class="login-error" id="loginError">密碼錯誤，請重試</div>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <header class="header">
+      <h1>
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        祝福牆管理
+      </h1>
+      <div class="header-actions">
+        <div class="stats-badge">
+          共 <span id="totalCount">0</span> 則祝福
+        </div>
+        <button class="logout-btn" id="logoutBtn">登出</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="material-symbols-outlined icon">search</span>
+        <input type="text" id="searchInput" placeholder="搜尋名字或內容...">
+      </div>
+      <button class="filter-btn" id="photoFilterBtn">
+        <span class="material-symbols-outlined">photo_camera</span>
+        只顯示有照片
+      </button>
+      <button class="refresh-btn" id="refreshBtn">
+        <span class="material-symbols-outlined">refresh</span>
+        重新載入
+      </button>
+    </div>
+
+    <div class="blessings-list" id="blessingsList">
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <p>載入中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="image-modal" id="imageModal">
+    <button class="close-btn" id="closeImageBtn">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <img id="modalImage" src="" alt="">
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="confirm-dialog" id="confirmDialog">
+    <div class="confirm-box">
+      <h3>確認刪除？</h3>
+      <p id="confirmMessage">此操作無法復原</p>
+      <div class="buttons">
+        <button class="cancel-btn" id="cancelDeleteBtn">取消</button>
+        <button class="confirm-btn" id="confirmDeleteBtn">刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove, query, orderByChild } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getStorage, ref as storageRef, deleteObject } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+
+    // ============================================
+    // 🔥 Firebase Configuration
+    // ============================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
+      authDomain: "wedding-e335c.firebaseapp.com",
+      databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "wedding-e335c",
+      storageBucket: "wedding-e335c.firebasestorage.app",
+      messagingSenderId: "89341612270",
+      appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // ============================================
+    // 🔑 Admin Password
+    // TODO: Change this to your own password!
+    // For better security, consider using Firebase Auth
+    // ============================================
+    const ADMIN_PASSWORD = "wedding2026";
+
+    // ============================================
+    // State
+    // ============================================
+    let allBlessings = [];
+    let filteredBlessings = [];
+    let photoFilterActive = false;
+    let searchQuery = '';
+    let pendingDeleteId = null;
+    let pendingDeletePhotoURL = null;
+
+    // ============================================
+    // DOM Elements
+    // ============================================
+    const loginScreen = document.getElementById('loginScreen');
+    const adminPanel = document.getElementById('adminPanel');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const searchInput = document.getElementById('searchInput');
+    const photoFilterBtn = document.getElementById('photoFilterBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const blessingsList = document.getElementById('blessingsList');
+    const loadingState = document.getElementById('loadingState');
+    const totalCount = document.getElementById('totalCount');
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const closeImageBtn = document.getElementById('closeImageBtn');
+    const confirmDialog = document.getElementById('confirmDialog');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const toast = document.getElementById('toast');
+
+    // ============================================
+    // Toast
+    // ============================================
+    function showToast(message, type = '') {
+      toast.textContent = message;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ============================================
+    // Login/Logout
+    // ============================================
+    function checkAuth() {
+      const isLoggedIn = sessionStorage.getItem('adminLoggedIn') === 'true';
+      if (isLoggedIn) {
+        loginScreen.classList.add('hidden');
+        adminPanel.classList.add('show');
+        loadBlessings();
+      }
+    }
+
+    loginBtn.addEventListener('click', () => {
+      if (passwordInput.value === ADMIN_PASSWORD) {
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        loginScreen.classList.add('hidden');
+        adminPanel.classList.add('show');
+        loginError.classList.remove('show');
+        loadBlessings();
+      } else {
+        loginError.classList.add('show');
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem('adminLoggedIn');
+      location.reload();
+    });
+
+    // ============================================
+    // Load Blessings
+    // ============================================
+    function loadBlessings() {
+      loadingState.style.display = 'block';
+      
+      const blessingsRef = query(ref(db, 'blessings'), orderByChild('timestamp'));
+      
+      onValue(blessingsRef, (snapshot) => {
+        allBlessings = [];
+        snapshot.forEach((child) => {
+          allBlessings.unshift({ id: child.key, ...child.val() });
+        });
+        totalCount.textContent = allBlessings.length;
+        filterAndRender();
+        loadingState.style.display = 'none';
+      }, (error) => {
+        console.error('Error loading blessings:', error);
+        showToast('載入失敗', 'error');
+        loadingState.style.display = 'none';
+      });
+    }
+
+    // ============================================
+    // Filter & Search
+    // ============================================
+    function filterAndRender() {
+      filteredBlessings = allBlessings.filter(b => {
+        // Photo filter
+        if (photoFilterActive && !b.photoURL) return false;
+        
+        // Search filter
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const nameMatch = b.name?.toLowerCase().includes(query);
+          const messageMatch = b.message?.toLowerCase().includes(query);
+          if (!nameMatch && !messageMatch) return false;
+        }
+        
+        return true;
+      });
+      
+      renderBlessings();
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      filterAndRender();
+    });
+
+    photoFilterBtn.addEventListener('click', () => {
+      photoFilterActive = !photoFilterActive;
+      photoFilterBtn.classList.toggle('active', photoFilterActive);
+      filterAndRender();
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      loadBlessings();
+      showToast('已重新載入', 'success');
+    });
+
+    // ============================================
+    // Render Blessings
+    // ============================================
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}/${month}/${day} ${hours}:${minutes}`;
+    }
+
+    function renderBlessings() {
+      if (filteredBlessings.length === 0) {
+        blessingsList.innerHTML = `
+          <div class="empty-state">
+            <div class="material-symbols-outlined icon">inbox</div>
+            <h3>${allBlessings.length === 0 ? '還沒有祝福' : '沒有符合條件的祝福'}</h3>
+            <p>${allBlessings.length === 0 ? '等待賓客送上祝福' : '試試其他搜尋條件'}</p>
+          </div>
+        `;
+        return;
+      }
+
+      blessingsList.innerHTML = filteredBlessings.map(blessing => `
+        <div class="blessing-item" data-id="${blessing.id}">
+          <div class="blessing-photo">
+            ${blessing.photoURL 
+              ? `<img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage('${blessing.photoURL}')">`
+              : `<span class="material-symbols-outlined no-photo">hide_image</span>`
+            }
+          </div>
+          <div class="blessing-content">
+            <div class="blessing-header">
+              <span class="blessing-name">${escapeHtml(blessing.name)}</span>
+              <span class="blessing-time">${formatTime(blessing.timestamp)}</span>
+            </div>
+            <div class="blessing-message ${!blessing.message ? 'empty' : ''}">
+              ${blessing.message ? escapeHtml(blessing.message) : '(無文字祝福)'}
+            </div>
+            <div class="blessing-actions">
+              <button class="delete-btn" onclick="window.confirmDelete('${blessing.id}', '${blessing.name}', ${blessing.photoURL ? `'${blessing.photoURL}'` : 'null'})">
+                <span class="material-symbols-outlined">delete</span>
+                刪除
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ============================================
+    // Image Modal
+    // ============================================
+    window.showImage = function(url) {
+      modalImage.src = url;
+      imageModal.classList.add('show');
+    };
+
+    closeImageBtn.addEventListener('click', () => {
+      imageModal.classList.remove('show');
+    });
+
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal) {
+        imageModal.classList.remove('show');
+      }
+    });
+
+    // ============================================
+    // Delete Blessing
+    // ============================================
+    window.confirmDelete = function(id, name, photoURL) {
+      pendingDeleteId = id;
+      pendingDeletePhotoURL = photoURL;
+      confirmMessage.textContent = `確定要刪除「${name}」的祝福嗎？此操作無法復原。`;
+      confirmDialog.classList.add('show');
+    };
+
+    cancelDeleteBtn.addEventListener('click', () => {
+      confirmDialog.classList.remove('show');
+      pendingDeleteId = null;
+      pendingDeletePhotoURL = null;
+    });
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!pendingDeleteId) return;
+      
+      confirmDialog.classList.remove('show');
+      
+      const itemElement = document.querySelector(`[data-id="${pendingDeleteId}"]`);
+      if (itemElement) {
+        itemElement.classList.add('deleting');
+      }
+
+      try {
+        // Delete from database
+        await remove(ref(db, `blessings/${pendingDeleteId}`));
+        
+        // Delete photo from storage if exists
+        if (pendingDeletePhotoURL) {
+          try {
+            // Extract file path from URL
+            const urlObj = new URL(pendingDeletePhotoURL);
+            const pathMatch = urlObj.pathname.match(/\/o\/(.+?)\?/);
+            if (pathMatch) {
+              const filePath = decodeURIComponent(pathMatch[1]);
+              const photoRef = storageRef(storage, filePath);
+              await deleteObject(photoRef);
+            }
+          } catch (storageError) {
+            console.warn('Could not delete photo from storage:', storageError);
+            // Continue even if photo deletion fails
+          }
+        }
+        
+        showToast('已刪除', 'success');
+        
+      } catch (error) {
+        console.error('Error deleting blessing:', error);
+        showToast('刪除失敗', 'error');
+        if (itemElement) {
+          itemElement.classList.remove('deleting');
+        }
+      }
+      
+      pendingDeleteId = null;
+      pendingDeletePhotoURL = null;
+    });
+
+    // ============================================
+    // Initialize
+    // ============================================
+    checkAuth();
+  </script>
+</body>
+</html>
+
