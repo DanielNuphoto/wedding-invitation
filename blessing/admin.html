@@ -88,6 +88,10 @@
       color: rgba(255, 255, 255, 0.4);
     }
 
+    .login-box input + input {
+      margin-top: 0;
+    }
+
     .login-box button {
       width: 100%;
       padding: 14px;
@@ -260,6 +264,30 @@
 
     .refresh-btn:hover {
       background: rgba(76, 175, 80, 0.3);
+    }
+
+    .delete-all-btn {
+      background: rgba(255, 107, 107, 0.15);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .delete-all-btn:hover {
+      background: rgba(255, 107, 107, 0.25);
+    }
+
+    .delete-all-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     /* Blessings List */
@@ -619,10 +647,11 @@
   <div class="login-screen" id="loginScreen">
     <div class="login-box">
       <h1>🔐 管理後台</h1>
-      <p>請輸入管理密碼</p>
-      <input type="password" id="passwordInput" placeholder="密碼" autocomplete="off">
+      <p>請使用管理員帳號登入</p>
+      <input type="email" id="emailInput" placeholder="Email" autocomplete="email">
+      <input type="password" id="passwordInput" placeholder="密碼" autocomplete="current-password">
       <button id="loginBtn">登入</button>
-      <div class="login-error" id="loginError">密碼錯誤，請重試</div>
+      <div class="login-error" id="loginError">登入失敗，請檢查帳號密碼</div>
     </div>
   </div>
 
@@ -653,6 +682,10 @@
       <button class="refresh-btn" id="refreshBtn">
         <span class="material-symbols-outlined">refresh</span>
         重新載入
+      </button>
+      <button class="delete-all-btn" id="deleteAllBtn">
+        <span class="material-symbols-outlined">delete_sweep</span>
+        全部刪除
       </button>
     </div>
 
@@ -690,6 +723,7 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
     import { getDatabase, ref, onValue, remove, query, orderByChild } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
     import { getStorage, ref as storageRef, deleteObject } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
@@ -707,15 +741,9 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
     const storage = getStorage(app);
-
-    // ============================================
-    // 🔑 Admin Password
-    // TODO: Change this to your own password!
-    // For better security, consider using Firebase Auth
-    // ============================================
-    const ADMIN_PASSWORD = "wedding2026";
 
     // ============================================
     // State
@@ -726,12 +754,14 @@
     let searchQuery = '';
     let pendingDeleteId = null;
     let pendingDeletePhotoURL = null;
+    let isDeleteAllMode = false;
 
     // ============================================
     // DOM Elements
     // ============================================
     const loginScreen = document.getElementById('loginScreen');
     const adminPanel = document.getElementById('adminPanel');
+    const emailInput = document.getElementById('emailInput');
     const passwordInput = document.getElementById('passwordInput');
     const loginBtn = document.getElementById('loginBtn');
     const loginError = document.getElementById('loginError');
@@ -739,6 +769,7 @@
     const searchInput = document.getElementById('searchInput');
     const photoFilterBtn = document.getElementById('photoFilterBtn');
     const refreshBtn = document.getElementById('refreshBtn');
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
     const blessingsList = document.getElementById('blessingsList');
     const loadingState = document.getElementById('loadingState');
     const totalCount = document.getElementById('totalCount');
@@ -761,38 +792,90 @@
     }
 
     // ============================================
-    // Login/Logout
+    // Login/Logout with Firebase Auth
     // ============================================
-    function checkAuth() {
-      const isLoggedIn = sessionStorage.getItem('adminLoggedIn') === 'true';
-      if (isLoggedIn) {
-        loginScreen.classList.add('hidden');
-        adminPanel.classList.add('show');
-        loadBlessings();
-      }
-    }
-
-    loginBtn.addEventListener('click', () => {
-      if (passwordInput.value === ADMIN_PASSWORD) {
-        sessionStorage.setItem('adminLoggedIn', 'true');
+    
+    // Listen for auth state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
         loginScreen.classList.add('hidden');
         adminPanel.classList.add('show');
         loginError.classList.remove('show');
         loadBlessings();
       } else {
+        // User is signed out
+        loginScreen.classList.remove('hidden');
+        adminPanel.classList.remove('show');
+      }
+    });
+
+    // Login button handler
+    loginBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        loginError.textContent = '請輸入 Email 和密碼';
+        loginError.classList.add('show');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = '登入中...';
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged will handle the UI update
+      } catch (error) {
+        console.error('Login error:', error);
+        
+        // Show user-friendly error messages
+        switch (error.code) {
+          case 'auth/invalid-email':
+            loginError.textContent = 'Email 格式不正確';
+            break;
+          case 'auth/user-not-found':
+            loginError.textContent = '找不到此帳號';
+            break;
+          case 'auth/wrong-password':
+            loginError.textContent = '密碼錯誤';
+            break;
+          case 'auth/invalid-credential':
+            loginError.textContent = '帳號或密碼錯誤';
+            break;
+          case 'auth/too-many-requests':
+            loginError.textContent = '嘗試次數過多，請稍後再試';
+            break;
+          default:
+            loginError.textContent = '登入失敗，請重試';
+        }
         loginError.classList.add('show');
         passwordInput.value = '';
-        passwordInput.focus();
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = '登入';
       }
+    });
+
+    // Enter key to submit
+    emailInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') passwordInput.focus();
     });
 
     passwordInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') loginBtn.click();
     });
 
-    logoutBtn.addEventListener('click', () => {
-      sessionStorage.removeItem('adminLoggedIn');
-      location.reload();
+    // Logout button handler
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        // onAuthStateChanged will handle the UI update
+      } catch (error) {
+        console.error('Logout error:', error);
+        showToast('登出失敗', 'error');
+      }
     });
 
     // ============================================
@@ -946,12 +1029,21 @@
       confirmDialog.classList.remove('show');
       pendingDeleteId = null;
       pendingDeletePhotoURL = null;
+      isDeleteAllMode = false;
     });
 
     confirmDeleteBtn.addEventListener('click', async () => {
-      if (!pendingDeleteId) return;
-      
       confirmDialog.classList.remove('show');
+      
+      // Handle Delete All
+      if (isDeleteAllMode) {
+        isDeleteAllMode = false;
+        await deleteAllBlessings();
+        return;
+      }
+      
+      // Handle Single Delete
+      if (!pendingDeleteId) return;
       
       const itemElement = document.querySelector(`[data-id="${pendingDeleteId}"]`);
       if (itemElement) {
@@ -964,19 +1056,7 @@
         
         // Delete photo from storage if exists
         if (pendingDeletePhotoURL) {
-          try {
-            // Extract file path from URL
-            const urlObj = new URL(pendingDeletePhotoURL);
-            const pathMatch = urlObj.pathname.match(/\/o\/(.+?)\?/);
-            if (pathMatch) {
-              const filePath = decodeURIComponent(pathMatch[1]);
-              const photoRef = storageRef(storage, filePath);
-              await deleteObject(photoRef);
-            }
-          } catch (storageError) {
-            console.warn('Could not delete photo from storage:', storageError);
-            // Continue even if photo deletion fails
-          }
+          await deletePhotoFromStorage(pendingDeletePhotoURL);
         }
         
         showToast('已刪除', 'success');
@@ -994,9 +1074,82 @@
     });
 
     // ============================================
+    // Delete Photo Helper
+    // ============================================
+    async function deletePhotoFromStorage(photoURL) {
+      try {
+        const urlObj = new URL(photoURL);
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+?)\?/);
+        if (pathMatch) {
+          const filePath = decodeURIComponent(pathMatch[1]);
+          const photoRef = storageRef(storage, filePath);
+          await deleteObject(photoRef);
+        }
+      } catch (storageError) {
+        console.warn('Could not delete photo from storage:', storageError);
+      }
+    }
+
+    // ============================================
+    // Delete All Blessings
+    // ============================================
+    deleteAllBtn.addEventListener('click', () => {
+      if (allBlessings.length === 0) {
+        showToast('沒有可刪除的祝福', 'error');
+        return;
+      }
+      
+      isDeleteAllMode = true;
+      confirmMessage.textContent = `確定要刪除全部 ${allBlessings.length} 則祝福嗎？此操作無法復原！`;
+      confirmDialog.classList.add('show');
+    });
+
+    async function deleteAllBlessings() {
+      deleteAllBtn.disabled = true;
+      deleteAllBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 刪除中...';
+      
+      let successCount = 0;
+      let failCount = 0;
+      const totalToDelete = allBlessings.length;
+
+      try {
+        // Delete all blessings and their photos
+        for (const blessing of allBlessings) {
+          try {
+            // Delete from database
+            await remove(ref(db, `blessings/${blessing.id}`));
+            
+            // Delete photo if exists
+            if (blessing.photoURL) {
+              await deletePhotoFromStorage(blessing.photoURL);
+            }
+            
+            successCount++;
+          } catch (error) {
+            console.error(`Error deleting blessing ${blessing.id}:`, error);
+            failCount++;
+          }
+        }
+
+        if (failCount === 0) {
+          showToast(`已刪除全部 ${successCount} 則祝福`, 'success');
+        } else {
+          showToast(`已刪除 ${successCount} 則，${failCount} 則失敗`, 'error');
+        }
+
+      } catch (error) {
+        console.error('Error in deleteAllBlessings:', error);
+        showToast('刪除失敗', 'error');
+      } finally {
+        deleteAllBtn.disabled = false;
+        deleteAllBtn.innerHTML = '<span class="material-symbols-outlined">delete_sweep</span> 全部刪除';
+      }
+    }
+
+    // ============================================
     // Initialize
     // ============================================
-    checkAuth();
+    // Firebase Auth's onAuthStateChanged handles initialization automatically
   </script>
 </body>
 </html>
