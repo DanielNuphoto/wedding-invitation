@@ -9,6 +9,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Text:ital,wght@0,400..800;1,400..800&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" />
   <style>
+    :root {
+      --text-scale: 1;
+      --photo-scale: 1;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -150,37 +155,37 @@
       height: calc(100% - 80px);
       pointer-events: none;
       overflow: hidden;
-      z-index: 10;
+      z-index: 20;
     }
 
     .danmaku {
       position: absolute;
       white-space: nowrap;
-      padding: 10px 20px;
-      border-radius: 25px;
-      font-size: 24px;
+      padding: calc(var(--text-scale, 1) * 15px) calc(var(--text-scale, 1) * 30px);
+      border-radius: calc(var(--text-scale, 1) * 35px);
+      font-size: calc(var(--text-scale, 1) * 72px);
       font-weight: 500;
       color: #fff;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
       background: linear-gradient(135deg, rgba(179, 144, 144, 0.85), rgba(149, 130, 130, 0.85));
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
       transform: translateX(100vw);
       animation: danmakuScroll linear forwards;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: calc(var(--text-scale, 1) * 20px);
     }
 
     .danmaku .sender {
       background: rgba(255, 255, 255, 0.25);
-      padding: 4px 12px;
-      border-radius: 15px;
-      font-size: 16px;
+      padding: calc(var(--text-scale, 1) * 8px) calc(var(--text-scale, 1) * 20px);
+      border-radius: calc(var(--text-scale, 1) * 25px);
+      font-size: calc(var(--text-scale, 1) * 48px);
       font-weight: 600;
     }
 
     .danmaku .message {
-      max-width: 600px;
+      max-width: 800px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -211,9 +216,9 @@
     .photo-card {
       position: absolute;
       background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      padding: 15px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      border-radius: calc(var(--photo-scale, 1) * 24px);
+      padding: calc(var(--photo-scale, 1) * 20px);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
       opacity: 1;
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
@@ -224,18 +229,18 @@
 
     .photo-card img {
       display: block;
-      max-width: 350px;
-      max-height: 300px;
+      max-width: calc(var(--photo-scale, 1) * 45vw);
+      max-height: calc(var(--photo-scale, 1) * 45vh);
       width: auto;
       height: auto;
-      border-radius: 12px;
+      border-radius: calc(var(--photo-scale, 1) * 16px);
       object-fit: cover;
     }
 
     .photo-card .photo-sender {
-      margin-top: 12px;
+      margin-top: calc(var(--photo-scale, 1) * 16px);
       text-align: center;
-      font-size: 16px;
+      font-size: calc(var(--photo-scale, 1) * 32px);
       font-weight: 600;
       color: #5a4a4a;
     }
@@ -387,6 +392,168 @@
       100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
     }
 
+    /* Settings Panel */
+    .settings-toggle {
+      position: fixed;
+      bottom: 30px;
+      left: 140px;
+      width: 45px;
+      height: 45px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      z-index: 200;
+    }
+
+    .settings-toggle:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    .settings-toggle .material-symbols-outlined {
+      font-size: 26px;
+      transition: transform 0.3s ease;
+    }
+
+    .settings-toggle.active .material-symbols-outlined {
+      transform: rotate(90deg);
+    }
+
+    .settings-panel {
+      position: fixed;
+      bottom: 90px;
+      left: 30px;
+      width: 320px;
+      background: rgba(45, 36, 36, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.35s ease;
+      backdrop-filter: blur(20px);
+      z-index: 200;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .settings-panel.open {
+      max-height: 400px;
+      padding: 24px;
+      opacity: 1;
+    }
+
+    .settings-panel h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-panel h3 .material-symbols-outlined {
+      font-size: 20px;
+      color: #e8c4c4;
+    }
+
+    .setting-item {
+      margin-bottom: 20px;
+    }
+
+    .setting-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .setting-value {
+      font-weight: 600;
+      color: #e8c4c4;
+      font-size: 13px;
+    }
+
+    .setting-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .setting-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e8c4c4, #d4a4a4);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .setting-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .setting-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e8c4c4, #d4a4a4);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .setting-presets {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preset-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .preset-btn.active {
+      background: rgba(232, 196, 196, 0.3);
+      border-color: #e8c4c4;
+      color: #e8c4c4;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header {
@@ -397,23 +564,21 @@
         font-size: 18px;
       }
 
-      .danmaku {
-        font-size: 18px;
-        padding: 8px 16px;
-      }
-
-      .danmaku .sender {
-        font-size: 14px;
-      }
-
-      .photo-card img {
-        max-width: 250px;
-        max-height: 200px;
-      }
-
       .qr-section .qr-box {
         width: 80px;
         height: 80px;
+      }
+
+      .settings-panel {
+        width: 280px;
+        left: 10px;
+      }
+
+      .settings-toggle {
+        left: 120px;
+        bottom: 25px;
+        width: 40px;
+        height: 40px;
       }
     }
   </style>
@@ -459,6 +624,46 @@
     <button class="control-btn" id="fullscreenBtn" title="全螢幕">
       <span class="material-symbols-outlined">fullscreen</span>
     </button>
+  </div>
+
+  <!-- Settings Panel -->
+  <button class="settings-toggle" id="settingsToggle" title="顯示設定">
+    <span class="material-symbols-outlined">tune</span>
+  </button>
+
+  <div class="settings-panel" id="settingsPanel">
+    <h3>
+      <span class="material-symbols-outlined">settings</span>
+      顯示設定
+    </h3>
+    
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>文字大小</span>
+        <span class="setting-value" id="textScaleValue">100%</span>
+      </div>
+      <input type="range" class="setting-slider" id="textScaleSlider" 
+             min="50" max="200" value="100" step="10">
+      <div class="setting-presets">
+        <button class="preset-btn" data-target="textScale" data-value="70">小</button>
+        <button class="preset-btn active" data-target="textScale" data-value="100">中</button>
+        <button class="preset-btn" data-target="textScale" data-value="150">大</button>
+      </div>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>照片大小</span>
+        <span class="setting-value" id="photoScaleValue">100%</span>
+      </div>
+      <input type="range" class="setting-slider" id="photoScaleSlider" 
+             min="50" max="150" value="100" step="10">
+      <div class="setting-presets">
+        <button class="preset-btn" data-target="photoScale" data-value="70">小</button>
+        <button class="preset-btn active" data-target="photoScale" data-value="100">中</button>
+        <button class="preset-btn" data-target="photoScale" data-value="130">大</button>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -627,18 +832,25 @@
       'photoEnterFromBottomLeft'
     ];
 
-    // Preload an image and cache it
-    function preloadImage(url) {
+    // Preload an image, decode it, and cache it
+    async function preloadImage(url) {
+      if (preloadedImages.has(url)) {
+        return preloadedImages.get(url);
+      }
+      
       return new Promise((resolve, reject) => {
-        if (preloadedImages.has(url)) {
-          resolve(preloadedImages.get(url));
-          return;
-        }
-        
         const img = new Image();
-        img.onload = () => {
-          preloadedImages.set(url, img);
-          resolve(img);
+        img.onload = async () => {
+          try {
+            // Decode the image (decompress pixels) so it's ready to render instantly
+            await img.decode();
+            preloadedImages.set(url, img);
+            resolve(img);
+          } catch (e) {
+            // decode() failed, but image is still loaded
+            preloadedImages.set(url, img);
+            resolve(img);
+          }
         };
         img.onerror = reject;
         img.src = url;
@@ -659,35 +871,66 @@
       return lastPhotoPosition;
     }
 
-    // Get centered position with some randomness
-    function getCenteredPosition(position) {
-      const cardWidth = 380; // Approximate card width
-      const cardHeight = 380; // Approximate card height
+    // Get centered position based on actual image dimensions
+    function getCenteredPosition(position, imageURL) {
+      // Get current photo scale from CSS variable
+      const photoScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--photo-scale')) || 1;
+      
+      // Get the preloaded image to calculate actual rendered size
+      const preloadedImg = preloadedImages.get(imageURL);
+      const naturalWidth = preloadedImg ? preloadedImg.naturalWidth : 400;
+      const naturalHeight = preloadedImg ? preloadedImg.naturalHeight : 300;
+      
+      // CSS max constraints
+      const maxImgWidth = window.innerWidth * 0.45 * photoScale;
+      const maxImgHeight = window.innerHeight * 0.45 * photoScale;
+      
+      // Calculate actual image size (browser scales to fit within max, maintaining aspect ratio)
+      const scaleW = maxImgWidth / naturalWidth;
+      const scaleH = maxImgHeight / naturalHeight;
+      const imgScale = Math.min(scaleW, scaleH, 1); // Don't upscale beyond natural size
+      
+      const actualImgWidth = naturalWidth * imgScale;
+      const actualImgHeight = naturalHeight * imgScale;
+      
+      // Card dimensions = image + padding + sender
+      const padding = 20 * photoScale;
+      const senderHeight = 48 * photoScale; // margin (16) + text (~32)
+      
+      const cardWidth = actualImgWidth + padding * 2;
+      const cardHeight = actualImgHeight + padding * 2 + senderHeight;
+      
       const headerHeight = 100;
       const bottomMargin = 200; // For QR and controls
       
-      const availableWidth = window.innerWidth - cardWidth;
-      const availableHeight = window.innerHeight - headerHeight - bottomMargin - cardHeight;
+      // Available space
+      const availableWidth = window.innerWidth;
+      const availableHeight = window.innerHeight - headerHeight - bottomMargin;
       
-      // Center area with slight offset based on position
-      const centerX = availableWidth / 2;
-      const centerY = headerHeight + availableHeight / 2;
-      
-      // Offset for multiple photos (left/right of center)
-      let offsetX = 0;
+      // Use percentage-based positioning (center of each half)
+      // Left half center = 25%, Right half center = 75%
+      let x;
       if (position === 0) {
-        offsetX = -availableWidth * 0.15; // Left of center
-      } else if (position === 1) {
-        offsetX = availableWidth * 0.15; // Right of center
+        // Left slot: card center at 25% of screen width
+        x = availableWidth * 0.25 - cardWidth / 2;
+      } else {
+        // Right slot: card center at 75% of screen width
+        x = availableWidth * 0.75 - cardWidth / 2;
       }
       
-      // Add small random variation
-      const randomX = (Math.random() - 0.5) * 100;
-      const randomY = (Math.random() - 0.5) * 80;
+      // Center vertically in available space
+      let y = headerHeight + (availableHeight - cardHeight) / 2;
       
+      // Add small random variation
+      const randomX = (Math.random() - 0.5) * 30;
+      const randomY = (Math.random() - 0.5) * 30;
+      x += randomX;
+      y += randomY;
+      
+      // Clamp to screen bounds
       return {
-        x: Math.max(30, Math.min(centerX + offsetX + randomX, availableWidth - 30)),
-        y: Math.max(headerHeight + 20, centerY + randomY)
+        x: Math.max(20, Math.min(x, availableWidth - cardWidth - 20)),
+        y: Math.max(headerHeight + 10, Math.min(y, window.innerHeight - bottomMargin - cardHeight))
       };
     }
 
@@ -708,20 +951,35 @@
       const position = getNextPhotoPosition();
       lastPhotoPosition = position; // Track for alternation
       
-      const pos = getCenteredPosition(position);
+      const pos = getCenteredPosition(position, blessing.photoURL);
       const animation = photoAnimations[Math.floor(Math.random() * photoAnimations.length)];
 
+      // Create image element and decode it before showing
+      const preloadedImg = preloadedImages.get(blessing.photoURL);
+      const imgElement = new Image();
+      imgElement.src = blessing.photoURL;
+      imgElement.alt = 'Photo';
+      
+      // Wait for this new element to be decoded (uses cached data but needs decoding)
+      try {
+        await imgElement.decode();
+      } catch (e) {
+        // Continue even if decode fails
+      }
+
       const card = document.createElement('div');
-      card.className = 'photo-card'; // Show immediately since image is preloaded
+      card.className = 'photo-card';
       card.style.left = pos.x + 'px';
       card.style.top = pos.y + 'px';
       card.style.animation = `${animation} 1.5s ease-out forwards`;
       card.dataset.id = blessing.id;
-
-      card.innerHTML = `
-        <img src="${blessing.photoURL}" alt="Photo">
-        <div class="photo-sender">來自 ${escapeHtml(blessing.name)}</div>
-      `;
+      
+      const senderDiv = document.createElement('div');
+      senderDiv.className = 'photo-sender';
+      senderDiv.textContent = `來自 ${blessing.name}`;
+      
+      card.appendChild(imgElement);
+      card.appendChild(senderDiv);
 
       photoContainer.appendChild(card);
       activePhotos.push({ id: blessing.id, element: card, position: position });
@@ -899,6 +1157,90 @@
       div.textContent = text || '';
       return div.innerHTML;
     }
+
+    // ============================================
+    // Settings Panel
+    // ============================================
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const textScaleSlider = document.getElementById('textScaleSlider');
+    const textScaleValue = document.getElementById('textScaleValue');
+    const photoScaleSlider = document.getElementById('photoScaleSlider');
+    const photoScaleValue = document.getElementById('photoScaleValue');
+    const presetBtns = document.querySelectorAll('.preset-btn');
+
+    // Load saved settings
+    const savedTextScale = localStorage.getItem('stageTextScale') || '100';
+    const savedPhotoScale = localStorage.getItem('stagePhotoScale') || '100';
+
+    textScaleSlider.value = savedTextScale;
+    photoScaleSlider.value = savedPhotoScale;
+    updateScale('text', savedTextScale);
+    updateScale('photo', savedPhotoScale);
+
+    // Toggle panel
+    settingsToggle.addEventListener('click', () => {
+      settingsToggle.classList.toggle('active');
+      settingsPanel.classList.toggle('open');
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!settingsPanel.contains(e.target) && !settingsToggle.contains(e.target)) {
+        settingsToggle.classList.remove('active');
+        settingsPanel.classList.remove('open');
+      }
+    });
+
+    // Update scale function
+    function updateScale(type, value) {
+      const scale = value / 100;
+      if (type === 'text') {
+        document.documentElement.style.setProperty('--text-scale', scale);
+        textScaleValue.textContent = value + '%';
+        localStorage.setItem('stageTextScale', value);
+        updatePresetButtons('textScale', value);
+      } else {
+        document.documentElement.style.setProperty('--photo-scale', scale);
+        photoScaleValue.textContent = value + '%';
+        localStorage.setItem('stagePhotoScale', value);
+        updatePresetButtons('photoScale', value);
+      }
+    }
+
+    // Update active preset buttons
+    function updatePresetButtons(target, value) {
+      presetBtns.forEach(btn => {
+        if (btn.dataset.target === target) {
+          btn.classList.toggle('active', parseInt(btn.dataset.value) === parseInt(value));
+        }
+      });
+    }
+
+    // Slider events
+    textScaleSlider.addEventListener('input', (e) => {
+      updateScale('text', e.target.value);
+    });
+
+    photoScaleSlider.addEventListener('input', (e) => {
+      updateScale('photo', e.target.value);
+    });
+
+    // Preset button events
+    presetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        const value = btn.dataset.value;
+        
+        if (target === 'textScale') {
+          textScaleSlider.value = value;
+          updateScale('text', value);
+        } else {
+          photoScaleSlider.value = value;
+          updateScale('photo', value);
+        }
+      });
+    });
   </script>
 </body>
 </html>
