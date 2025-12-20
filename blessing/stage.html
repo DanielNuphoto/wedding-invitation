@@ -24,7 +24,7 @@
       color: #fff;
     }
 
-    /* Decorative background elements */
+    /* Decorative background */
     .bg-decoration {
       position: fixed;
       top: 0;
@@ -62,16 +62,16 @@
       top: 0;
       left: 0;
       width: 100%;
-      padding: 30px 40px;
+      padding: 20px 30px;
       z-index: 100;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(45, 36, 36, 0.9) 0%, transparent 100%);
+      background: linear-gradient(to bottom, rgba(45, 36, 36, 0.95) 0%, rgba(45, 36, 36, 0.8) 50%, transparent 100%);
     }
 
     .header h1 {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.9);
       text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -79,20 +79,20 @@
 
     .header .stats {
       display: flex;
-      gap: 30px;
-      font-size: 16px;
+      gap: 20px;
+      font-size: 14px;
       color: rgba(255, 255, 255, 0.7);
     }
 
     .header .stats span {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .header .stats .count {
       font-weight: 700;
-      font-size: 20px;
+      font-size: 18px;
       color: #e8c4c4;
     }
 
@@ -139,23 +139,187 @@
       margin-top: 10px;
     }
 
+    /* ============================================
+       DANMAKU (Bullet Comments) Container
+       ============================================ */
+    .danmaku-container {
+      position: fixed;
+      top: 80px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 80px);
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .danmaku {
+      position: absolute;
+      white-space: nowrap;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 24px;
+      font-weight: 500;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(135deg, rgba(179, 144, 144, 0.85), rgba(149, 130, 130, 0.85));
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transform: translateX(100vw);
+      animation: danmakuScroll linear forwards;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .danmaku .sender {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .danmaku .message {
+      max-width: 600px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @keyframes danmakuScroll {
+      0% {
+        transform: translateX(100vw);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
+    /* ============================================
+       PHOTO Display Container
+       ============================================ */
+    .photo-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 15;
+    }
+
+    .photo-card {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .photo-card.show {
+      opacity: 1;
+    }
+
+    .photo-card img {
+      display: block;
+      max-width: 350px;
+      max-height: 300px;
+      width: auto;
+      height: auto;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .photo-card .photo-sender {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #5a4a4a;
+    }
+
+    /* Photo entrance animations */
+    @keyframes photoEnterFromRight {
+      0% { transform: translateX(100vw) rotate(5deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromLeft {
+      0% { transform: translateX(-100vw) rotate(-5deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromTop {
+      0% { transform: translateY(-100vh) rotate(3deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromBottom {
+      0% { transform: translateY(100vh) rotate(-3deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromTopRight {
+      0% { transform: translate(100vw, -100vh) rotate(8deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translate(0, 0) rotate(-2deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromTopLeft {
+      0% { transform: translate(-100vw, -100vh) rotate(-8deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translate(0, 0) rotate(2deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromBottomRight {
+      0% { transform: translate(100vw, 100vh) rotate(-8deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translate(0, 0) rotate(3deg); opacity: 1; }
+    }
+
+    @keyframes photoEnterFromBottomLeft {
+      0% { transform: translate(-100vw, 100vh) rotate(8deg); opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { transform: translate(0, 0) rotate(-3deg); opacity: 1; }
+    }
+
+    /* Photo exit animation */
+    @keyframes photoExit {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+
     /* QR Code section */
     .qr-section {
       position: fixed;
-      bottom: 40px;
-      right: 40px;
+      bottom: 30px;
+      right: 30px;
       text-align: center;
       z-index: 100;
     }
 
     .qr-section .qr-box {
-      width: 150px;
-      height: 150px;
+      width: 120px;
+      height: 120px;
       background: #fff;
-      border-radius: 16px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 10px;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .qr-section .qr-box img {
@@ -165,124 +329,26 @@
     }
 
     .qr-section .qr-text {
-      font-size: 14px;
+      font-size: 12px;
       color: rgba(255, 255, 255, 0.7);
     }
 
-    /* Blessing display area */
-    .blessing-display {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      padding: 120px 200px 40px 40px;
-    }
-
-    /* Blessing card */
-    .blessing-card {
-      max-width: 800px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 30px;
-      padding: 50px;
-      box-shadow: 
-        0 25px 80px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-      opacity: 0;
-      transform: scale(0.9) translateY(30px);
-      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .blessing-card.show {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-
-    .blessing-card.hide {
-      opacity: 0;
-      transform: scale(0.9) translateY(-30px);
-    }
-
-    .blessing-card .sender {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .blessing-card .avatar {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #b39090, #958282);
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 28px;
-      color: #fff;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-
-    .blessing-card .sender-info h3 {
-      font-size: 24px;
-      font-weight: 600;
-      color: #4a3a3a;
-      margin: 0 0 5px 0;
-    }
-
-    .blessing-card .sender-info .time {
-      font-size: 14px;
-      color: #9a8a8a;
-    }
-
-    .blessing-card .message {
-      font-size: 28px;
-      line-height: 1.6;
-      color: #3a2a2a;
-      margin-bottom: 20px;
-      word-wrap: break-word;
-    }
-
-    .blessing-card .photo {
-      width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-      border-radius: 16px;
-      margin-top: 20px;
-    }
-
-    /* Photo-only card variant */
-    .blessing-card.photo-only {
-      padding: 30px;
-    }
-
-    .blessing-card.photo-only .photo {
-      max-height: 500px;
-      margin-top: 0;
-    }
-
-    /* Controls (for host) */
+    /* Controls */
     .controls {
       position: fixed;
-      bottom: 40px;
-      left: 40px;
+      bottom: 30px;
+      left: 30px;
       display: flex;
-      gap: 15px;
+      gap: 12px;
       z-index: 100;
     }
 
     .control-btn {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+      border-radius: 10px;
       color: #fff;
       cursor: pointer;
       display: flex;
@@ -297,10 +363,10 @@
     }
 
     .control-btn .material-symbols-outlined {
-      font-size: 24px;
+      font-size: 22px;
     }
 
-    /* Floating hearts animation */
+    /* Floating hearts */
     .hearts-container {
       position: fixed;
       top: 0;
@@ -321,70 +387,39 @@
     }
 
     @keyframes floatUp {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0;
-      }
-      10% {
-        opacity: 0.7;
-      }
-      90% {
-        opacity: 0.5;
-      }
-      100% {
-        transform: translateY(-100vh) rotate(360deg);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.5; }
+      100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
     }
 
     /* Responsive */
-    @media (max-width: 1024px) {
-      .blessing-display {
-        padding: 100px 20px 180px 20px;
-      }
-
-      .qr-section {
-        bottom: 20px;
-        right: 50%;
-        transform: translateX(50%);
-      }
-
-      .qr-section .qr-box {
-        width: 100px;
-        height: 100px;
-      }
-
-      .blessing-card {
-        padding: 30px;
-      }
-
-      .blessing-card .message {
-        font-size: 22px;
-      }
-    }
-
     @media (max-width: 768px) {
-      .header h1 {
-        font-size: 20px;
+      .header {
+        padding: 15px 20px;
       }
 
-      .header .stats {
-        gap: 15px;
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .danmaku {
+        font-size: 18px;
+        padding: 8px 16px;
+      }
+
+      .danmaku .sender {
         font-size: 14px;
       }
 
-      .blessing-card .sender .avatar {
-        width: 50px;
-        height: 50px;
-        font-size: 22px;
+      .photo-card img {
+        max-width: 250px;
+        max-height: 200px;
       }
 
-      .blessing-card .sender-info h3 {
-        font-size: 20px;
-      }
-
-      .blessing-card .message {
-        font-size: 18px;
+      .qr-section .qr-box {
+        width: 80px;
+        height: 80px;
       }
     }
   </style>
@@ -396,8 +431,12 @@
     <h1>💕 祝福牆</h1>
     <div class="stats">
       <span>
-        <span class="material-symbols-outlined">favorite</span>
-        收到 <span class="count" id="totalCount">0</span> 則祝福
+        <span class="material-symbols-outlined">chat</span>
+        文字 <span class="count" id="textCount">0</span>
+      </span>
+      <span>
+        <span class="material-symbols-outlined">photo_camera</span>
+        照片 <span class="count" id="photoCount">0</span>
       </span>
     </div>
   </header>
@@ -408,28 +447,13 @@
     <div class="subtext">掃描 QR Code 送上您的祝福</div>
   </div>
 
-  <div class="blessing-display">
-    <div class="blessing-card" id="blessingCard">
-      <div class="sender">
-        <div class="avatar" id="avatar">王</div>
-        <div class="sender-info">
-          <h3 id="senderName">王小明</h3>
-          <div class="time" id="sendTime">剛剛</div>
-        </div>
-      </div>
-      <div class="message" id="message">祝福新人永浴愛河，百年好合！</div>
-      <img class="photo" id="photo" src="" alt="" style="display: none;">
-    </div>
-  </div>
-
+  <div class="danmaku-container" id="danmakuContainer"></div>
+  <div class="photo-container" id="photoContainer"></div>
   <div class="hearts-container" id="heartsContainer"></div>
 
   <div class="qr-section">
     <div class="qr-box">
-      <!-- TODO: Replace with your actual QR code image -->
-      <!-- You can generate one at: https://www.qr-code-generator.com/ -->
-      <!-- Link it to: https://YOUR_GITHUB_USERNAME.github.io/wedding-invitation/bless/ -->
-      <img id="qrCode" src="./qr.png" alt="QR Code">
+      <img src="./qr.png" alt="QR Code">
     </div>
     <div class="qr-text">掃描送祝福</div>
   </div>
@@ -438,30 +462,23 @@
     <button class="control-btn" id="pauseBtn" title="暫停/播放">
       <span class="material-symbols-outlined" id="pauseIcon">pause</span>
     </button>
-    <button class="control-btn" id="skipBtn" title="下一則">
-      <span class="material-symbols-outlined">skip_next</span>
-    </button>
     <button class="control-btn" id="fullscreenBtn" title="全螢幕">
       <span class="material-symbols-outlined">fullscreen</span>
     </button>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
-    // ============================================
-    // 🔥 Firebase Configuration
-    // ============================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, onValue, onChildAdded, onChildRemoved, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
-        authDomain: "wedding-e335c.firebaseapp.com",
-        databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "wedding-e335c",
-        storageBucket: "wedding-e335c.firebasestorage.app",
-        messagingSenderId: "89341612270",
-        appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
+      apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
+      authDomain: "wedding-e335c.firebaseapp.com",
+      databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "wedding-e335c",
+      storageBucket: "wedding-e335c.firebasestorage.app",
+      messagingSenderId: "89341612270",
+      appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -470,30 +487,43 @@
     // ============================================
     // State
     // ============================================
-    let blessingQueue = [];
-    let displayedBlessings = [];
-    let currentIndex = 0;
-    let currentlyDisplayedId = null; // Track which blessing is currently shown
+    let textBlessings = [];
+    let photoBlessings = [];
+    let textQueue = [];
+    let photoQueue = [];
+    let activePhotos = []; // Max 2 photos on screen { id, element, position }
+    let activeDanmakuIds = new Set(); // Track currently visible danmaku
+    let lastPhotoPosition = 1; // Track last used position to alternate (0=left, 1=right)
     let isPlaying = true;
-    let displayTimeout = null;
-    const DISPLAY_DURATION = 8000; // 8 seconds per blessing
+    let danmakuInterval = null;
+    let photoInterval = null;
+
+    // Settings
+    const DANMAKU_INTERVAL = 3000; // New danmaku every 3 seconds
+    const DANMAKU_DURATION = 12000; // Time to cross screen (12 seconds)
+    const PHOTO_DISPLAY_TIME = 8000; // Photo stays for 8 seconds
+    const PHOTO_INTERVAL = 5000; // New photo every 5 seconds
+    const MAX_PHOTOS_ON_SCREEN = 2;
+    const DANMAKU_LANES = 6; // Number of vertical lanes
+
+    // Track lane usage for danmaku
+    let laneLastUsed = Array(DANMAKU_LANES).fill(0);
+
+    // Preloaded images cache
+    const preloadedImages = new Map();
 
     // ============================================
     // DOM Elements
     // ============================================
     const waitingScreen = document.getElementById('waitingScreen');
-    const blessingCard = document.getElementById('blessingCard');
-    const avatar = document.getElementById('avatar');
-    const senderName = document.getElementById('senderName');
-    const sendTime = document.getElementById('sendTime');
-    const message = document.getElementById('message');
-    const photo = document.getElementById('photo');
-    const totalCount = document.getElementById('totalCount');
+    const danmakuContainer = document.getElementById('danmakuContainer');
+    const photoContainer = document.getElementById('photoContainer');
+    const heartsContainer = document.getElementById('heartsContainer');
+    const textCountEl = document.getElementById('textCount');
+    const photoCountEl = document.getElementById('photoCount');
     const pauseBtn = document.getElementById('pauseBtn');
     const pauseIcon = document.getElementById('pauseIcon');
-    const skipBtn = document.getElementById('skipBtn');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const heartsContainer = document.getElementById('heartsContainer');
 
     // ============================================
     // Floating Hearts Animation
@@ -507,173 +537,327 @@
       heart.style.left = Math.random() * 100 + '%';
       heart.style.animationDuration = (6 + Math.random() * 4) + 's';
       heartsContainer.appendChild(heart);
-      
       setTimeout(() => heart.remove(), 10000);
     }
 
-    // Create floating hearts periodically
-    setInterval(createFloatingHeart, 3000);
+    setInterval(createFloatingHeart, 4000);
 
     // ============================================
-    // Time Formatting
+    // DANMAKU (Text Blessings)
     // ============================================
-    function formatTime(timestamp) {
+    function getAvailableLane() {
       const now = Date.now();
-      const diff = now - timestamp;
+      let bestLane = 0;
+      let oldestTime = laneLastUsed[0];
       
-      if (diff < 60000) return '剛剛';
-      if (diff < 3600000) return Math.floor(diff / 60000) + ' 分鐘前';
-      if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小時前';
+      for (let i = 0; i < DANMAKU_LANES; i++) {
+        if (now - laneLastUsed[i] > 2000) {
+          laneLastUsed[i] = now;
+          return i;
+        }
+        if (laneLastUsed[i] < oldestTime) {
+          oldestTime = laneLastUsed[i];
+          bestLane = i;
+        }
+      }
       
-      const date = new Date(timestamp);
-      return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+      laneLastUsed[bestLane] = now;
+      return bestLane;
     }
 
-    // ============================================
-    // Display Blessing
-    // ============================================
-    function displayBlessing(blessing) {
-      // Track currently displayed blessing
-      currentlyDisplayedId = blessing.id;
+    function createDanmaku(blessing) {
+      // Track this danmaku as active
+      activeDanmakuIds.add(blessing.id);
       
-      // Hide card first
-      blessingCard.classList.remove('show');
-      blessingCard.classList.add('hide');
+      const lane = getAvailableLane();
+      const laneHeight = (danmakuContainer.offsetHeight - 100) / DANMAKU_LANES;
+      const topPosition = 50 + lane * laneHeight;
 
-      setTimeout(() => {
-        // Update content
-        const firstChar = blessing.name.charAt(0);
-        avatar.textContent = firstChar;
-        senderName.textContent = blessing.name;
-        sendTime.textContent = formatTime(blessing.timestamp);
-        
-        // Handle message
-        if (blessing.message) {
-          message.textContent = blessing.message;
-          message.style.display = 'block';
-        } else {
-          message.style.display = 'none';
-        }
+      const danmaku = document.createElement('div');
+      danmaku.className = 'danmaku';
+      danmaku.style.top = topPosition + 'px';
+      danmaku.style.animationDuration = DANMAKU_DURATION + 'ms';
+      danmaku.dataset.id = blessing.id;
+      
+      danmaku.innerHTML = `
+        <span class="sender">${escapeHtml(blessing.name)}</span>
+        <span class="message">${escapeHtml(blessing.message)}</span>
+      `;
 
-        // Handle photo
-        if (blessing.photoURL) {
-          photo.src = blessing.photoURL;
-          photo.style.display = 'block';
-          blessingCard.classList.toggle('photo-only', !blessing.message);
-        } else {
-          photo.style.display = 'none';
-          blessingCard.classList.remove('photo-only');
-        }
+      danmakuContainer.appendChild(danmaku);
 
-        // Show card
-        blessingCard.classList.remove('hide');
-        blessingCard.classList.add('show');
-        waitingScreen.classList.add('hidden');
-
-        // Create burst of hearts
-        for (let i = 0; i < 5; i++) {
-          setTimeout(createFloatingHeart, i * 200);
-        }
-
-      }, 400);
-    }
-
-    // ============================================
-    // Cycle Through Blessings
-    // ============================================
-    function showNext() {
-      if (!isPlaying) return;
-
-      if (blessingQueue.length > 0) {
-        // Show new blessing from queue (priority)
-        const blessing = blessingQueue.shift();
-        displayedBlessings.push(blessing);
-        displayBlessing(blessing);
-      } else if (displayedBlessings.length > 0) {
-        // Recycle through displayed blessings
-        currentIndex = currentIndex % displayedBlessings.length;
-        displayBlessing(displayedBlessings[currentIndex]);
-        currentIndex++;
-      } else {
-        // No blessings yet
-        waitingScreen.classList.remove('hidden');
-        blessingCard.classList.remove('show');
+      // Create hearts burst
+      for (let i = 0; i < 3; i++) {
+        setTimeout(createFloatingHeart, i * 150);
       }
 
-      // Schedule next
-      displayTimeout = setTimeout(showNext, DISPLAY_DURATION);
+      // Remove after animation and clear from active set
+      setTimeout(() => {
+        danmaku.remove();
+        activeDanmakuIds.delete(blessing.id);
+      }, DANMAKU_DURATION + 500);
+    }
+
+    function showNextDanmaku() {
+      if (!isPlaying) return;
+      
+      if (textQueue.length > 0) {
+        const blessing = textQueue.shift();
+        textBlessings.push(blessing);
+        createDanmaku(blessing);
+        waitingScreen.classList.add('hidden');
+      } else if (textBlessings.length > 0) {
+        // Recycle - but avoid duplicates on screen
+        const availableBlessings = textBlessings.filter(b => !activeDanmakuIds.has(b.id));
+        
+        if (availableBlessings.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableBlessings.length);
+          createDanmaku(availableBlessings[randomIndex]);
+          waitingScreen.classList.add('hidden');
+        }
+        // If all are already on screen, skip this cycle
+      }
     }
 
     // ============================================
-    // Firebase Real-time Listener
+    // PHOTO Blessings
+    // ============================================
+    const photoAnimations = [
+      'photoEnterFromRight',
+      'photoEnterFromLeft',
+      'photoEnterFromTop',
+      'photoEnterFromBottom',
+      'photoEnterFromTopRight',
+      'photoEnterFromTopLeft',
+      'photoEnterFromBottomRight',
+      'photoEnterFromBottomLeft'
+    ];
+
+    // Preload an image and cache it
+    function preloadImage(url) {
+      return new Promise((resolve, reject) => {
+        if (preloadedImages.has(url)) {
+          resolve(preloadedImages.get(url));
+          return;
+        }
+        
+        const img = new Image();
+        img.onload = () => {
+          preloadedImages.set(url, img);
+          resolve(img);
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    // Get next position (alternates left/right)
+    function getNextPhotoPosition() {
+      // Check which positions are currently in use
+      const usedPositions = new Set(activePhotos.map(p => p.position));
+      
+      // If a position is free, use it
+      if (!usedPositions.has(0)) return 0;
+      if (!usedPositions.has(1)) return 1;
+      
+      // Both positions in use (shouldn't happen due to MAX check), alternate
+      lastPhotoPosition = lastPhotoPosition === 0 ? 1 : 0;
+      return lastPhotoPosition;
+    }
+
+    // Get centered position with some randomness
+    function getCenteredPosition(position) {
+      const cardWidth = 380; // Approximate card width
+      const cardHeight = 380; // Approximate card height
+      const headerHeight = 100;
+      const bottomMargin = 200; // For QR and controls
+      
+      const availableWidth = window.innerWidth - cardWidth;
+      const availableHeight = window.innerHeight - headerHeight - bottomMargin - cardHeight;
+      
+      // Center area with slight offset based on position
+      const centerX = availableWidth / 2;
+      const centerY = headerHeight + availableHeight / 2;
+      
+      // Offset for multiple photos (left/right of center)
+      let offsetX = 0;
+      if (position === 0) {
+        offsetX = -availableWidth * 0.15; // Left of center
+      } else if (position === 1) {
+        offsetX = availableWidth * 0.15; // Right of center
+      }
+      
+      // Add small random variation
+      const randomX = (Math.random() - 0.5) * 100;
+      const randomY = (Math.random() - 0.5) * 80;
+      
+      return {
+        x: Math.max(30, Math.min(centerX + offsetX + randomX, availableWidth - 30)),
+        y: Math.max(headerHeight + 20, centerY + randomY)
+      };
+    }
+
+    async function createPhotoCard(blessing) {
+      if (activePhotos.length >= MAX_PHOTOS_ON_SCREEN) {
+        return false;
+      }
+
+      // Preload image first
+      try {
+        await preloadImage(blessing.photoURL);
+      } catch (e) {
+        console.warn('Failed to preload image:', e);
+        return false;
+      }
+
+      // Get the next position (alternates left/right)
+      const position = getNextPhotoPosition();
+      lastPhotoPosition = position; // Track for alternation
+      
+      const pos = getCenteredPosition(position);
+      const animation = photoAnimations[Math.floor(Math.random() * photoAnimations.length)];
+
+      const card = document.createElement('div');
+      card.className = 'photo-card show'; // Show immediately since image is preloaded
+      card.style.left = pos.x + 'px';
+      card.style.top = pos.y + 'px';
+      card.style.animation = `${animation} 1.5s ease-out forwards`;
+      card.dataset.id = blessing.id;
+
+      card.innerHTML = `
+        <img src="${blessing.photoURL}" alt="Photo">
+        <div class="photo-sender">來自 ${escapeHtml(blessing.name)}</div>
+      `;
+
+      photoContainer.appendChild(card);
+      activePhotos.push({ id: blessing.id, element: card, position: position });
+
+      // Create hearts burst
+      for (let i = 0; i < 5; i++) {
+        setTimeout(createFloatingHeart, i * 100);
+      }
+
+      // Remove after display time
+      setTimeout(() => {
+        card.style.animation = 'photoExit 0.5s ease-out forwards';
+        setTimeout(() => {
+          card.remove();
+          activePhotos = activePhotos.filter(p => p.id !== blessing.id);
+        }, 500);
+      }, PHOTO_DISPLAY_TIME);
+      
+      return true;
+    }
+
+    async function showNextPhoto() {
+      if (!isPlaying) return;
+      if (activePhotos.length >= MAX_PHOTOS_ON_SCREEN) return;
+
+      // Get IDs of currently displayed photos
+      const activePhotoIds = new Set(activePhotos.map(p => p.id));
+
+      if (photoQueue.length > 0) {
+        const blessing = photoQueue.shift();
+        photoBlessings.push(blessing);
+        // Preload next in queue while showing this one
+        if (photoQueue.length > 0) {
+          preloadImage(photoQueue[0].photoURL).catch(() => {});
+        }
+        await createPhotoCard(blessing);
+        waitingScreen.classList.add('hidden');
+      } else if (photoBlessings.length > 0) {
+        // Recycle - but avoid duplicates on screen
+        const availablePhotos = photoBlessings.filter(b => !activePhotoIds.has(b.id));
+        
+        if (availablePhotos.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availablePhotos.length);
+          await createPhotoCard(availablePhotos[randomIndex]);
+          waitingScreen.classList.add('hidden');
+        }
+        // If all are already on screen, skip this cycle
+      }
+    }
+
+    // ============================================
+    // Firebase Listeners
     // ============================================
     const blessingsRef = ref(db, 'blessings');
 
-    // Listen for new blessings
     onChildAdded(blessingsRef, (snapshot) => {
       const blessing = { id: snapshot.key, ...snapshot.val() };
       
-      // Skip private blessings - they should not be shown on stage
-      if (blessing.private === true) {
-        return;
-      }
-      
-      // Check if already in displayed (page refresh scenario)
-      const alreadyDisplayed = displayedBlessings.some(b => b.id === blessing.id);
-      
-      if (!alreadyDisplayed) {
-        blessingQueue.push(blessing);
-        
-        // If this is the first blessing and we're waiting
-        if (displayedBlessings.length === 0 && blessingQueue.length === 1) {
-          clearTimeout(displayTimeout);
-          showNext();
+      // Skip private blessings
+      if (blessing.private === true) return;
+
+      // Separate by type
+      if (blessing.type === 'photo' && blessing.photoURL) {
+        // Check if already exists
+        if (!photoBlessings.some(b => b.id === blessing.id) && 
+            !photoQueue.some(b => b.id === blessing.id)) {
+          // Preload image immediately when added to queue
+          preloadImage(blessing.photoURL).catch(() => {});
+          photoQueue.push(blessing);
+          photoCountEl.textContent = photoBlessings.length + photoQueue.length;
+        }
+      } else if (blessing.message) {
+        // Check if already exists
+        if (!textBlessings.some(b => b.id === blessing.id) &&
+            !textQueue.some(b => b.id === blessing.id)) {
+          textQueue.push(blessing);
+          textCountEl.textContent = textBlessings.length + textQueue.length;
         }
       }
 
-      // Update count
-      totalCount.textContent = displayedBlessings.length + blessingQueue.length;
+      // Hide waiting screen if we have content
+      if (textQueue.length > 0 || photoQueue.length > 0 || textBlessings.length > 0 || photoBlessings.length > 0) {
+        waitingScreen.classList.add('hidden');
+      }
     });
 
-    // Listen for deleted blessings (from admin panel)
     onChildRemoved(blessingsRef, (snapshot) => {
       const deletedId = snapshot.key;
       
-      // Remove from queue
-      blessingQueue = blessingQueue.filter(b => b.id !== deletedId);
+      // Remove from text
+      textQueue = textQueue.filter(b => b.id !== deletedId);
+      textBlessings = textBlessings.filter(b => b.id !== deletedId);
       
-      // Remove from displayed list
-      const displayedIndex = displayedBlessings.findIndex(b => b.id === deletedId);
-      if (displayedIndex !== -1) {
-        displayedBlessings.splice(displayedIndex, 1);
-        
-        // Adjust currentIndex if needed
-        if (currentIndex > displayedIndex) {
-          currentIndex--;
-        }
-        if (currentIndex >= displayedBlessings.length) {
-          currentIndex = 0;
-        }
+      // Remove from photo
+      photoQueue = photoQueue.filter(b => b.id !== deletedId);
+      photoBlessings = photoBlessings.filter(b => b.id !== deletedId);
+      
+      // Remove active photo if displayed
+      const activePhoto = activePhotos.find(p => p.id === deletedId);
+      if (activePhoto) {
+        activePhoto.element.remove();
+        activePhotos = activePhotos.filter(p => p.id !== deletedId);
       }
-      
-      // Update count
-      totalCount.textContent = displayedBlessings.length + blessingQueue.length;
-      
-      // If the currently displayed blessing was deleted, skip to next
-      if (currentlyDisplayedId === deletedId) {
-        clearTimeout(displayTimeout);
-        showNext();
-      }
-      
-      // If no blessings left, show waiting screen
-      if (displayedBlessings.length === 0 && blessingQueue.length === 0) {
-        blessingCard.classList.remove('show');
+
+      // Update counts
+      textCountEl.textContent = textBlessings.length + textQueue.length;
+      photoCountEl.textContent = photoBlessings.length + photoQueue.length;
+
+      // Show waiting if empty
+      if (textBlessings.length === 0 && photoBlessings.length === 0 && 
+          textQueue.length === 0 && photoQueue.length === 0) {
         waitingScreen.classList.remove('hidden');
       }
     });
 
-    // Start the display loop
-    setTimeout(showNext, 2000);
+    // ============================================
+    // Start Display Loops
+    // ============================================
+    function startDisplayLoops() {
+      danmakuInterval = setInterval(showNextDanmaku, DANMAKU_INTERVAL);
+      photoInterval = setInterval(showNextPhoto, PHOTO_INTERVAL);
+    }
+
+    function stopDisplayLoops() {
+      clearInterval(danmakuInterval);
+      clearInterval(photoInterval);
+    }
+
+    // Start after a short delay
+    setTimeout(startDisplayLoops, 2000);
 
     // ============================================
     // Controls
@@ -683,15 +867,10 @@
       pauseIcon.textContent = isPlaying ? 'pause' : 'play_arrow';
       
       if (isPlaying) {
-        showNext();
+        startDisplayLoops();
       } else {
-        clearTimeout(displayTimeout);
+        stopDisplayLoops();
       }
-    });
-
-    skipBtn.addEventListener('click', () => {
-      clearTimeout(displayTimeout);
-      showNext();
     });
 
     fullscreenBtn.addEventListener('click', () => {
@@ -703,17 +882,13 @@
     });
 
     // ============================================
-    // Preload Images for Smoother Display
+    // Utility
     // ============================================
-    function preloadImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = url;
-      });
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
     }
   </script>
 </body>
 </html>
-
