@@ -964,11 +964,11 @@
         return;
       }
 
-      blessingsList.innerHTML = filteredBlessings.map(blessing => `
-        <div class="blessing-item" data-id="${blessing.id}">
+      blessingsList.innerHTML = filteredBlessings.map((blessing, index) => `
+        <div class="blessing-item" data-id="${blessing.id}" data-index="${index}">
           <div class="blessing-photo">
             ${blessing.photoURL 
-              ? `<img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage('${blessing.photoURL}')">`
+              ? `<img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage(${index})">`
               : `<span class="material-symbols-outlined no-photo">hide_image</span>`
             }
           </div>
@@ -981,7 +981,7 @@
               ${blessing.message ? escapeHtml(blessing.message) : '(無文字祝福)'}
             </div>
             <div class="blessing-actions">
-              <button class="delete-btn" onclick="window.confirmDelete('${blessing.id}', '${blessing.name}', ${blessing.photoURL ? `'${blessing.photoURL}'` : 'null'})">
+              <button class="delete-btn" onclick="window.confirmDelete(${index})">
                 <span class="material-symbols-outlined">delete</span>
                 刪除
               </button>
@@ -1000,9 +1000,12 @@
     // ============================================
     // Image Modal
     // ============================================
-    window.showImage = function(url) {
-      modalImage.src = url;
-      imageModal.classList.add('show');
+    window.showImage = function(index) {
+      const blessing = filteredBlessings[index];
+      if (blessing && blessing.photoURL) {
+        modalImage.src = blessing.photoURL;
+        imageModal.classList.add('show');
+      }
     };
 
     closeImageBtn.addEventListener('click', () => {
@@ -1018,10 +1021,13 @@
     // ============================================
     // Delete Blessing
     // ============================================
-    window.confirmDelete = function(id, name, photoURL) {
-      pendingDeleteId = id;
-      pendingDeletePhotoURL = photoURL;
-      confirmMessage.textContent = `確定要刪除「${name}」的祝福嗎？此操作無法復原。`;
+    window.confirmDelete = function(index) {
+      const blessing = filteredBlessings[index];
+      if (!blessing) return;
+      
+      pendingDeleteId = blessing.id;
+      pendingDeletePhotoURL = blessing.photoURL || null;
+      confirmMessage.textContent = `確定要刪除「${blessing.name}」的祝福嗎？此操作無法復原。`;
       confirmDialog.classList.add('show');
     };
 
@@ -1077,16 +1083,23 @@
     // Delete Photo Helper
     // ============================================
     async function deletePhotoFromStorage(photoURL) {
+      if (!photoURL) return;
+      
       try {
         const urlObj = new URL(photoURL);
-        const pathMatch = urlObj.pathname.match(/\/o\/(.+?)\?/);
+        // Match Firebase Storage URL pattern: /o/path%2Fto%2Ffile.jpg
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+?)(?:\?|$)/);
         if (pathMatch) {
           const filePath = decodeURIComponent(pathMatch[1]);
+          console.log('Deleting photo from storage:', filePath);
           const photoRef = storageRef(storage, filePath);
           await deleteObject(photoRef);
+          console.log('Photo deleted successfully');
+        } else {
+          console.warn('Could not parse photo URL:', photoURL);
         }
       } catch (storageError) {
-        console.warn('Could not delete photo from storage:', storageError);
+        console.warn('Could not delete photo from storage:', storageError.message);
       }
     }
 
