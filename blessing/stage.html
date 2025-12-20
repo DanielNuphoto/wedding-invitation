@@ -214,12 +214,12 @@
       border-radius: 20px;
       padding: 15px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      transition: opacity 0.5s ease;
+      opacity: 1;
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
 
-    .photo-card.show {
-      opacity: 1;
+    .photo-card.fade-out {
+      opacity: 0;
     }
 
     .photo-card img {
@@ -242,31 +242,31 @@
 
     /* Photo entrance animations */
     @keyframes photoEnterFromRight {
-      0% { transform: translateX(100vw) rotate(5deg); opacity: 0; }
+      0% { transform: translateX(100vw) rotate(8deg); opacity: 0; }
       15% { opacity: 1; }
       85% { opacity: 1; }
-      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateX(0) rotate(-2deg); opacity: 1; }
     }
 
     @keyframes photoEnterFromLeft {
-      0% { transform: translateX(-100vw) rotate(-5deg); opacity: 0; }
+      0% { transform: translateX(-100vw) rotate(-8deg); opacity: 0; }
       15% { opacity: 1; }
       85% { opacity: 1; }
-      100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateX(0) rotate(2deg); opacity: 1; }
     }
 
     @keyframes photoEnterFromTop {
-      0% { transform: translateY(-100vh) rotate(3deg); opacity: 0; }
+      0% { transform: translateY(-100vh) rotate(6deg); opacity: 0; }
       15% { opacity: 1; }
       85% { opacity: 1; }
-      100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(0) rotate(-3deg); opacity: 1; }
     }
 
     @keyframes photoEnterFromBottom {
-      0% { transform: translateY(100vh) rotate(-3deg); opacity: 0; }
+      0% { transform: translateY(100vh) rotate(-6deg); opacity: 0; }
       15% { opacity: 1; }
       85% { opacity: 1; }
-      100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(0) rotate(3deg); opacity: 1; }
     }
 
     @keyframes photoEnterFromTopRight {
@@ -295,12 +295,6 @@
       15% { opacity: 1; }
       85% { opacity: 1; }
       100% { transform: translate(0, 0) rotate(-3deg); opacity: 1; }
-    }
-
-    /* Photo exit animation */
-    @keyframes photoExit {
-      0% { opacity: 1; transform: scale(1); }
-      100% { opacity: 0; transform: scale(0.8); }
     }
 
     /* QR Code section */
@@ -718,7 +712,7 @@
       const animation = photoAnimations[Math.floor(Math.random() * photoAnimations.length)];
 
       const card = document.createElement('div');
-      card.className = 'photo-card show'; // Show immediately since image is preloaded
+      card.className = 'photo-card'; // Show immediately since image is preloaded
       card.style.left = pos.x + 'px';
       card.style.top = pos.y + 'px';
       card.style.animation = `${animation} 1.5s ease-out forwards`;
@@ -737,9 +731,25 @@
         setTimeout(createFloatingHeart, i * 100);
       }
 
+      // Store final transform for use when fading out
+      let savedTransform = 'none';
+      
+      // After entrance animation ends, preserve transform and clear animation
+      card.addEventListener('animationend', () => {
+        // Get the final computed transform from the animation
+        const computedStyle = window.getComputedStyle(card);
+        savedTransform = computedStyle.transform;
+        
+        // Apply it as inline style and clear animation
+        card.style.transform = savedTransform;
+        card.style.animation = 'none';
+      }, { once: true });
+
       // Remove after display time
       setTimeout(() => {
-        card.style.animation = 'photoExit 0.5s ease-out forwards';
+        // Apply scale with existing transform
+        card.style.transform = savedTransform + ' scale(0.85)';
+        card.classList.add('fade-out');
         setTimeout(() => {
           card.remove();
           activePhotos = activePhotos.filter(p => p.id !== blessing.id);
