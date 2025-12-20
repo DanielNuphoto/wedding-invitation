@@ -1270,11 +1270,35 @@
         { name: '林志明', message: '恭喜恭喜！希望你們永遠這麼甜蜜！' },
         { name: '黃淑芬', message: '祝你們新婚愉快，幸福美滿！' },
         { name: '吳建國', message: '看到你們在一起真的很開心，祝你們永遠幸福！' },
-        { name: '劉雅婷', message: '願你們的愛情永遠像今天一樣美好！💖' }
+        { name: '劉雅婷', message: '願你們的愛情永遠像今天一樣美好！💖' },
+        { name: '周大偉', message: '恭喜兩位新人！願你們的婚姻充滿歡笑與愛！' },
+        { name: '鄭文靜', message: '看到你們這麼相愛，真的很感動！祝永遠幸福！' },
+        { name: '許家豪', message: '祝福你們新婚快樂，百年好合，永結同心！' },
+        { name: '楊思涵', message: '願你們的愛情故事永遠這麼美好！💝' },
+        { name: '趙子龍', message: '恭喜你們！希望你們的未來充滿陽光與歡笑！' },
+        { name: '孫美玲', message: '看到你們這麼幸福，我也很開心！祝新婚愉快！' },
+        { name: '馬文博', message: '願你們的愛情像花一樣美麗，永遠綻放！🌹' },
+        { name: '朱曉雯', message: '祝福新人白頭偕老，相愛到永遠！' },
+        { name: '胡志強', message: '恭喜你們！希望你們的每一天都充滿愛與歡笑！' },
+        { name: '高詩雅', message: '看到你們在一起真的很般配！祝永遠幸福美滿！' },
+        { name: '徐建華', message: '願你們的婚姻像美酒一樣，越陳越香醇！' },
+        { name: '謝佳穎', message: '祝福你們新婚快樂，早生貴子，幸福美滿！🎊' },
+        { name: '羅文傑', message: '恭喜兩位！希望你們的愛情永遠這麼甜蜜！' },
+        { name: '蔡雅芳', message: '看到你們這麼相愛，真的很感動！祝永遠幸福！💕' }
       ];
 
-      const photoColors = ['#d4a8a8', '#c89898', '#b88888', '#a87878', '#986868'];
-      const photoTexts = ['祝福', '恭喜', '幸福', '快樂', '甜蜜'];
+      const photoColors = [
+        '#d4a8a8', '#c89898', '#b88888', '#a87878', '#986868',
+        '#d0b0b0', '#c0a0a0', '#b09090', '#a08080', '#907070',
+        '#e8c8c8', '#d8b8b8', '#c8a8a8', '#b89898', '#a88888',
+        '#f0d0d0', '#e0c0c0', '#d0b0b0', '#c0a0a0', '#b09090'
+      ];
+      const photoTexts = [
+        '祝福', '恭喜', '幸福', '快樂', '甜蜜',
+        '美滿', '恩愛', '永恆', '美好', '喜悅',
+        '相愛', '和諧', '溫馨', '浪漫', '珍貴',
+        '真愛', '圓滿', '完美', '珍重', '永恆'
+      ];
 
       let successCount = 0;
       let errorCount = 0;
@@ -1297,9 +1321,11 @@
         }
 
         // Add photo blessings
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 20; i++) {
           try {
-            const blob = await createTestImage(photoColors[i], photoTexts[i]);
+            const colorIndex = i % photoColors.length;
+            const textIndex = i % photoTexts.length;
+            const blob = await createTestImage(photoColors[colorIndex], photoTexts[textIndex]);
             const fileName = `test_${Date.now()}_${i}.jpg`;
             const imageRef = storageRef(storage, `blessings/${fileName}`);
             
