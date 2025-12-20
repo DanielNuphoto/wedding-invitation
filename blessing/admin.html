@@ -480,6 +480,24 @@
       line-height: 1.6;
       color: rgba(255, 255, 255, 0.8);
       word-wrap: break-word;
+      position: relative;
+    }
+
+    .blessing-color {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .blessing-color-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: inline-block;
     }
 
     .blessing-message.empty {
@@ -1287,17 +1305,21 @@
         { name: '蔡雅芳', message: '看到你們這麼相愛，真的很感動！祝永遠幸福！💕' }
       ];
 
-      const photoColors = [
-        '#d4a8a8', '#c89898', '#b88888', '#a87878', '#986868',
-        '#d0b0b0', '#c0a0a0', '#b09090', '#a08080', '#907070',
-        '#e8c8c8', '#d8b8b8', '#c8a8a8', '#b89898', '#a88888',
-        '#f0d0d0', '#e0c0c0', '#d0b0b0', '#c0a0a0', '#b09090'
-      ];
       const photoTexts = [
         '祝福', '恭喜', '幸福', '快樂', '甜蜜',
         '美滿', '恩愛', '永恆', '美好', '喜悅',
         '相愛', '和諧', '溫馨', '浪漫', '珍貴',
         '真愛', '圓滿', '完美', '珍重', '永恆'
+      ];
+
+      // Available Morandi colors for both text and photo blessings
+      const morandiColors = [
+        '#a8b5a0', // 灰綠
+        '#b8a8a0', // 灰粉
+        '#a8a8b8', // 灰藍
+        '#c0b8a8', // 淺灰
+        '#a8b8b0', // 灰青
+        '#b8a8b0'  // 灰紫
       ];
 
       let successCount = 0;
@@ -1307,11 +1329,14 @@
         // Add text blessings
         for (const blessing of textBlessings) {
           try {
+            // Randomly select a color from available Morandi colors
+            const randomColor = morandiColors[Math.floor(Math.random() * morandiColors.length)];
             await push(ref(db, 'blessings'), {
               name: blessing.name,
               message: blessing.message,
               timestamp: Date.now() - Math.random() * 86400000, // Random time in last 24h
-              type: 'text'
+              type: 'text',
+              color: randomColor
             });
             successCount++;
           } catch (error) {
@@ -1323,9 +1348,10 @@
         // Add photo blessings
         for (let i = 0; i < 20; i++) {
           try {
-            const colorIndex = i % photoColors.length;
-            const textIndex = i % photoTexts.length;
-            const blob = await createTestImage(photoColors[colorIndex], photoTexts[textIndex]);
+            // Randomly select color from Morandi colors and text
+            const colorIndex = Math.floor(Math.random() * morandiColors.length);
+            const textIndex = Math.floor(Math.random() * photoTexts.length);
+            const blob = await createTestImage(morandiColors[colorIndex], photoTexts[textIndex]);
             const fileName = `test_${Date.now()}_${i}.jpg`;
             const imageRef = storageRef(storage, `blessings/${fileName}`);
             
@@ -1403,6 +1429,12 @@
             ${blessing.message ? `
             <div class="blessing-message">
               ${escapeHtml(blessing.message)}
+            </div>
+            ` : ''}
+            ${blessing.color && blessing.type === 'text' ? `
+            <div class="blessing-color">
+              <span class="blessing-color-swatch" style="background: ${blessing.color};"></span>
+              <span>背景顏色: ${blessing.color}</span>
             </div>
             ` : ''}
             <div class="blessing-actions">
