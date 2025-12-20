@@ -790,9 +790,10 @@
           type: currentTab // 'text' or 'photo'
         };
 
-        // Add photoURL if exists
+        // Add photoURL and file size if exists
         if (photoURL) {
           blessingData.photoURL = photoURL;
+          blessingData.fileSize = selectedFile.size; // Track file size in bytes
         }
 
         // Add private flag if checked

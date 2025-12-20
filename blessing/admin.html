@@ -290,6 +290,87 @@
       cursor: not-allowed;
     }
 
+    /* Storage Bar */
+    .storage-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 30px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .storage-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .storage-info .material-symbols-outlined {
+      font-size: 18px;
+      color: #64b5f6;
+    }
+
+    .storage-percent {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .storage-track {
+      flex: 1;
+      max-width: 200px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .storage-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.5s ease, background 0.3s ease;
+    }
+
+    .storage-fill.warning {
+      background: linear-gradient(90deg, #ffb74d, #ff9800);
+    }
+
+    .storage-fill.danger {
+      background: linear-gradient(90deg, #ff8a80, #f44336);
+    }
+
+    .cleanup-btn {
+      background: rgba(255, 183, 77, 0.15);
+      border: 1px solid rgba(255, 183, 77, 0.3);
+      color: #ffb74d;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .cleanup-btn:hover {
+      background: rgba(255, 183, 77, 0.25);
+    }
+
+    .cleanup-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .cleanup-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
     /* Blessings List */
     .blessings-list {
       padding: 0 30px 30px;
@@ -689,6 +770,21 @@
       </button>
     </div>
 
+    <div class="storage-bar" id="storageBar">
+      <div class="storage-info">
+        <span class="material-symbols-outlined">cloud</span>
+        <span>儲存空間：<strong id="storageUsed">0 MB</strong> / 5 GB</span>
+        <span class="storage-percent" id="storagePercent">(0%)</span>
+      </div>
+      <div class="storage-track">
+        <div class="storage-fill" id="storageFill"></div>
+      </div>
+      <button class="cleanup-btn" id="cleanupBtn" title="刪除最舊的照片祝福">
+        <span class="material-symbols-outlined">auto_delete</span>
+        清理舊照片
+      </button>
+    </div>
+
     <div class="blessings-list" id="blessingsList">
       <div class="loading-state" id="loadingState">
         <div class="loading-spinner"></div>
@@ -781,6 +877,13 @@
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     const toast = document.getElementById('toast');
+    const storageUsed = document.getElementById('storageUsed');
+    const storagePercent = document.getElementById('storagePercent');
+    const storageFill = document.getElementById('storageFill');
+    const cleanupBtn = document.getElementById('cleanupBtn');
+
+    // Storage limit (5 GB in bytes)
+    const STORAGE_LIMIT = 5 * 1024 * 1024 * 1024;
 
     // ============================================
     // Toast
@@ -892,6 +995,7 @@
           allBlessings.unshift({ id: child.key, ...child.val() });
         });
         totalCount.textContent = allBlessings.length;
+        updateStorageDisplay();
         filterAndRender();
         loadingState.style.display = 'none';
       }, (error) => {
@@ -899,6 +1003,126 @@
         showToast('載入失敗', 'error');
         loadingState.style.display = 'none';
       });
+    }
+
+    // ============================================
+    // Storage Display
+    // ============================================
+    function updateStorageDisplay() {
+      // Calculate total storage from tracked file sizes
+      let totalBytes = 0;
+      let photoCount = 0;
+      
+      allBlessings.forEach(b => {
+        if (b.fileSize) {
+          totalBytes += b.fileSize;
+          photoCount++;
+        } else if (b.photoURL) {
+          // Estimate ~2MB for photos without tracked size (legacy)
+          totalBytes += 2 * 1024 * 1024;
+          photoCount++;
+        }
+      });
+
+      // Update display
+      const mb = totalBytes / (1024 * 1024);
+      const gb = totalBytes / (1024 * 1024 * 1024);
+      const percent = (totalBytes / STORAGE_LIMIT) * 100;
+
+      if (gb >= 1) {
+        storageUsed.textContent = gb.toFixed(2) + ' GB';
+      } else {
+        storageUsed.textContent = mb.toFixed(1) + ' MB';
+      }
+      
+      storagePercent.textContent = `(${percent.toFixed(1)}%)`;
+      storageFill.style.width = Math.min(percent, 100) + '%';
+      
+      // Color coding
+      storageFill.classList.remove('warning', 'danger');
+      if (percent >= 80) {
+        storageFill.classList.add('danger');
+      } else if (percent >= 50) {
+        storageFill.classList.add('warning');
+      }
+
+      // Enable/disable cleanup button
+      cleanupBtn.disabled = photoCount === 0;
+    }
+
+    // ============================================
+    // Cleanup Old Photos
+    // ============================================
+    async function cleanupOldPhotos() {
+      // Get photo blessings sorted by timestamp (oldest first)
+      const photoBlessings = allBlessings
+        .filter(b => b.photoURL)
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+      if (photoBlessings.length === 0) {
+        showToast('沒有照片可以清理', 'error');
+        return;
+      }
+
+      // Calculate how many to delete (oldest 20% or at least 1)
+      const deleteCount = Math.max(1, Math.ceil(photoBlessings.length * 0.2));
+      const toDelete = photoBlessings.slice(0, deleteCount);
+      
+      // Calculate size to free
+      let sizeToFree = 0;
+      toDelete.forEach(b => {
+        sizeToFree += b.fileSize || (2 * 1024 * 1024);
+      });
+      const mbToFree = (sizeToFree / (1024 * 1024)).toFixed(1);
+
+      confirmMessage.textContent = `將刪除 ${deleteCount} 則最舊的照片祝福（約釋放 ${mbToFree} MB）。此操作無法復原！`;
+      confirmDialog.classList.add('show');
+
+      // Store for confirmation
+      pendingCleanup = toDelete;
+    }
+
+    let pendingCleanup = null;
+
+    cleanupBtn.addEventListener('click', cleanupOldPhotos);
+
+    async function executeCleanup() {
+      if (!pendingCleanup || pendingCleanup.length === 0) return;
+
+      const toDelete = pendingCleanup;
+      pendingCleanup = null;
+
+      cleanupBtn.disabled = true;
+      cleanupBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 清理中...';
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const blessing of toDelete) {
+        try {
+          // Delete from database
+          await remove(ref(db, `blessings/${blessing.id}`));
+          
+          // Delete photo from storage
+          if (blessing.photoURL) {
+            await deletePhotoFromStorage(blessing.photoURL);
+          }
+          
+          successCount++;
+        } catch (error) {
+          console.error('Error deleting blessing:', error);
+          errorCount++;
+        }
+      }
+
+      cleanupBtn.innerHTML = '<span class="material-symbols-outlined">auto_delete</span> 清理舊照片';
+      cleanupBtn.disabled = false;
+
+      if (errorCount > 0) {
+        showToast(`已清理 ${successCount} 則，${errorCount} 則失敗`, 'warning');
+      } else {
+        showToast(`已清理 ${successCount} 則舊照片`, 'success');
+      }
     }
 
     // ============================================
@@ -1036,10 +1260,17 @@
       pendingDeleteId = null;
       pendingDeletePhotoURL = null;
       isDeleteAllMode = false;
+      pendingCleanup = null;
     });
 
     confirmDeleteBtn.addEventListener('click', async () => {
       confirmDialog.classList.remove('show');
+      
+      // Handle Cleanup
+      if (pendingCleanup && pendingCleanup.length > 0) {
+        await executeCleanup();
+        return;
+      }
       
       // Handle Delete All
       if (isDeleteAllMode) {
