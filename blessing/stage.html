@@ -450,7 +450,6 @@
   <script type="module">
     // ============================================
     // 🔥 Firebase Configuration
-    // TODO: Replace with your Firebase project config
     // ============================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getDatabase, ref, onValue, onChildAdded, onChildRemoved, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
@@ -613,6 +612,11 @@
     // Listen for new blessings
     onChildAdded(blessingsRef, (snapshot) => {
       const blessing = { id: snapshot.key, ...snapshot.val() };
+      
+      // Skip private blessings - they should not be shown on stage
+      if (blessing.private === true) {
+        return;
+      }
       
       // Check if already in displayed (page refresh scenario)
       const alreadyDisplayed = displayedBlessings.some(b => b.id === blessing.id);

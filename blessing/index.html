@@ -94,7 +94,7 @@
     }
 
     .form-group textarea {
-      min-height: 120px;
+      min-height: 150px;
       resize: vertical;
     }
 
@@ -118,6 +118,63 @@
       color: #c0392b;
     }
 
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      background: #f0ebeb;
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      color: #8a7a7a;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab:hover {
+      color: #5a4a4a;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: #5a4a4a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Photo Upload */
     .photo-upload {
       position: relative;
     }
@@ -125,7 +182,7 @@
     .photo-upload-area {
       border: 2px dashed #d0c5c5;
       border-radius: 12px;
-      padding: 30px;
+      padding: 40px 30px;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -166,7 +223,6 @@
     .photo-preview {
       display: none;
       position: relative;
-      margin-top: 15px;
     }
 
     .photo-preview.show {
@@ -199,6 +255,32 @@
 
     .photo-preview .remove-btn:hover {
       background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Submit Section */
+    .submit-section {
+      margin-top: 20px;
+    }
+
+    .privacy-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+    .privacy-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #b39090;
+      cursor: pointer;
+    }
+
+    .privacy-checkbox span {
+      font-size: 13px;
+      color: #7a6a6a;
+      line-height: 1.4;
     }
 
     .submit-btn {
@@ -321,6 +403,8 @@
       transition: all 0.3s ease;
       z-index: 1000;
       pointer-events: none;
+      max-width: 90%;
+      text-align: center;
     }
 
     .toast.show {
@@ -329,6 +413,10 @@
     }
 
     .toast.error {
+      background: rgba(198, 40, 40, 0.9);
+    }
+
+    .toast.warning {
       background: rgba(198, 40, 40, 0.9);
     }
 
@@ -362,12 +450,21 @@
         padding: 25px 20px;
       }
 
+      .tab {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
       .photo-upload-area {
-        padding: 25px 15px;
+        padding: 30px 15px;
       }
 
       .photo-upload-area .icon {
         font-size: 40px;
+      }
+
+      .privacy-checkbox span {
+        font-size: 12px;
       }
     }
   </style>
@@ -387,32 +484,57 @@
           <div class="char-counter"><span id="nameCount">0</span>/50</div>
         </div>
 
-        <div class="form-group">
-          <label for="message">祝福話語</label>
-          <textarea id="message" name="message" placeholder="寫下您對新人的祝福..." maxlength="500"></textarea>
-          <div class="char-counter"><span id="messageCount">0</span>/500</div>
+        <!-- Tabs -->
+        <div class="tabs">
+          <button type="button" class="tab active" id="textTab" data-tab="text">
+            <span class="material-symbols-outlined">edit_note</span>
+            文字祝福
+          </button>
+          <button type="button" class="tab" id="photoTab" data-tab="photo">
+            <span class="material-symbols-outlined">photo_camera</span>
+            照片祝福
+          </button>
         </div>
 
-        <div class="form-group photo-upload">
-          <label>附上照片（可選）</label>
-          <div class="photo-upload-area" id="uploadArea">
-            <div class="material-symbols-outlined icon">add_photo_alternate</div>
-            <div class="text">點擊或拖曳上傳照片</div>
-            <div class="subtext">支援 JPG、PNG，最大 10MB</div>
-          </div>
-          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp">
-          <div class="photo-preview" id="photoPreview">
-            <img id="previewImg" src="" alt="Preview">
-            <button type="button" class="remove-btn" id="removePhoto">
-              <span class="material-symbols-outlined">close</span>
-            </button>
+        <!-- Text Tab Content -->
+        <div class="tab-content active" id="textContent">
+          <div class="form-group">
+            <label for="message">祝福話語 *</label>
+            <textarea id="message" name="message" placeholder="寫下您對新人的祝福..." maxlength="500"></textarea>
+            <div class="char-counter"><span id="messageCount">0</span>/500</div>
           </div>
         </div>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
-          <span class="text">送出祝福 💝</span>
-          <span class="loading">傳送中...</span>
-        </button>
+        <!-- Photo Tab Content -->
+        <div class="tab-content" id="photoContent">
+          <div class="form-group photo-upload">
+            <label>選擇照片 *</label>
+            <div class="photo-upload-area" id="uploadArea">
+              <div class="material-symbols-outlined icon">add_photo_alternate</div>
+              <div class="text">點擊或拖曳上傳照片</div>
+              <div class="subtext">支援 JPG、PNG，最大 10MB</div>
+            </div>
+            <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp">
+            <div class="photo-preview" id="photoPreview">
+              <img id="previewImg" src="" alt="Preview">
+              <button type="button" class="remove-btn" id="removePhoto">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+          <label class="privacy-checkbox">
+            <input type="checkbox" id="privateCheckbox">
+            <span>不公開在祝福牆上（只有新郎新娘可以看到）</span>
+          </label>
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="text">送出祝福 💝</span>
+            <span class="loading">傳送中...</span>
+          </button>
+        </div>
       </form>
     </div>
 
@@ -432,28 +554,36 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    // ============================================
-    // 🔥 Firebase Configuration
-    // TODO: Replace with your Firebase project config
-    // Get this from Firebase Console > Project Settings > Your Apps
-    // ============================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
-        authDomain: "wedding-e335c.firebaseapp.com",
-        databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "wedding-e335c",
-        storageBucket: "wedding-e335c.firebasestorage.app",
-        messagingSenderId: "89341612270",
-        appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
+      apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
+      authDomain: "wedding-e335c.firebaseapp.com",
+      databaseURL: "https://wedding-e335c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "wedding-e335c",
+      storageBucket: "wedding-e335c.firebasestorage.app",
+      messagingSenderId: "89341612270",
+      appId: "1:89341612270:web:afa62ef0c5b51f5130a3ff"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const storage = getStorage(app);
+
+    // ============================================
+    // State
+    // ============================================
+    let currentTab = 'text'; // 'text' or 'photo'
+    let selectedFile = null;
+    let toastTimeout = null;
+
+    // ============================================
+    // Validation Constants
+    // ============================================
+    const MAX_NAME_LENGTH = 50;
+    const MAX_MESSAGE_LENGTH = 500;
 
     // ============================================
     // DOM Elements
@@ -462,30 +592,39 @@
     const formCard = document.getElementById('formCard');
     const successCard = document.getElementById('successCard');
     const submitBtn = document.getElementById('submitBtn');
+    const textTab = document.getElementById('textTab');
+    const photoTab = document.getElementById('photoTab');
+    const textContent = document.getElementById('textContent');
+    const photoContent = document.getElementById('photoContent');
     const uploadArea = document.getElementById('uploadArea');
     const photoInput = document.getElementById('photoInput');
     const photoPreview = document.getElementById('photoPreview');
     const previewImg = document.getElementById('previewImg');
     const removePhotoBtn = document.getElementById('removePhoto');
     const anotherBtn = document.getElementById('anotherBtn');
+    const privateCheckbox = document.getElementById('privateCheckbox');
     const toast = document.getElementById('toast');
-
-    let selectedFile = null;
-
-    // ============================================
-    // Validation Constants (must match Firebase rules)
-    // ============================================
-    const MAX_NAME_LENGTH = 50;
-    const MAX_MESSAGE_LENGTH = 500;
-
-    // ============================================
-    // Character Counters
-    // ============================================
     const nameInput = document.getElementById('name');
     const messageInput = document.getElementById('message');
     const nameCount = document.getElementById('nameCount');
     const messageCount = document.getElementById('messageCount');
 
+    // ============================================
+    // Toast Notification
+    // ============================================
+    function showToast(message, type = '', duration = 3000) {
+      toast.textContent = message;
+      toast.className = 'toast show' + (type ? ` ${type}` : '');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // ============================================
+    // Character Counters
+    // ============================================
     function updateCounter(input, counter, max) {
       const len = input.value.length;
       counter.textContent = len;
@@ -502,15 +641,39 @@
     messageInput.addEventListener('input', () => updateCounter(messageInput, messageCount, MAX_MESSAGE_LENGTH));
 
     // ============================================
-    // Toast Notification
+    // Tab Switching
     // ============================================
-    function showToast(message, isError = false) {
-      toast.textContent = message;
-      toast.className = 'toast show' + (isError ? ' error' : '');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+    function switchTab(newTab) {
+      if (newTab === currentTab) return;
+
+      // Check if there's data to clear
+      const hasTextData = messageInput.value.trim().length > 0;
+      const hasPhotoData = selectedFile !== null;
+      
+      if ((currentTab === 'text' && hasTextData) || (currentTab === 'photo' && hasPhotoData)) {
+        showToast('已清除先前輸入的內容，請重新填寫', 'warning', 4000);
+      }
+
+      // Clear previous data
+      if (currentTab === 'text') {
+        messageInput.value = '';
+        messageCount.textContent = '0';
+      } else {
+        clearPhoto();
+      }
+
+      // Update tab state
+      currentTab = newTab;
+      
+      // Update UI
+      textTab.classList.toggle('active', newTab === 'text');
+      photoTab.classList.toggle('active', newTab === 'photo');
+      textContent.classList.toggle('active', newTab === 'text');
+      photoContent.classList.toggle('active', newTab === 'photo');
     }
+
+    textTab.addEventListener('click', () => switchTab('text'));
+    photoTab.addEventListener('click', () => switchTab('photo'));
 
     // ============================================
     // Photo Upload Handling
@@ -542,9 +705,8 @@
     });
 
     function handleFileSelect(file) {
-      // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
-        showToast('照片大小不能超過 10MB', true);
+        showToast('照片大小不能超過 10MB', 'error');
         return;
       }
 
@@ -558,12 +720,14 @@
       reader.readAsDataURL(file);
     }
 
-    removePhotoBtn.addEventListener('click', () => {
+    function clearPhoto() {
       selectedFile = null;
       photoInput.value = '';
       photoPreview.classList.remove('show');
       uploadArea.style.display = 'block';
-    });
+    }
+
+    removePhotoBtn.addEventListener('click', clearPhoto);
 
     // ============================================
     // Form Submission
@@ -571,28 +735,35 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById('name').value.trim();
-      const message = document.getElementById('message').value.trim();
+      const name = nameInput.value.trim();
+      const message = messageInput.value.trim();
+      const isPrivate = privateCheckbox.checked;
 
-      // Validation (must match Firebase security rules)
+      // Validation
       if (!name) {
-        showToast('請填寫您的稱呼', true);
+        showToast('請填寫您的稱呼', 'error');
         return;
       }
 
       if (name.length > MAX_NAME_LENGTH) {
-        showToast(`稱呼不能超過 ${MAX_NAME_LENGTH} 個字`, true);
+        showToast(`稱呼不能超過 ${MAX_NAME_LENGTH} 個字`, 'error');
         return;
       }
 
-      if (message.length > MAX_MESSAGE_LENGTH) {
-        showToast(`祝福話語不能超過 ${MAX_MESSAGE_LENGTH} 個字`, true);
-        return;
-      }
-
-      if (!message && !selectedFile) {
-        showToast('請填寫祝福或上傳照片', true);
-        return;
+      if (currentTab === 'text') {
+        if (!message) {
+          showToast('請填寫祝福話語', 'error');
+          return;
+        }
+        if (message.length > MAX_MESSAGE_LENGTH) {
+          showToast(`祝福話語不能超過 ${MAX_MESSAGE_LENGTH} 個字`, 'error');
+          return;
+        }
+      } else {
+        if (!selectedFile) {
+          showToast('請選擇一張照片', 'error');
+          return;
+        }
       }
 
       submitBtn.classList.add('loading');
@@ -601,8 +772,8 @@
       try {
         let photoURL = null;
 
-        // Upload photo if selected
-        if (selectedFile) {
+        // Upload photo if in photo mode
+        if (currentTab === 'photo' && selectedFile) {
           const timestamp = Date.now();
           const fileName = `${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
           const imageRef = storageRef(storage, `blessings/${fileName}`);
@@ -611,17 +782,22 @@
           photoURL = await getDownloadURL(imageRef);
         }
 
-        // Save blessing to database
-        // Data structure must match Firebase security rules
+        // Build blessing data
         const blessingData = {
           name: name,
-          message: message || '',
-          timestamp: Date.now()
+          message: currentTab === 'text' ? message : '',
+          timestamp: Date.now(),
+          type: currentTab // 'text' or 'photo'
         };
-        
-        // Only add photoURL if it exists (can be null or string in rules)
+
+        // Add photoURL if exists
         if (photoURL) {
           blessingData.photoURL = photoURL;
+        }
+
+        // Add private flag if checked
+        if (isPrivate) {
+          blessingData.private = true;
         }
         
         await push(ref(db, 'blessings'), blessingData);
@@ -632,7 +808,7 @@
 
       } catch (error) {
         console.error('Error submitting blessing:', error);
-        showToast('送出失敗，請稍後再試', true);
+        showToast('送出失敗，請稍後再試', 'error');
       } finally {
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;
@@ -645,14 +821,25 @@
     anotherBtn.addEventListener('click', () => {
       form.reset();
       selectedFile = null;
+      currentTab = 'text';
+      
+      // Reset UI
       photoPreview.classList.remove('show');
       uploadArea.style.display = 'block';
-      successCard.classList.remove('show');
-      formCard.style.display = 'block';
+      textTab.classList.add('active');
+      photoTab.classList.remove('active');
+      textContent.classList.add('active');
+      photoContent.classList.remove('active');
+      privateCheckbox.checked = false;
+      
+      // Reset counters
       messageCount.textContent = '0';
       nameCount.textContent = '0';
+      
+      // Show form
+      successCard.classList.remove('show');
+      formCard.style.display = 'block';
     });
   </script>
 </body>
 </html>
-
