@@ -636,6 +636,7 @@
       </div>
       <button id="mapBtn" class="btn breathe">📍 查看地址</button>
       <button id="calendarBtn" class="btn breathe">📅 加入行事曆</button>
+      <button id="blessBtn" class="btn breathe">💕 前往祝福</button>
     </div>
   </div>
   <div id="toast" class="toast"></div>
@@ -795,6 +796,11 @@
 
   mapBtn.addEventListener('click', () => {
     window.open('https://www.google.com/maps/dir//708台南市安平區城平路1號/@22.9918224,120.069466,12z/data=!4m8!4m7!1m0!1m5!1m1!1s0x346dd8acbf1b4465:0xf4ab14aaf3caa61c!2m2!1d120.1518676!2d22.9918437?entry=ttu', '_blank');
+  });
+
+  const blessBtn = document.getElementById('blessBtn');
+  blessBtn.addEventListener('click', () => {
+    window.location.href = 'blessing/';
   });
 
   function downloadICS() {
