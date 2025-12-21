@@ -227,6 +227,7 @@
       box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
       opacity: 1;
       transition: opacity 0.5s ease, transform 0.5s ease;
+      overflow: hidden; /* Prevent content from overflowing card boundaries */
     }
 
     .photo-card.fade-out {
@@ -236,11 +237,13 @@
     .photo-card img,
     .photo-card video {
       display: block;
-      max-width: calc(var(--photo-scale, 1) * 45vw);
-      max-height: calc(var(--photo-scale, 1) * 45vh);
-      /* width and height will be set inline by JavaScript */
+      width: auto; /* Let JavaScript set the size */
+      height: auto; /* Maintain aspect ratio */
+      max-width: 100%; /* Never exceed card content area */
+      max-height: 100%; /* Never exceed card content area */
       border-radius: calc(var(--photo-scale, 1) * 16px);
-      object-fit: contain; /* Changed to contain to show full media without cropping */
+      object-fit: contain; /* Show full media without cropping */
+      box-sizing: border-box; /* Include border/padding in size calculations */
     }
 
     .photo-card video {
@@ -1030,7 +1033,7 @@
       // Left half: 0-50% of screen, Right half: 50-100% of screen
       let x;
       const halfWidth = availableWidth / 2;
-      const edgePadding = 20; // Minimum padding from edges
+      const edgePadding = 20 * photoScale; // Minimum padding from edges (scaled)
       
       if (position === 0) {
         // Left slot: center in left half (0-50% of screen)
@@ -1121,11 +1124,9 @@
           // Continue even if decode fails
         }
         
-        // Set explicit size to match calculated dimensions (use !important to override CSS)
-        imgElement.style.setProperty('width', calculatedWidth + 'px', 'important');
-        imgElement.style.setProperty('height', calculatedHeight + 'px', 'important');
-        imgElement.style.setProperty('max-width', 'none', 'important');
-        imgElement.style.setProperty('max-height', 'none', 'important');
+        // Set max dimensions to match calculated size (allows aspect ratio to be maintained)
+        imgElement.style.maxWidth = calculatedWidth + 'px';
+        imgElement.style.maxHeight = calculatedHeight + 'px';
         
         card.appendChild(imgElement);
       } else if (isVideo) {
@@ -1137,13 +1138,26 @@
         videoElement.muted = true;
         videoElement.playsInline = true;
         
-        // Set explicit size to match calculated dimensions (use !important to override CSS)
-        videoElement.style.setProperty('width', calculatedWidth + 'px', 'important');
-        videoElement.style.setProperty('height', calculatedHeight + 'px', 'important');
-        videoElement.style.setProperty('max-width', 'none', 'important');
-        videoElement.style.setProperty('max-height', 'none', 'important');
+        // Create a wrapper div to strictly constrain video dimensions
+        const videoWrapper = document.createElement('div');
+        videoWrapper.style.width = calculatedWidth + 'px';
+        videoWrapper.style.height = calculatedHeight + 'px';
+        videoWrapper.style.maxWidth = calculatedWidth + 'px';
+        videoWrapper.style.maxHeight = calculatedHeight + 'px';
+        videoWrapper.style.overflow = 'hidden';
+        videoWrapper.style.position = 'relative';
+        videoWrapper.style.borderRadius = 'inherit'; // Inherit border radius from card
         
-        card.appendChild(videoElement);
+        // Set video to fill wrapper while maintaining aspect ratio
+        videoElement.style.width = '100%';
+        videoElement.style.height = '100%';
+        videoElement.style.maxWidth = '100%';
+        videoElement.style.maxHeight = '100%';
+        videoElement.style.objectFit = 'contain'; // Ensure video fits within bounds without cropping
+        videoElement.style.display = 'block';
+        
+        videoWrapper.appendChild(videoElement);
+        card.appendChild(videoWrapper);
       }
       
       card.appendChild(senderDiv);
