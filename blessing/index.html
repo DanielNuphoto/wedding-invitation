@@ -440,6 +440,8 @@
       display: block;
       background: #000;
       object-fit: contain;
+      flex: 1;
+      min-height: 0;
     }
 
     .camera-controls {
@@ -781,6 +783,65 @@
         right: 10px;
         width: 36px;
         height: 36px;
+      }
+    }
+
+    /* Landscape orientation optimizations */
+    @media (orientation: landscape) and (max-height: 600px) {
+      .camera-container {
+        max-width: 100%;
+        max-height: 100vh;
+        max-height: 100dvh;
+        border-radius: 0;
+        flex-direction: row;
+      }
+
+      .camera-video {
+        max-height: 100vh;
+        max-height: 100dvh;
+        width: auto;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .camera-controls {
+        flex-direction: column;
+        padding: 15px 10px;
+        gap: 15px;
+        width: auto;
+        min-width: 80px;
+      }
+
+      .camera-btn-control {
+        width: 45px;
+        height: 45px;
+        border-width: 3px;
+      }
+
+      .camera-btn-control.capture {
+        width: 55px;
+        height: 55px;
+      }
+
+      .camera-btn-control.switch {
+        width: 40px;
+        height: 40px;
+        border-width: 2px;
+      }
+
+      .camera-btn-control .material-symbols-outlined {
+        font-size: 24px;
+      }
+
+      .camera-btn-control.capture .material-symbols-outlined {
+        font-size: 28px;
+      }
+
+      .camera-btn-control.close {
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
       }
     }
   </style>
