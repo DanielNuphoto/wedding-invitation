@@ -227,7 +227,9 @@
       box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
       opacity: 1;
       transition: opacity 0.5s ease, transform 0.5s ease;
-      overflow: hidden; /* Prevent content from overflowing card boundaries */
+      overflow: hidden;
+      box-sizing: border-box;
+      transform-origin: center center;
     }
 
     .photo-card.fade-out {
@@ -975,11 +977,14 @@
     }
 
     // Get centered position based on actual media dimensions
+    // Requirements:
+    // 1. Show media in left half or right half of the screen
+    // 2. Media should be centered in their assigned half
+    // 3. Media should not be larger than their assigned half on any side. If they are, make them smaller.
     function getCenteredPosition(position, mediaURL, isVideo = false) {
-      // Get current photo scale from CSS variable
       const photoScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--photo-scale')) || 1;
       
-      // Get the preloaded media to calculate actual rendered size
+      // Get natural media dimensions
       let naturalWidth, naturalHeight;
       if (isVideo) {
         const preloadedVideo = preloadedVideos.get(mediaURL);
@@ -987,7 +992,6 @@
           naturalWidth = preloadedVideo.width;
           naturalHeight = preloadedVideo.height;
         } else {
-          // Fallback if video not preloaded yet
           naturalWidth = 400;
           naturalHeight = 300;
         }
@@ -997,68 +1001,53 @@
         naturalHeight = preloadedImg ? preloadedImg.naturalHeight : 300;
       }
       
-      // CSS max constraints (matches CSS: max-width: 45vw, max-height: 45vh)
-      const maxImgWidth = window.innerWidth * 0.45 * photoScale;
-      const maxImgHeight = window.innerHeight * 0.45 * photoScale;
+      const headerHeight = 100;
+      const bottomMargin = 200;
+      const availableWidth = window.innerWidth;
+      const availableHeight = window.innerHeight - headerHeight - bottomMargin;
+      const halfWidth = availableWidth / 2;
+      const edgePadding = 20 * photoScale;
+      const padding = 20 * photoScale;
+      const senderHeight = 48 * photoScale;
       
-      // Target size: use 85% of max to ensure consistent sizing and leave some margin
-      const targetWidth = maxImgWidth * 0.85;
-      const targetHeight = maxImgHeight * 0.85;
+      // Requirement 3: Calculate maximum size that fits in half the screen
+      const maxCardWidth = halfWidth - (edgePadding * 2);
+      const maxCardHeight = availableHeight - (edgePadding * 2);
       
-      // Calculate scale needed to fit natural dimensions into target size (maintaining aspect ratio)
-      const scaleW = targetWidth / naturalWidth;
-      const scaleH = targetHeight / naturalHeight;
-      const imgScale = Math.min(scaleW, scaleH); // Use the smaller scale to fit within both constraints
+      // Maximum image size = max card size - card padding - sender height
+      const maxImgWidth = maxCardWidth - (padding * 2);
+      const maxImgHeight = maxCardHeight - (padding * 2) - senderHeight;
       
-      // Calculate final rendered size - always scale to target, regardless of natural size
-      // This ensures photos and videos are always the same size
+      // Calculate scale to fit image within max size (maintaining aspect ratio)
+      const scaleW = maxImgWidth / naturalWidth;
+      const scaleH = maxImgHeight / naturalHeight;
+      const imgScale = Math.min(scaleW, scaleH);
+      
+      // Calculate final image dimensions
       const actualImgWidth = naturalWidth * imgScale;
       const actualImgHeight = naturalHeight * imgScale;
       
-      // Card dimensions = image + padding + sender
-      const padding = 20 * photoScale;
-      const senderHeight = 48 * photoScale; // margin (16) + text (~32)
-      
+      // Calculate card dimensions
       const cardWidth = actualImgWidth + padding * 2;
       const cardHeight = actualImgHeight + padding * 2 + senderHeight;
       
-      const headerHeight = 100;
-      const bottomMargin = 200; // For QR and controls
-      
-      // Available space
-      const availableWidth = window.innerWidth;
-      const availableHeight = window.innerHeight - headerHeight - bottomMargin;
-      
-      // Use percentage-based positioning (center of each half)
-      // Left half: 0-50% of screen, Right half: 50-100% of screen
+      // Requirement 1 & 2: Center media in assigned half
       let x;
-      const halfWidth = availableWidth / 2;
-      const edgePadding = 20 * photoScale; // Minimum padding from edges (scaled)
-      
       if (position === 0) {
-        // Left slot: center in left half (0-50% of screen)
-        // Card center at 25% of screen width, but ensure it stays within left half
-        const leftHalfCenter = halfWidth * 0.5; // Center of left half
+        // Left half: center at 25% of screen width
+        const leftHalfCenter = halfWidth * 0.5;
         x = leftHalfCenter - cardWidth / 2;
-        // Clamp to stay within left half (with padding)
-        x = Math.max(edgePadding, Math.min(x, halfWidth - cardWidth - edgePadding));
       } else {
-        // Right slot: center in right half (50-100% of screen)
-        // Card center at 75% of screen width, but ensure it stays within right half
-        const rightHalfCenter = halfWidth + (halfWidth * 0.5); // Center of right half
+        // Right half: center at 75% of screen width
+        const rightHalfCenter = halfWidth + (halfWidth * 0.5);
         x = rightHalfCenter - cardWidth / 2;
-        // Clamp to stay within right half (with padding)
-        x = Math.max(halfWidth + edgePadding, Math.min(x, availableWidth - cardWidth - edgePadding));
       }
       
-      // Center vertically in available space
+      // Center vertically
       let y = headerHeight + (availableHeight - cardHeight) / 2;
-      
-      // Add small random variation (only vertical, no horizontal to prevent overlap)
       const randomY = (Math.random() - 0.5) * 30;
       y += randomY;
       
-      // Clamp to screen bounds
       return {
         x: x,
         y: Math.max(headerHeight + 10, Math.min(y, window.innerHeight - bottomMargin - cardHeight)),
@@ -1100,8 +1089,18 @@
       const calculatedWidth = pos.actualImgWidth || (window.innerWidth * 0.45);
       const calculatedHeight = pos.actualImgHeight || (window.innerHeight * 0.45);
 
+      // Get current photo scale for card dimensions
+      const photoScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--photo-scale')) || 1;
+      const padding = 20 * photoScale;
+      const senderHeight = 48 * photoScale;
+      const cardWidth = calculatedWidth + padding * 2;
+      const cardHeight = calculatedHeight + padding * 2 + senderHeight;
+
       const card = document.createElement('div');
       card.className = 'photo-card';
+      // Set explicit dimensions to match calculations
+      card.style.width = cardWidth + 'px';
+      card.style.height = cardHeight + 'px';
       card.style.left = pos.x + 'px';
       card.style.top = pos.y + 'px';
       card.style.animation = `${animation} 1.5s ease-out forwards`;
@@ -1111,24 +1110,34 @@
       senderDiv.className = 'photo-sender';
       senderDiv.textContent = `來自 ${blessing.name}`;
       
+      // Create media container to constrain dimensions
+      const mediaContainer = document.createElement('div');
+      mediaContainer.style.width = calculatedWidth + 'px';
+      mediaContainer.style.height = calculatedHeight + 'px';
+      mediaContainer.style.maxWidth = calculatedWidth + 'px';
+      mediaContainer.style.maxHeight = calculatedHeight + 'px';
+      mediaContainer.style.overflow = 'hidden';
+      mediaContainer.style.position = 'relative';
+      mediaContainer.style.borderRadius = 'inherit';
+      
       // Create image or video element
       if (isPhoto) {
         const imgElement = new Image();
         imgElement.src = blessing.photoURL;
         imgElement.alt = 'Photo';
         
-        // Wait for this new element to be decoded (uses cached data but needs decoding)
         try {
           await imgElement.decode();
         } catch (e) {
           // Continue even if decode fails
         }
         
-        // Set max dimensions to match calculated size (allows aspect ratio to be maintained)
-        imgElement.style.maxWidth = calculatedWidth + 'px';
-        imgElement.style.maxHeight = calculatedHeight + 'px';
+        imgElement.style.width = '100%';
+        imgElement.style.height = '100%';
+        imgElement.style.objectFit = 'contain';
         
-        card.appendChild(imgElement);
+        mediaContainer.appendChild(imgElement);
+        card.appendChild(mediaContainer);
       } else if (isVideo) {
         const videoElement = document.createElement('video');
         videoElement.src = blessing.videoURL;
@@ -1138,26 +1147,13 @@
         videoElement.muted = true;
         videoElement.playsInline = true;
         
-        // Create a wrapper div to strictly constrain video dimensions
-        const videoWrapper = document.createElement('div');
-        videoWrapper.style.width = calculatedWidth + 'px';
-        videoWrapper.style.height = calculatedHeight + 'px';
-        videoWrapper.style.maxWidth = calculatedWidth + 'px';
-        videoWrapper.style.maxHeight = calculatedHeight + 'px';
-        videoWrapper.style.overflow = 'hidden';
-        videoWrapper.style.position = 'relative';
-        videoWrapper.style.borderRadius = 'inherit'; // Inherit border radius from card
-        
-        // Set video to fill wrapper while maintaining aspect ratio
         videoElement.style.width = '100%';
         videoElement.style.height = '100%';
-        videoElement.style.maxWidth = '100%';
-        videoElement.style.maxHeight = '100%';
-        videoElement.style.objectFit = 'contain'; // Ensure video fits within bounds without cropping
+        videoElement.style.objectFit = 'contain';
         videoElement.style.display = 'block';
         
-        videoWrapper.appendChild(videoElement);
-        card.appendChild(videoWrapper);
+        mediaContainer.appendChild(videoElement);
+        card.appendChild(mediaContainer);
       }
       
       card.appendChild(senderDiv);
@@ -1170,17 +1166,23 @@
         setTimeout(createFloatingHeart, i * 100);
       }
 
-      // Store final transform for use when fading out
-      let savedTransform = 'none';
+      // After entrance animation ends, preserve rotation but clear translation
+      // Store the animation name to extract the final rotation
+      const rotationMap = {
+        'photoEnterFromRight': 'rotate(-2deg)',
+        'photoEnterFromLeft': 'rotate(2deg)',
+        'photoEnterFromTop': 'rotate(-3deg)',
+        'photoEnterFromBottom': 'rotate(3deg)',
+        'photoEnterFromTopRight': 'rotate(-2deg)',
+        'photoEnterFromTopLeft': 'rotate(2deg)',
+        'photoEnterFromBottomRight': 'rotate(3deg)',
+        'photoEnterFromBottomLeft': 'rotate(-3deg)'
+      };
+      const finalRotation = rotationMap[animation] || 'rotate(0deg)';
       
-      // After entrance animation ends, preserve transform and clear animation
       card.addEventListener('animationend', () => {
-        // Get the final computed transform from the animation
-        const computedStyle = window.getComputedStyle(card);
-        savedTransform = computedStyle.transform;
-        
-        // Apply it as inline style and clear animation
-        card.style.transform = savedTransform;
+        // Apply only rotation, no translation (positioning is handled by left/top)
+        card.style.transform = finalRotation;
         card.style.animation = 'none';
       }, { once: true });
 
@@ -1194,8 +1196,9 @@
           }
         }
         
-        // Apply scale with existing transform
-        card.style.transform = savedTransform + ' scale(0.85)';
+        // Apply scale for fade-out, preserving existing rotation
+        const currentTransform = card.style.transform || 'rotate(0deg)';
+        card.style.transform = currentTransform + ' scale(0.85)';
         card.classList.add('fade-out');
         setTimeout(() => {
           card.remove();
