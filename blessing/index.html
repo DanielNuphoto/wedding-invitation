@@ -368,7 +368,8 @@
       display: block;
     }
 
-    .photo-preview img {
+    .photo-preview img,
+    .photo-preview video {
       width: 100%;
       max-height: 300px;
       object-fit: cover;
@@ -507,6 +508,37 @@
     .camera-btn-control.capture .material-symbols-outlined {
       color: #000;
       font-size: 32px;
+    }
+
+    .recording-timer {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 0, 0, 0.8);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 600;
+      z-index: 1002;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .recording-timer::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
     /* Submit Section */
@@ -772,11 +804,15 @@
         <div class="tabs">
           <button type="button" class="tab active" id="textTab" data-tab="text">
             <span class="material-symbols-outlined">edit_note</span>
-            文字祝福
+            文字
           </button>
           <button type="button" class="tab" id="photoTab" data-tab="photo">
             <span class="material-symbols-outlined">photo_camera</span>
-            照片祝福
+            照片
+          </button>
+          <button type="button" class="tab" id="videoTab" data-tab="video">
+            <span class="material-symbols-outlined">videocam</span>
+            影片
           </button>
         </div>
 
@@ -842,6 +878,32 @@
           </div>
         </div>
 
+        <!-- Video Tab Content -->
+        <div class="tab-content" id="videoContent">
+          <div class="form-group photo-upload">
+            <label>選擇影片 *</label>
+            <div class="photo-upload-options">
+              <div class="photo-upload-area" id="videoUploadArea">
+                <div class="material-symbols-outlined icon">videocam</div>
+                <div class="text">點擊或拖曳上傳影片</div>
+                <div class="subtext">支援 MP4、MOV，最大 30MB，長度不超過 8 秒</div>
+              </div>
+              <div class="photo-upload-divider">或</div>
+              <button type="button" class="camera-btn" id="videoRecordBtn">
+                <span class="material-symbols-outlined">videocam</span>
+                <span>使用相機錄影</span>
+              </button>
+            </div>
+            <input type="file" id="videoInput" accept="video/mp4,video/quicktime,video/webm">
+            <div class="photo-preview" id="videoPreview">
+              <video id="previewVideo" src="" controls></video>
+              <button type="button" class="remove-btn" id="removeVideo">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Submit Section -->
         <div class="submit-section">
           <label class="privacy-checkbox">
@@ -889,6 +951,28 @@
     </div>
   </div>
 
+  <!-- Video Recording Modal -->
+  <div class="camera-modal" id="videoRecordModal">
+    <div class="camera-container">
+      <button type="button" class="camera-btn-control close" id="closeVideoRecordBtn">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <video id="videoRecordVideo" class="camera-video" autoplay playsinline></video>
+      <div class="camera-controls">
+        <button type="button" class="camera-btn-control switch" id="switchVideoCameraBtn">
+          <span class="material-symbols-outlined">flip_camera_ios</span>
+        </button>
+        <button type="button" class="camera-btn-control capture" id="recordBtn">
+          <span class="material-symbols-outlined">fiber_manual_record</span>
+        </button>
+        <button type="button" class="camera-btn-control capture" id="stopRecordBtn" style="display: none;">
+          <span class="material-symbols-outlined">stop</span>
+        </button>
+      </div>
+      <div class="recording-timer" id="recordingTimer" style="display: none;">00:00</div>
+    </div>
+  </div>
+
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -912,7 +996,7 @@
     // ============================================
     // State
     // ============================================
-    let currentTab = 'text'; // 'text' or 'photo'
+    let currentTab = 'text'; // 'text', 'photo', or 'video'
     let selectedFile = null;
     let selectedColor = '#a8b5a0'; // Default color (first Morandi color)
     let toastTimeout = null;
@@ -932,13 +1016,20 @@
     const submitBtn = document.getElementById('submitBtn');
     const textTab = document.getElementById('textTab');
     const photoTab = document.getElementById('photoTab');
+    const videoTab = document.getElementById('videoTab');
     const textContent = document.getElementById('textContent');
     const photoContent = document.getElementById('photoContent');
+    const videoContent = document.getElementById('videoContent');
     const uploadArea = document.getElementById('uploadArea');
+    const videoUploadArea = document.getElementById('videoUploadArea');
     const photoInput = document.getElementById('photoInput');
+    const videoInput = document.getElementById('videoInput');
     const photoPreview = document.getElementById('photoPreview');
+    const videoPreview = document.getElementById('videoPreview');
     const previewImg = document.getElementById('previewImg');
+    const previewVideo = document.getElementById('previewVideo');
     const removePhotoBtn = document.getElementById('removePhoto');
+    const removeVideoBtn = document.getElementById('removeVideo');
     const anotherBtn = document.getElementById('anotherBtn');
     const privateCheckbox = document.getElementById('privateCheckbox');
     const toast = document.getElementById('toast');
@@ -956,9 +1047,24 @@
     const captureBtn = document.getElementById('captureBtn');
     const closeCameraBtn = document.getElementById('closeCameraBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
-    
+
+    const videoRecordBtn = document.getElementById('videoRecordBtn');
+    const videoRecordModal = document.getElementById('videoRecordModal');
+    const videoRecordVideo = document.getElementById('videoRecordVideo');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopRecordBtn = document.getElementById('stopRecordBtn');
+    const closeVideoRecordBtn = document.getElementById('closeVideoRecordBtn');
+    const switchVideoCameraBtn = document.getElementById('switchVideoCameraBtn');
+    const recordingTimer = document.getElementById('recordingTimer');
+
     let cameraStream = null;
+    let videoRecordStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordingStartTime = null;
+    let recordingTimerInterval = null;
     let currentFacingMode = 'environment'; // 'environment' (back) or 'user' (front)
+    let currentVideoFacingMode = 'environment';
 
     // ============================================
     // Toast Notification
@@ -1032,9 +1138,10 @@
 
       // Check if there's data to clear
       const hasTextData = messageInput.value.trim().length > 0;
-      const hasPhotoData = selectedFile !== null;
+      const hasPhotoData = currentTab === 'photo' && selectedFile !== null;
+      const hasVideoData = currentTab === 'video' && selectedFile !== null;
       
-      if ((currentTab === 'text' && hasTextData) || (currentTab === 'photo' && hasPhotoData)) {
+      if ((currentTab === 'text' && hasTextData) || hasPhotoData || hasVideoData) {
         showToast('已清除先前輸入的內容，請重新填寫', 'warning', 4000);
       }
 
@@ -1042,10 +1149,17 @@
       if (currentTab === 'text') {
         messageInput.value = '';
         messageCount.textContent = '0';
-      } else {
+      } else if (currentTab === 'photo') {
         clearPhoto();
         stopCamera(); // Stop camera if switching away from photo tab
+      } else if (currentTab === 'video') {
+        clearVideo();
+        stopVideoRecording(); // Stop video recording if switching away from video tab
       }
+
+      // Reset color to default when switching tabs
+      selectedColor = '#a8b5a0';
+      updateColorPreview(selectedColor);
 
       // Update tab state
       currentTab = newTab;
@@ -1053,12 +1167,15 @@
       // Update UI
       textTab.classList.toggle('active', newTab === 'text');
       photoTab.classList.toggle('active', newTab === 'photo');
+      videoTab.classList.toggle('active', newTab === 'video');
       textContent.classList.toggle('active', newTab === 'text');
       photoContent.classList.toggle('active', newTab === 'photo');
+      videoContent.classList.toggle('active', newTab === 'video');
     }
 
     textTab.addEventListener('click', () => switchTab('text'));
     photoTab.addEventListener('click', () => switchTab('photo'));
+    videoTab.addEventListener('click', () => switchTab('video'));
 
     // ============================================
     // Photo Upload Handling
@@ -1085,11 +1202,37 @@
 
     photoInput.addEventListener('change', (e) => {
       if (e.target.files[0]) {
-        handleFileSelect(e.target.files[0]);
+        handlePhotoSelect(e.target.files[0]);
       }
     });
 
-    function handleFileSelect(file) {
+    videoUploadArea.addEventListener('click', () => videoInput.click());
+
+    videoUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      videoUploadArea.classList.add('dragover');
+    });
+
+    videoUploadArea.addEventListener('dragleave', () => {
+      videoUploadArea.classList.remove('dragover');
+    });
+
+    videoUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      videoUploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('video/')) {
+        handleVideoSelect(file);
+      }
+    });
+
+    videoInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleVideoSelect(e.target.files[0]);
+      }
+    });
+
+    function handlePhotoSelect(file) {
       if (file.size > 10 * 1024 * 1024) {
         showToast('照片大小不能超過 10MB', 'error');
         return;
@@ -1105,6 +1248,36 @@
       reader.readAsDataURL(file);
     }
 
+    function handleVideoSelect(file) {
+      if (file.size > 30 * 1024 * 1024) {
+        showToast('影片大小不能超過 30MB', 'error');
+        return;
+      }
+
+      selectedFile = file;
+      const url = URL.createObjectURL(file);
+      previewVideo.src = url;
+      
+      // Check video duration when metadata is loaded
+      previewVideo.addEventListener('loadedmetadata', function checkDuration() {
+        const duration = previewVideo.duration;
+        const maxDuration = 8; // 8 seconds to match display time
+        
+        if (duration > maxDuration) {
+          showToast(`影片長度不能超過 ${maxDuration} 秒`, 'error');
+          clearVideo();
+          previewVideo.removeEventListener('loadedmetadata', checkDuration);
+        } else {
+          videoPreview.classList.add('show');
+          videoUploadArea.style.display = 'none';
+          previewVideo.removeEventListener('loadedmetadata', checkDuration);
+        }
+      }, { once: true });
+      
+      // Load metadata to trigger duration check
+      previewVideo.load();
+    }
+
     function clearPhoto() {
       selectedFile = null;
       photoInput.value = '';
@@ -1113,7 +1286,20 @@
       stopCamera(); // Stop camera if clearing photo
     }
 
+    function clearVideo() {
+      selectedFile = null;
+      videoInput.value = '';
+      videoPreview.classList.remove('show');
+      videoUploadArea.style.display = 'block';
+      if (previewVideo.src) {
+        URL.revokeObjectURL(previewVideo.src);
+        previewVideo.src = '';
+      }
+      stopVideoRecording(); // Stop video recording if clearing video
+    }
+
     removePhotoBtn.addEventListener('click', clearPhoto);
+    removeVideoBtn.addEventListener('click', clearVideo);
 
     // ============================================
     // Camera Functionality
@@ -1224,6 +1410,164 @@
     });
 
     // ============================================
+    // Video Recording Functionality
+    // ============================================
+    async function startVideoRecording(facingMode = null) {
+      try {
+        // Use provided facingMode or current one
+        const facing = facingMode || currentVideoFacingMode;
+        
+        // Request camera access
+        videoRecordStream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: facing,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: true // Include audio for video recording
+        });
+        
+        currentVideoFacingMode = facing; // Update current facing mode
+        videoRecordVideo.srcObject = videoRecordStream;
+        videoRecordModal.classList.add('show');
+      } catch (error) {
+        console.error('Error accessing camera for video:', error);
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          showToast('需要相機和麥克風權限才能使用此功能', 'error', 4000);
+        } else if (error.name === 'NotFoundError') {
+          showToast('找不到可用的相機', 'error', 4000);
+        } else {
+          showToast('無法開啟相機，請稍後再試', 'error', 4000);
+        }
+      }
+    }
+
+    async function switchVideoCamera() {
+      if (!videoRecordStream) return;
+      
+      // Stop current stream
+      videoRecordStream.getTracks().forEach(track => track.stop());
+      
+      // Switch facing mode
+      const newFacingMode = currentVideoFacingMode === 'environment' ? 'user' : 'environment';
+      
+      // Start new stream with switched camera
+      await startVideoRecording(newFacingMode);
+    }
+
+    function stopVideoRecording() {
+      if (videoRecordStream) {
+        videoRecordStream.getTracks().forEach(track => track.stop());
+        videoRecordStream = null;
+      }
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      videoRecordVideo.srcObject = null;
+      videoRecordModal.classList.remove('show');
+      recordBtn.style.display = 'flex';
+      stopRecordBtn.style.display = 'none';
+      recordingTimer.style.display = 'none';
+      if (recordingTimerInterval) {
+        clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
+      }
+      recordedChunks = [];
+    }
+
+    function startRecording() {
+      if (!videoRecordStream) return;
+
+      recordedChunks = [];
+      const options = { mimeType: 'video/webm;codecs=vp9' };
+      
+      try {
+        mediaRecorder = new MediaRecorder(videoRecordStream, options);
+      } catch (e) {
+        // Fallback to default mimeType
+        try {
+          mediaRecorder = new MediaRecorder(videoRecordStream);
+        } catch (e2) {
+          showToast('無法開始錄影，請稍後再試', 'error');
+          return;
+        }
+      }
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        
+        // Convert webm to mp4 if needed, or use webm directly
+        // For simplicity, we'll use webm (most browsers support it)
+        const file = new File([blob], `video_${Date.now()}.webm`, {
+          type: 'video/webm',
+          lastModified: Date.now()
+        });
+        
+        // Use the same handler as file upload
+        handleVideoSelect(file);
+        
+        // Stop camera and close modal
+        stopVideoRecording();
+      };
+
+      mediaRecorder.start();
+      recordingStartTime = Date.now();
+      recordBtn.style.display = 'none';
+      stopRecordBtn.style.display = 'flex';
+      recordingTimer.style.display = 'block';
+      
+      // Start timer
+      recordingTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+        const seconds = elapsed % 60;
+        const minutes = Math.floor(elapsed / 60);
+        recordingTimer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        // Auto-stop at 8 seconds
+        if (elapsed >= 8) {
+          stopRecording();
+        }
+      }, 100);
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      if (recordingTimerInterval) {
+        clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
+      }
+    }
+
+    videoRecordBtn.addEventListener('click', () => startVideoRecording());
+    closeVideoRecordBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      stopVideoRecording();
+    });
+    switchVideoCameraBtn.addEventListener('click', switchVideoCamera);
+    recordBtn.addEventListener('click', startRecording);
+    stopRecordBtn.addEventListener('click', stopRecording);
+
+    // Close video recording modal when clicking outside
+    videoRecordModal.addEventListener('click', (e) => {
+      if (e.target === videoRecordModal) {
+        stopVideoRecording();
+      }
+    });
+    
+    // Prevent closing when clicking on container
+    document.querySelector('#videoRecordModal .camera-container').addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // ============================================
     // Form Submission
     // ============================================
     form.addEventListener('submit', async (e) => {
@@ -1253,9 +1597,14 @@
           showToast(`祝福話語不能超過 ${MAX_MESSAGE_LENGTH} 個字`, 'error');
           return;
         }
-      } else {
+      } else if (currentTab === 'photo') {
         if (!selectedFile) {
           showToast('請選擇一張照片', 'error');
+          return;
+        }
+      } else if (currentTab === 'video') {
+        if (!selectedFile) {
+          showToast('請選擇一個影片', 'error');
           return;
         }
       }
@@ -1265,15 +1614,26 @@
 
       try {
         let photoURL = null;
+        let videoURL = null;
 
         // Upload photo if in photo mode
         if (currentTab === 'photo' && selectedFile) {
           const timestamp = Date.now();
-          const fileName = `${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+          const fileName = `photo_${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
           const imageRef = storageRef(storage, `blessings/${fileName}`);
           
           await uploadBytes(imageRef, selectedFile);
           photoURL = await getDownloadURL(imageRef);
+        }
+
+        // Upload video if in video mode
+        if (currentTab === 'video' && selectedFile) {
+          const timestamp = Date.now();
+          const fileName = `video_${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+          const videoRef = storageRef(storage, `blessings/${fileName}`);
+          
+          await uploadBytes(videoRef, selectedFile);
+          videoURL = await getDownloadURL(videoRef);
         }
 
         // Build blessing data
@@ -1281,7 +1641,7 @@
           name: name,
           message: currentTab === 'text' ? message : '',
           timestamp: Date.now(),
-          type: currentTab // 'text' or 'photo'
+          type: currentTab // 'text', 'photo', or 'video'
         };
 
         // Add color for text blessings
@@ -1292,6 +1652,12 @@
         // Add photoURL and file size if exists
         if (photoURL) {
           blessingData.photoURL = photoURL;
+          blessingData.fileSize = selectedFile.size; // Track file size in bytes
+        }
+
+        // Add videoURL and file size if exists
+        if (videoURL) {
+          blessingData.videoURL = videoURL;
           blessingData.fileSize = selectedFile.size; // Track file size in bytes
         }
 
@@ -1325,12 +1691,22 @@
       
       // Reset UI
       photoPreview.classList.remove('show');
+      videoPreview.classList.remove('show');
       uploadArea.style.display = 'block';
+      videoUploadArea.style.display = 'block';
       textTab.classList.add('active');
       photoTab.classList.remove('active');
+      videoTab.classList.remove('active');
       textContent.classList.add('active');
       photoContent.classList.remove('active');
+      videoContent.classList.remove('active');
       privateCheckbox.checked = false;
+      
+      // Clean up video preview URL
+      if (previewVideo.src) {
+        URL.revokeObjectURL(previewVideo.src);
+        previewVideo.src = '';
+      }
       
       // Reset counters
       messageCount.textContent = '0';

@@ -233,14 +233,18 @@
       opacity: 0;
     }
 
-    .photo-card img {
+    .photo-card img,
+    .photo-card video {
       display: block;
       max-width: calc(var(--photo-scale, 1) * 45vw);
       max-height: calc(var(--photo-scale, 1) * 45vh);
-      width: auto;
-      height: auto;
+      /* width and height will be set inline by JavaScript */
       border-radius: calc(var(--photo-scale, 1) * 16px);
-      object-fit: cover;
+      object-fit: contain; /* Changed to contain to show full media without cropping */
+    }
+
+    .photo-card video {
+      background: #000;
     }
 
     .photo-card .photo-sender {
@@ -601,7 +605,7 @@
       </span>
       <span>
         <span class="material-symbols-outlined">photo_camera</span>
-        照片 <span class="count" id="photoCount">0</span>
+        照片/影片 <span class="count" id="photoCount">0</span>
       </span>
     </div>
   </header>
@@ -693,22 +697,22 @@
     // State
     // ============================================
     let textBlessings = [];
-    let photoBlessings = [];
+    let mediaBlessings = []; // Combined photos and videos
     let textQueue = [];
-    let photoQueue = [];
-    let activePhotos = []; // Max 2 photos on screen { id, element, position }
+    let mediaQueue = []; // Combined photo and video queue
+    let activeMedia = []; // Max 2 media items on screen { id, element, position, type }
     let activeDanmakuIds = new Set(); // Track currently visible danmaku
-    let lastPhotoPosition = 1; // Track last used position to alternate (0=left, 1=right)
+    let lastMediaPosition = 1; // Track last used position to alternate (0=left, 1=right)
     let isPlaying = true;
     let danmakuInterval = null;
-    let photoInterval = null;
+    let mediaInterval = null;
 
     // Settings
     const DANMAKU_INTERVAL = 3000; // New danmaku every 3 seconds
     const DANMAKU_DURATION = 12000; // Time to cross screen (12 seconds)
-    const PHOTO_DISPLAY_TIME = 8000; // Photo stays for 8 seconds
-    const PHOTO_INTERVAL = 5000; // New photo every 5 seconds
-    const MAX_PHOTOS_ON_SCREEN = 2;
+    const MEDIA_DISPLAY_TIME = 8000; // Photos and videos stay for 8 seconds
+    const MEDIA_INTERVAL = 5000; // New media every 5 seconds
+    const MAX_MEDIA_ON_SCREEN = 2;
     const DANMAKU_LANES = 6; // Number of vertical lanes
 
     // Track lane usage for danmaku
@@ -717,6 +721,8 @@
 
     // Preloaded images cache
     const preloadedImages = new Map();
+    // Preloaded videos cache
+    const preloadedVideos = new Map();
 
     // ============================================
     // DOM Elements
@@ -925,39 +931,84 @@
       });
     }
 
+    // Preload a video and cache it with dimensions
+    async function preloadVideo(url) {
+      if (preloadedVideos.has(url)) {
+        return preloadedVideos.get(url);
+      }
+      
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'auto';
+        video.muted = true; // Mute for preloading to avoid autoplay issues
+        video.onloadedmetadata = () => {
+          // Store video with its dimensions
+          const videoData = {
+            element: video,
+            width: video.videoWidth,
+            height: video.videoHeight
+          };
+          preloadedVideos.set(url, videoData);
+          resolve(videoData);
+        };
+        video.onerror = reject;
+        video.src = url;
+        video.load(); // Start loading
+      });
+    }
+
     // Get next position (alternates left/right)
-    function getNextPhotoPosition() {
+    function getNextMediaPosition() {
       // Check which positions are currently in use
-      const usedPositions = new Set(activePhotos.map(p => p.position));
+      const usedPositions = new Set(activeMedia.map(m => m.position));
       
       // If a position is free, use it
       if (!usedPositions.has(0)) return 0;
       if (!usedPositions.has(1)) return 1;
       
       // Both positions in use (shouldn't happen due to MAX check), alternate
-      lastPhotoPosition = lastPhotoPosition === 0 ? 1 : 0;
-      return lastPhotoPosition;
+      lastMediaPosition = lastMediaPosition === 0 ? 1 : 0;
+      return lastMediaPosition;
     }
 
-    // Get centered position based on actual image dimensions
-    function getCenteredPosition(position, imageURL) {
+    // Get centered position based on actual media dimensions
+    function getCenteredPosition(position, mediaURL, isVideo = false) {
       // Get current photo scale from CSS variable
       const photoScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--photo-scale')) || 1;
       
-      // Get the preloaded image to calculate actual rendered size
-      const preloadedImg = preloadedImages.get(imageURL);
-      const naturalWidth = preloadedImg ? preloadedImg.naturalWidth : 400;
-      const naturalHeight = preloadedImg ? preloadedImg.naturalHeight : 300;
+      // Get the preloaded media to calculate actual rendered size
+      let naturalWidth, naturalHeight;
+      if (isVideo) {
+        const preloadedVideo = preloadedVideos.get(mediaURL);
+        if (preloadedVideo) {
+          naturalWidth = preloadedVideo.width;
+          naturalHeight = preloadedVideo.height;
+        } else {
+          // Fallback if video not preloaded yet
+          naturalWidth = 400;
+          naturalHeight = 300;
+        }
+      } else {
+        const preloadedImg = preloadedImages.get(mediaURL);
+        naturalWidth = preloadedImg ? preloadedImg.naturalWidth : 400;
+        naturalHeight = preloadedImg ? preloadedImg.naturalHeight : 300;
+      }
       
-      // CSS max constraints
+      // CSS max constraints (matches CSS: max-width: 45vw, max-height: 45vh)
       const maxImgWidth = window.innerWidth * 0.45 * photoScale;
       const maxImgHeight = window.innerHeight * 0.45 * photoScale;
       
-      // Calculate actual image size (browser scales to fit within max, maintaining aspect ratio)
-      const scaleW = maxImgWidth / naturalWidth;
-      const scaleH = maxImgHeight / naturalHeight;
-      const imgScale = Math.min(scaleW, scaleH, 1); // Don't upscale beyond natural size
+      // Target size: use 85% of max to ensure consistent sizing and leave some margin
+      const targetWidth = maxImgWidth * 0.85;
+      const targetHeight = maxImgHeight * 0.85;
       
+      // Calculate scale needed to fit natural dimensions into target size (maintaining aspect ratio)
+      const scaleW = targetWidth / naturalWidth;
+      const scaleH = targetHeight / naturalHeight;
+      const imgScale = Math.min(scaleW, scaleH); // Use the smaller scale to fit within both constraints
+      
+      // Calculate final rendered size - always scale to target, regardless of natural size
+      // This ensures photos and videos are always the same size
       const actualImgWidth = naturalWidth * imgScale;
       const actualImgHeight = naturalHeight * imgScale;
       
@@ -976,64 +1027,75 @@
       const availableHeight = window.innerHeight - headerHeight - bottomMargin;
       
       // Use percentage-based positioning (center of each half)
-      // Left half center = 25%, Right half center = 75%
+      // Left half: 0-50% of screen, Right half: 50-100% of screen
       let x;
+      const halfWidth = availableWidth / 2;
+      const edgePadding = 20; // Minimum padding from edges
+      
       if (position === 0) {
-        // Left slot: card center at 25% of screen width
-        x = availableWidth * 0.25 - cardWidth / 2;
+        // Left slot: center in left half (0-50% of screen)
+        // Card center at 25% of screen width, but ensure it stays within left half
+        const leftHalfCenter = halfWidth * 0.5; // Center of left half
+        x = leftHalfCenter - cardWidth / 2;
+        // Clamp to stay within left half (with padding)
+        x = Math.max(edgePadding, Math.min(x, halfWidth - cardWidth - edgePadding));
       } else {
-        // Right slot: card center at 75% of screen width
-        x = availableWidth * 0.75 - cardWidth / 2;
+        // Right slot: center in right half (50-100% of screen)
+        // Card center at 75% of screen width, but ensure it stays within right half
+        const rightHalfCenter = halfWidth + (halfWidth * 0.5); // Center of right half
+        x = rightHalfCenter - cardWidth / 2;
+        // Clamp to stay within right half (with padding)
+        x = Math.max(halfWidth + edgePadding, Math.min(x, availableWidth - cardWidth - edgePadding));
       }
       
       // Center vertically in available space
       let y = headerHeight + (availableHeight - cardHeight) / 2;
       
-      // Add small random variation
-      const randomX = (Math.random() - 0.5) * 30;
+      // Add small random variation (only vertical, no horizontal to prevent overlap)
       const randomY = (Math.random() - 0.5) * 30;
-      x += randomX;
       y += randomY;
       
       // Clamp to screen bounds
       return {
-        x: Math.max(20, Math.min(x, availableWidth - cardWidth - 20)),
-        y: Math.max(headerHeight + 10, Math.min(y, window.innerHeight - bottomMargin - cardHeight))
+        x: x,
+        y: Math.max(headerHeight + 10, Math.min(y, window.innerHeight - bottomMargin - cardHeight)),
+        actualImgWidth: actualImgWidth,
+        actualImgHeight: actualImgHeight
       };
     }
 
-    async function createPhotoCard(blessing) {
-      if (activePhotos.length >= MAX_PHOTOS_ON_SCREEN) {
+    async function createMediaCard(blessing) {
+      if (activeMedia.length >= MAX_MEDIA_ON_SCREEN) {
         return false;
       }
 
-      // Preload image first
+      const isPhoto = blessing.photoURL !== undefined;
+      const isVideo = blessing.videoURL !== undefined;
+
+      // Preload media first
       try {
-        await preloadImage(blessing.photoURL);
+        if (isPhoto) {
+          await preloadImage(blessing.photoURL);
+        } else if (isVideo) {
+          await preloadVideo(blessing.videoURL);
+        }
       } catch (e) {
-        console.warn('Failed to preload image:', e);
+        console.warn('Failed to preload media:', e);
         return false;
       }
 
       // Get the next position (alternates left/right)
-      const position = getNextPhotoPosition();
-      lastPhotoPosition = position; // Track for alternation
+      const position = getNextMediaPosition();
+      lastMediaPosition = position; // Track for alternation
       
-      const pos = getCenteredPosition(position, blessing.photoURL);
+      const pos = isPhoto 
+        ? getCenteredPosition(position, blessing.photoURL, false)
+        : getCenteredPosition(position, blessing.videoURL, true); // Use actual video dimensions
       const animation = photoAnimations[Math.floor(Math.random() * photoAnimations.length)];
 
-      // Create image element and decode it before showing
-      const preloadedImg = preloadedImages.get(blessing.photoURL);
-      const imgElement = new Image();
-      imgElement.src = blessing.photoURL;
-      imgElement.alt = 'Photo';
-      
-      // Wait for this new element to be decoded (uses cached data but needs decoding)
-      try {
-        await imgElement.decode();
-      } catch (e) {
-        // Continue even if decode fails
-      }
+      // Get calculated dimensions from position
+      const calculatedWidth = pos.actualImgWidth || (window.innerWidth * 0.45);
+      const calculatedHeight = pos.actualImgHeight || (window.innerHeight * 0.45);
 
       const card = document.createElement('div');
       card.className = 'photo-card';
@@ -1046,11 +1108,48 @@
       senderDiv.className = 'photo-sender';
       senderDiv.textContent = `來自 ${blessing.name}`;
       
-      card.appendChild(imgElement);
+      // Create image or video element
+      if (isPhoto) {
+        const imgElement = new Image();
+        imgElement.src = blessing.photoURL;
+        imgElement.alt = 'Photo';
+        
+        // Wait for this new element to be decoded (uses cached data but needs decoding)
+        try {
+          await imgElement.decode();
+        } catch (e) {
+          // Continue even if decode fails
+        }
+        
+        // Set explicit size to match calculated dimensions (use !important to override CSS)
+        imgElement.style.setProperty('width', calculatedWidth + 'px', 'important');
+        imgElement.style.setProperty('height', calculatedHeight + 'px', 'important');
+        imgElement.style.setProperty('max-width', 'none', 'important');
+        imgElement.style.setProperty('max-height', 'none', 'important');
+        
+        card.appendChild(imgElement);
+      } else if (isVideo) {
+        const videoElement = document.createElement('video');
+        videoElement.src = blessing.videoURL;
+        videoElement.controls = false;
+        videoElement.autoplay = true;
+        videoElement.loop = true;
+        videoElement.muted = false;
+        videoElement.playsInline = true;
+        
+        // Set explicit size to match calculated dimensions (use !important to override CSS)
+        videoElement.style.setProperty('width', calculatedWidth + 'px', 'important');
+        videoElement.style.setProperty('height', calculatedHeight + 'px', 'important');
+        videoElement.style.setProperty('max-width', 'none', 'important');
+        videoElement.style.setProperty('max-height', 'none', 'important');
+        
+        card.appendChild(videoElement);
+      }
+      
       card.appendChild(senderDiv);
 
       photoContainer.appendChild(card);
-      activePhotos.push({ id: blessing.id, element: card, position: position });
+      activeMedia.push({ id: blessing.id, element: card, position: position, type: isPhoto ? 'photo' : 'video' });
 
       // Create hearts burst
       for (let i = 0; i < 5; i++) {
@@ -1073,41 +1172,56 @@
 
       // Remove after display time
       setTimeout(() => {
+        // Pause video if it's a video
+        if (isVideo) {
+          const videoElement = card.querySelector('video');
+          if (videoElement) {
+            videoElement.pause();
+          }
+        }
+        
         // Apply scale with existing transform
         card.style.transform = savedTransform + ' scale(0.85)';
         card.classList.add('fade-out');
         setTimeout(() => {
           card.remove();
-          activePhotos = activePhotos.filter(p => p.id !== blessing.id);
+          activeMedia = activeMedia.filter(m => m.id !== blessing.id);
         }, 500);
-      }, PHOTO_DISPLAY_TIME);
+      }, MEDIA_DISPLAY_TIME);
       
       return true;
     }
 
-    async function showNextPhoto() {
+    async function showNextMedia() {
       if (!isPlaying) return;
-      if (activePhotos.length >= MAX_PHOTOS_ON_SCREEN) return;
+      if (activeMedia.length >= MAX_MEDIA_ON_SCREEN) return;
 
-      // Get IDs of currently displayed photos
-      const activePhotoIds = new Set(activePhotos.map(p => p.id));
+      // Get IDs of currently displayed media
+      const activeMediaIds = new Set(activeMedia.map(m => m.id));
 
-      if (photoQueue.length > 0) {
-        const blessing = photoQueue.shift();
-        photoBlessings.push(blessing);
-        // Preload next in queue while showing this one
-        if (photoQueue.length > 0) {
-          preloadImage(photoQueue[0].photoURL).catch(() => {});
-        }
-        await createPhotoCard(blessing);
-        waitingScreen.classList.add('hidden');
-      } else if (photoBlessings.length > 0) {
-        // Recycle - but avoid duplicates on screen
-        const availablePhotos = photoBlessings.filter(b => !activePhotoIds.has(b.id));
+      if (mediaQueue.length > 0) {
+        const blessing = mediaQueue.shift();
+        mediaBlessings.push(blessing);
         
-        if (availablePhotos.length > 0) {
-          const randomIndex = Math.floor(Math.random() * availablePhotos.length);
-          await createPhotoCard(availablePhotos[randomIndex]);
+        // Preload next in queue while showing this one
+        if (mediaQueue.length > 0) {
+          const nextBlessing = mediaQueue[0];
+          if (nextBlessing.photoURL) {
+            preloadImage(nextBlessing.photoURL).catch(() => {});
+          } else if (nextBlessing.videoURL) {
+            preloadVideo(nextBlessing.videoURL).catch(() => {});
+          }
+        }
+        
+        await createMediaCard(blessing);
+        waitingScreen.classList.add('hidden');
+      } else if (mediaBlessings.length > 0) {
+        // Recycle - but avoid duplicates on screen
+        const availableMedia = mediaBlessings.filter(b => !activeMediaIds.has(b.id));
+        
+        if (availableMedia.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableMedia.length);
+          await createMediaCard(availableMedia[randomIndex]);
           waitingScreen.classList.add('hidden');
         }
         // If all are already on screen, skip this cycle
@@ -1126,14 +1240,18 @@
       if (blessing.private === true) return;
 
       // Separate by type
-      if (blessing.type === 'photo' && blessing.photoURL) {
+      if ((blessing.type === 'photo' && blessing.photoURL) || (blessing.type === 'video' && blessing.videoURL)) {
         // Check if already exists
-        if (!photoBlessings.some(b => b.id === blessing.id) && 
-            !photoQueue.some(b => b.id === blessing.id)) {
-          // Preload image immediately when added to queue
-          preloadImage(blessing.photoURL).catch(() => {});
-          photoQueue.push(blessing);
-          photoCountEl.textContent = photoBlessings.length + photoQueue.length;
+        if (!mediaBlessings.some(b => b.id === blessing.id) && 
+            !mediaQueue.some(b => b.id === blessing.id)) {
+          // Preload media immediately when added to queue
+          if (blessing.photoURL) {
+            preloadImage(blessing.photoURL).catch(() => {});
+          } else if (blessing.videoURL) {
+            preloadVideo(blessing.videoURL).catch(() => {});
+          }
+          mediaQueue.push(blessing);
+          photoCountEl.textContent = mediaBlessings.length + mediaQueue.length;
         }
       } else if (blessing.message) {
         // Check if already exists
@@ -1145,7 +1263,8 @@
       }
 
       // Hide waiting screen if we have content
-      if (textQueue.length > 0 || photoQueue.length > 0 || textBlessings.length > 0 || photoBlessings.length > 0) {
+      if (textQueue.length > 0 || mediaQueue.length > 0 || 
+          textBlessings.length > 0 || mediaBlessings.length > 0) {
         waitingScreen.classList.add('hidden');
       }
     });
@@ -1157,24 +1276,24 @@
       textQueue = textQueue.filter(b => b.id !== deletedId);
       textBlessings = textBlessings.filter(b => b.id !== deletedId);
       
-      // Remove from photo
-      photoQueue = photoQueue.filter(b => b.id !== deletedId);
-      photoBlessings = photoBlessings.filter(b => b.id !== deletedId);
+      // Remove from media
+      mediaQueue = mediaQueue.filter(b => b.id !== deletedId);
+      mediaBlessings = mediaBlessings.filter(b => b.id !== deletedId);
       
-      // Remove active photo if displayed
-      const activePhoto = activePhotos.find(p => p.id === deletedId);
-      if (activePhoto) {
-        activePhoto.element.remove();
-        activePhotos = activePhotos.filter(p => p.id !== deletedId);
+      // Remove active media if displayed
+      const activeMediaItem = activeMedia.find(m => m.id === deletedId);
+      if (activeMediaItem) {
+        activeMediaItem.element.remove();
+        activeMedia = activeMedia.filter(m => m.id !== deletedId);
       }
 
       // Update counts
       textCountEl.textContent = textBlessings.length + textQueue.length;
-      photoCountEl.textContent = photoBlessings.length + photoQueue.length;
+      photoCountEl.textContent = mediaBlessings.length + mediaQueue.length;
 
       // Show waiting if empty
-      if (textBlessings.length === 0 && photoBlessings.length === 0 && 
-          textQueue.length === 0 && photoQueue.length === 0) {
+      if (textBlessings.length === 0 && mediaBlessings.length === 0 && 
+          textQueue.length === 0 && mediaQueue.length === 0) {
         waitingScreen.classList.remove('hidden');
       }
     });
@@ -1184,12 +1303,12 @@
     // ============================================
     function startDisplayLoops() {
       danmakuInterval = setInterval(showNextDanmaku, DANMAKU_INTERVAL);
-      photoInterval = setInterval(showNextPhoto, PHOTO_INTERVAL);
+      mediaInterval = setInterval(showNextMedia, MEDIA_INTERVAL);
     }
 
     function stopDisplayLoops() {
       clearInterval(danmakuInterval);
-      clearInterval(photoInterval);
+      clearInterval(mediaInterval);
     }
 
     // Start after a short delay

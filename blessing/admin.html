@@ -1074,6 +1074,10 @@
           // Estimate ~2MB for photos without tracked size (legacy)
           totalBytes += 2 * 1024 * 1024;
           photoCount++;
+        } else if (b.videoURL) {
+          // Estimate ~10MB for videos without tracked size
+          totalBytes += 10 * 1024 * 1024;
+          photoCount++; // Count videos as photos for display purposes
         }
       });
 
@@ -1107,19 +1111,19 @@
     // Cleanup Old Photos
     // ============================================
     async function cleanupOldPhotos() {
-      // Get photo blessings sorted by timestamp (oldest first)
-      const photoBlessings = allBlessings
-        .filter(b => b.photoURL)
+      // Get photo and video blessings sorted by timestamp (oldest first)
+      const mediaBlessings = allBlessings
+        .filter(b => b.photoURL || b.videoURL)
         .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-      if (photoBlessings.length === 0) {
-        showToast('沒有照片可以清理', 'error');
+      if (mediaBlessings.length === 0) {
+        showToast('沒有照片或影片可以清理', 'error');
         return;
       }
 
       // Calculate how many to delete (oldest 20% or at least 1)
-      const deleteCount = Math.max(1, Math.ceil(photoBlessings.length * 0.2));
-      const toDelete = photoBlessings.slice(0, deleteCount);
+      const deleteCount = Math.max(1, Math.ceil(mediaBlessings.length * 0.2));
+      const toDelete = mediaBlessings.slice(0, deleteCount);
       
       // Calculate size to free
       let sizeToFree = 0;
@@ -1128,7 +1132,7 @@
       });
       const mbToFree = (sizeToFree / (1024 * 1024)).toFixed(1);
 
-      confirmMessage.textContent = `將刪除 ${deleteCount} 則最舊的照片祝福（約釋放 ${mbToFree} MB）。此操作無法復原！`;
+      confirmMessage.textContent = `將刪除 ${deleteCount} 則最舊的照片/影片祝福（約釋放 ${mbToFree} MB）。此操作無法復原！`;
       confirmDialog.classList.add('show');
 
       // Store for confirmation
@@ -1156,9 +1160,11 @@
           // Delete from database
           await remove(ref(db, `blessings/${blessing.id}`));
           
-          // Delete photo from storage
+          // Delete photo or video from storage
           if (blessing.photoURL) {
             await deletePhotoFromStorage(blessing.photoURL);
+          } else if (blessing.videoURL) {
+            await deleteVideoFromStorage(blessing.videoURL);
           }
           
           successCount++;
@@ -1183,11 +1189,10 @@
     // ============================================
     function filterAndRender() {
       filteredBlessings = allBlessings.filter(b => {
-        // Photo filter
-        // Photo filter - show only blessings with photos
-        if (photoFilterActive && !b.photoURL) return false;
-        // Text filter - show only blessings without photos
-        if (textFilterActive && b.photoURL) return false;
+        // Photo filter - show only blessings with photos or videos
+        if (photoFilterActive && !b.photoURL && !b.videoURL) return false;
+        // Text filter - show only blessings without photos or videos
+        if (textFilterActive && (b.photoURL || b.videoURL)) return false;
         
         // Search filter
         if (searchQuery) {
@@ -1421,6 +1426,11 @@
             <img src="${blessing.photoURL}" alt="Photo" onclick="window.showImage(${index})">
           </div>
           ` : ''}
+          ${blessing.videoURL ? `
+          <div class="blessing-photo">
+            <video src="${blessing.videoURL}" controls onclick="window.showVideo(${index})" style="width: 100%; max-height: 200px; border-radius: 8px;"></video>
+          </div>
+          ` : ''}
           <div class="blessing-content">
             <div class="blessing-header">
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
@@ -1483,7 +1493,7 @@
       if (!blessing) return;
       
       pendingDeleteId = blessing.id;
-      pendingDeletePhotoURL = blessing.photoURL || null;
+      pendingDeletePhotoURL = blessing.photoURL || blessing.videoURL || null;
       confirmMessage.textContent = `確定要刪除「${blessing.name}」的祝福嗎？此操作無法復原。`;
       confirmDialog.classList.add('show');
     };
@@ -1524,9 +1534,14 @@
         // Delete from database
         await remove(ref(db, `blessings/${pendingDeleteId}`));
         
-        // Delete photo from storage if exists
+        // Delete photo or video from storage if exists
         if (pendingDeletePhotoURL) {
-          await deletePhotoFromStorage(pendingDeletePhotoURL);
+          const blessing = filteredBlessings.find(b => b.id === pendingDeleteId);
+          if (blessing && blessing.videoURL) {
+            await deleteVideoFromStorage(pendingDeletePhotoURL);
+          } else {
+            await deletePhotoFromStorage(pendingDeletePhotoURL);
+          }
         }
         
         showToast('已刪除', 'success');
@@ -1567,6 +1582,27 @@
       }
     }
 
+    async function deleteVideoFromStorage(videoURL) {
+      if (!videoURL) return;
+      
+      try {
+        const urlObj = new URL(videoURL);
+        // Match Firebase Storage URL pattern: /o/path%2Fto%2Ffile.mp4
+        const pathMatch = urlObj.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+        if (pathMatch) {
+          const filePath = decodeURIComponent(pathMatch[1]);
+          console.log('Deleting video from storage:', filePath);
+          const videoRef = storageRef(storage, filePath);
+          await deleteObject(videoRef);
+          console.log('Video deleted successfully');
+        } else {
+          console.warn('Could not parse video URL:', videoURL);
+        }
+      } catch (storageError) {
+        console.warn('Could not delete video from storage:', storageError.message);
+      }
+    }
+
     // ============================================
     // Delete All Blessings
     // ============================================
@@ -1599,6 +1635,8 @@
             // Delete photo if exists
             if (blessing.photoURL) {
               await deletePhotoFromStorage(blessing.photoURL);
+            } else if (blessing.videoURL) {
+              await deleteVideoFromStorage(blessing.videoURL);
             }
             
             successCount++;
