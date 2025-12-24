@@ -407,6 +407,27 @@
       100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
     }
 
+    /* Emoji Blast Container */
+    .emoji-blast-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 25;
+      overflow: hidden;
+    }
+
+    .emoji-blast {
+      position: absolute;
+      bottom: 0;
+      font-size: 32px;
+      opacity: 0;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+      will-change: transform, opacity;
+    }
+
     /* Settings Panel */
     .settings-toggle {
       position: fixed;
@@ -624,6 +645,7 @@
   <div class="danmaku-container" id="danmakuContainer"></div>
   <div class="photo-container" id="photoContainer"></div>
   <div class="hearts-container" id="heartsContainer"></div>
+  <div class="emoji-blast-container" id="emojiBlastContainer"></div>
 
   <div class="qr-section">
     <div class="qr-box">
@@ -683,7 +705,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
@@ -736,6 +758,7 @@
     const danmakuContainer = document.getElementById('danmakuContainer');
     const photoContainer = document.getElementById('photoContainer');
     const heartsContainer = document.getElementById('heartsContainer');
+    const emojiBlastContainer = document.getElementById('emojiBlastContainer');
     const textCountEl = document.getElementById('textCount');
     const photoCountEl = document.getElementById('photoCount');
     const pauseBtn = document.getElementById('pauseBtn');
@@ -1312,6 +1335,170 @@
       if (textBlessings.length === 0 && mediaBlessings.length === 0 && 
           textQueue.length === 0 && mediaQueue.length === 0) {
         waitingScreen.classList.remove('hidden');
+      }
+    });
+
+    // ============================================
+    // Emoji Blast Feature - Tornado/Fountain Effect
+    // ============================================
+    function createEmojiFountain(emoji, originX) {
+      const blastCount = 18 + Math.floor(Math.random() * 8); // 18-25 emojis per blast
+      const duration = 2500; // Animation duration in ms
+      
+      for (let i = 0; i < blastCount; i++) {
+        // Stagger emoji creation for burst effect
+        setTimeout(() => {
+          const blast = document.createElement('div');
+          blast.className = 'emoji-blast';
+          blast.textContent = emoji;
+          
+          // Start from origin point
+          blast.style.left = originX + 'px';
+          blast.style.bottom = '0px';
+          
+          // Random spread angle for tornado shape (-15 to +15 degrees from vertical)
+          const spreadAngle = (Math.random() - 0.5) * 30;
+          const spreadRadians = spreadAngle * (Math.PI / 180);
+          
+          // Random height (300-500px)
+          const maxHeight = 300 + Math.random() * 200;
+          
+          // Calculate final horizontal offset based on spread angle
+          // Wider spread at the top for tornado shape
+          const horizontalSpread = Math.tan(spreadRadians) * maxHeight;
+          
+          // Starting scale and ending scale (grows as it rises)
+          const startScale = 0.6 + Math.random() * 0.3;
+          const endScale = 1.2 + Math.random() * 0.4;
+          
+          // Random rotation
+          const rotation = (Math.random() - 0.5) * 60;
+          
+          // Random slight delay for more organic feel
+          const animDelay = Math.random() * 100;
+          
+          emojiBlastContainer.appendChild(blast);
+          
+          // Use Web Animations API for smooth curved path
+          const keyframes = [
+            { 
+              transform: `translate(0, 0) scale(${startScale}) rotate(0deg)`,
+              opacity: 0
+            },
+            { 
+              transform: `translate(${horizontalSpread * 0.2}px, -${maxHeight * 0.15}px) scale(${startScale + (endScale - startScale) * 0.2}) rotate(${rotation * 0.3}deg)`,
+              opacity: 1,
+              offset: 0.15
+            },
+            { 
+              transform: `translate(${horizontalSpread * 0.5}px, -${maxHeight * 0.5}px) scale(${startScale + (endScale - startScale) * 0.5}) rotate(${rotation * 0.6}deg)`,
+              opacity: 0.5,
+              offset: 0.5
+            },
+            { 
+              transform: `translate(${horizontalSpread * 0.8}px, -${maxHeight * 0.8}px) scale(${startScale + (endScale - startScale) * 0.8}) rotate(${rotation * 0.9}deg)`,
+              opacity: 0.3,
+              offset: 0.8
+            },
+            { 
+              transform: `translate(${horizontalSpread}px, -${maxHeight}px) scale(${endScale}) rotate(${rotation}deg)`,
+              opacity: 0
+            }
+          ];
+          
+          const animation = blast.animate(keyframes, {
+            duration: duration + Math.random() * 500,
+            delay: animDelay,
+            easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            fill: 'forwards'
+          });
+          
+          animation.onfinish = () => blast.remove();
+          
+        }, i * 20); // Stagger by 20ms each for denser burst
+      }
+    }
+
+    // ============================================
+    // Emoji Blast Queue System
+    // ============================================
+    const MAX_CONCURRENT_BLASTS = 3;
+    const BLAST_DELAY = 1000; // Delay between starting each blast (ms)
+    const BLAST_DURATION = 3000; // How long a blast animation lasts
+    const MAX_QUEUE_LENGTH = 200; // Limit queue for edge cases
+    
+    let emojiBlastQueue = [];
+    let activeBlastsCount = 0;
+    let lastBlastTime = 0;
+
+    // Try to display next blast from queue
+    function tryDisplayNextBlast() {
+      if (emojiBlastQueue.length === 0) return;
+      if (activeBlastsCount >= MAX_CONCURRENT_BLASTS) return;
+      
+      // Ensure minimum delay between blasts for visual sequencing
+      const now = Date.now();
+      const timeSinceLastBlast = now - lastBlastTime;
+      
+      if (timeSinceLastBlast < BLAST_DELAY) {
+        // Schedule to try again after the remaining delay
+        setTimeout(tryDisplayNextBlast, BLAST_DELAY - timeSinceLastBlast);
+        return;
+      }
+      
+      // Display the next blast
+      const blastItem = emojiBlastQueue.shift();
+      if (blastItem) {
+        displayEmojiBlast(blastItem.emoji, blastItem.key);
+        lastBlastTime = Date.now();
+        
+        // Immediately try to display more if we have capacity
+        if (emojiBlastQueue.length > 0 && activeBlastsCount < MAX_CONCURRENT_BLASTS) {
+          setTimeout(tryDisplayNextBlast, BLAST_DELAY);
+        }
+      }
+    }
+
+    // Display a single emoji blast and delete from Firebase
+    function displayEmojiBlast(emoji, key) {
+      activeBlastsCount++;
+      
+      // Random origin point at the bottom of the screen
+      const originX = 100 + Math.random() * (window.innerWidth - 200);
+      createEmojiFountain(emoji, originX);
+      
+      // Delete from Firebase after triggering animation
+      remove(ref(db, `emojiBlasts/${key}`)).catch(err => {
+        console.log('Could not delete emoji blast:', err);
+      });
+      
+      // When this blast finishes, reduce count and try to display next
+      setTimeout(() => {
+        activeBlastsCount = Math.max(0, activeBlastsCount - 1);
+        // Immediately try to display next from queue
+        tryDisplayNextBlast();
+      }, BLAST_DURATION);
+    }
+
+    // Listen for emoji blast events
+    const emojiBlastsRef = ref(db, 'emojiBlasts');
+    onChildAdded(emojiBlastsRef, (snapshot) => {
+      const blastData = snapshot.val();
+      const emoji = blastData?.e;
+      if (emoji) {
+        // Add to queue if not exceeding max length
+        if (emojiBlastQueue.length < MAX_QUEUE_LENGTH) {
+          emojiBlastQueue.push({
+            emoji: emoji,
+            key: snapshot.key
+          });
+          
+          // Try to display immediately
+          tryDisplayNextBlast();
+        } else {
+          // Queue full, delete immediately
+          remove(ref(db, `emojiBlasts/${snapshot.key}`)).catch(() => {});
+        }
       }
     });
 

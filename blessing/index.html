@@ -611,6 +611,198 @@
       display: none;
     }
 
+    /* Floating Emoji Bar - Fixed at right edge */
+    .emoji-float-bar {
+      position: fixed;
+      bottom: 50%;
+      right: 0;
+      transform: translateY(50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+    }
+
+    .emoji-toggle-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 28px 0 0 28px;
+      background: linear-gradient(135deg, #e85d75, #d64161);
+      border: 3px solid #fff;
+      border-right: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 
+        -4px 4px 15px rgba(214, 65, 97, 0.4),
+        -2px 8px 30px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    .emoji-toggle-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        -6px 6px 20px rgba(214, 65, 97, 0.5),
+        -4px 12px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .emoji-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .emoji-toggle-btn .close-icon {
+      display: none;
+      color: #fff;
+      font-size: 26px;
+    }
+
+    .emoji-float-bar.open .emoji-toggle-btn .heart-icon {
+      display: none;
+    }
+
+    .emoji-float-bar.open .emoji-toggle-btn .close-icon {
+      display: block;
+    }
+
+    /* Bounce animation for attention */
+    @keyframes emojiBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .emoji-toggle-btn.bouncing {
+      animation: emojiBounce 1s ease-in-out infinite;
+    }
+
+    .emoji-toggle-btn.bouncing:hover {
+      animation: none;
+    }
+
+    /* Cooldown effect - circular progress */
+    .emoji-toggle-btn .cooldown-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 28px 0 0 28px;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .emoji-toggle-btn.cooldown .cooldown-overlay {
+      opacity: 1;
+    }
+
+    .emoji-toggle-btn.cooldown .heart-icon {
+      opacity: 0.3;
+    }
+
+    .emoji-buttons-panel {
+      position: absolute;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 16px;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateX(20px) scale(0.9);
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .emoji-float-bar.open .emoji-buttons-panel {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .emoji-buttons-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .emoji-btn {
+      width: 44px;
+      height: 44px;
+      font-size: 24px;
+      background: linear-gradient(145deg, #fff, #f8f4f4);
+      border: 1px solid rgba(200, 152, 152, 0.15);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(200, 152, 152, 0.15);
+    }
+
+    .emoji-btn:hover {
+      transform: translateY(-3px) scale(1.1);
+      box-shadow: 0 6px 16px rgba(200, 152, 152, 0.3);
+      background: linear-gradient(145deg, #fff, #fff0f0);
+    }
+
+    .emoji-btn:active {
+      transform: translateY(0) scale(0.92);
+      transition-duration: 0.1s;
+    }
+
+    @keyframes emojiPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .emoji-btn.popping {
+      animation: emojiPop 0.25s ease-out;
+    }
+
+    @media (max-width: 480px) {
+      .emoji-float-bar {
+        bottom: 40%;
+        transform: translateY(50%);
+      }
+
+      .emoji-toggle-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+      }
+
+      .emoji-buttons-panel {
+        right: 54px;
+        gap: 6px;
+        padding: 10px;
+      }
+
+      .emoji-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+      }
+
+      .emoji-toggle-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+    }
+
     /* Success state */
     .success-card {
       display: none;
@@ -993,6 +1185,29 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- Floating Emoji Bar -->
+  <div class="emoji-float-bar" id="emojiFloatBar">
+    <div class="emoji-buttons-panel" id="emojiButtonsPanel">
+      <div class="emoji-buttons-row">
+        <button type="button" class="emoji-btn" data-emoji="💕">💕</button>
+        <button type="button" class="emoji-btn" data-emoji="❤️">❤️</button>
+        <button type="button" class="emoji-btn" data-emoji="💗">💗</button>
+        <button type="button" class="emoji-btn" data-emoji="💖">💖</button>
+      </div>
+      <div class="emoji-buttons-row">
+        <button type="button" class="emoji-btn" data-emoji="💝">💝</button>
+        <button type="button" class="emoji-btn" data-emoji="💘">💘</button>
+        <button type="button" class="emoji-btn" data-emoji="🥰">🥰</button>
+        <button type="button" class="emoji-btn" data-emoji="😍">😍</button>
+      </div>
+    </div>
+    <button type="button" class="emoji-toggle-btn" id="emojiToggleBtn">
+      <span class="heart-icon">💕</span>
+      <span class="material-symbols-outlined close-icon">close</span>
+      <span class="cooldown-overlay" id="cooldownOverlay">8</span>
+    </button>
+  </div>
+
   <!-- Camera Modal -->
   <div class="camera-modal" id="cameraModal">
     <div class="camera-container">
@@ -1131,7 +1346,7 @@
     // Toast Notification
     // ============================================
     function showToast(message, type = '', duration = 3000) {
-      toast.textContent = message;
+      toast.innerHTML = message;
       toast.className = 'toast show' + (type ? ` ${type}` : '');
       
       clearTimeout(toastTimeout);
@@ -1782,6 +1997,101 @@
       // Show form
       successCard.classList.remove('show');
       formCard.style.display = 'block';
+    });
+
+    // ============================================
+    // Emoji Blast Feature
+    // ============================================
+    const emojiFloatBar = document.getElementById('emojiFloatBar');
+    const emojiToggleBtn = document.getElementById('emojiToggleBtn');
+    const emojiButtonsPanel = document.getElementById('emojiButtonsPanel');
+    const cooldownOverlay = document.getElementById('cooldownOverlay');
+    const emojiButtons = document.querySelectorAll('.emoji-btn');
+    
+    const EMOJI_COOLDOWN = 8; // seconds
+    let emojiCooldownActive = false;
+    let cooldownTimer = null;
+    let hasClickedEmojiBtn = false;
+
+    // Start bouncing animation after a short delay
+    setTimeout(() => {
+      if (!hasClickedEmojiBtn) {
+        emojiToggleBtn.classList.add('bouncing');
+      }
+    }, 2000);
+
+    // Toggle emoji panel
+    emojiToggleBtn.addEventListener('click', () => {
+      if (emojiCooldownActive) return;
+      
+      // Stop bouncing on first interaction
+      if (!hasClickedEmojiBtn) {
+        hasClickedEmojiBtn = true;
+        emojiToggleBtn.classList.remove('bouncing');
+      }
+      
+      const isOpening = !emojiFloatBar.classList.contains('open');
+      emojiFloatBar.classList.toggle('open');
+      
+      // Show toast when opening for the first time
+      if (isOpening) {
+        showToast('你可以送出 emoji<br>祝福給我們 💕');
+      }
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!emojiFloatBar.contains(e.target) && emojiFloatBar.classList.contains('open')) {
+        emojiFloatBar.classList.remove('open');
+      }
+    });
+
+    // Start cooldown
+    function startEmojiCooldown() {
+      emojiCooldownActive = true;
+      emojiFloatBar.classList.remove('open'); // Close menu first
+      emojiToggleBtn.classList.add('cooldown');
+      
+      let remaining = EMOJI_COOLDOWN;
+      cooldownOverlay.textContent = remaining;
+      
+      cooldownTimer = setInterval(() => {
+        remaining--;
+        cooldownOverlay.textContent = remaining;
+        
+        if (remaining <= 0) {
+          clearInterval(cooldownTimer);
+          emojiCooldownActive = false;
+          emojiToggleBtn.classList.remove('cooldown');
+        }
+      }, 1000);
+    }
+
+    // Emoji button clicks
+    emojiButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (emojiCooldownActive) return;
+        
+        const emoji = btn.getAttribute('data-emoji');
+        
+        // Visual feedback - pop animation
+        btn.classList.add('popping');
+        setTimeout(() => btn.classList.remove('popping'), 300);
+        
+        try {
+          // Push emoji blast event to Firebase (minimal data)
+          await push(ref(db, 'emojiBlasts'), {
+            e: emoji,  // short key for minimal data
+            t: Date.now()
+          });
+          
+          // Start cooldown after successful send
+          startEmojiCooldown();
+        } catch (error) {
+          console.error('Error sending emoji blast:', error);
+          showToast('發送失敗，請稍後再試', 'error');
+        }
+      });
     });
   </script>
 </body>

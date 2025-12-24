@@ -814,6 +814,10 @@
         <span class="material-symbols-outlined">science</span>
         加入測試資料
       </button>
+      <button class="test-data-btn" id="emojiBlastBtn" style="background: rgba(233, 93, 117, 0.2); border-color: rgba(233, 93, 117, 0.3); color: #f48fb1;">
+        <span class="material-symbols-outlined">celebration</span>
+        發送 50 個 Emoji
+      </button>
       <button class="delete-all-btn" id="deleteAllBtn">
         <span class="material-symbols-outlined">delete_sweep</span>
         全部刪除
@@ -1393,6 +1397,45 @@
     }
 
     testDataBtn.addEventListener('click', addTestData);
+
+    // ============================================
+    // Emoji Blast (50 at once)
+    // ============================================
+    const emojiBlastBtn = document.getElementById('emojiBlastBtn');
+    const blastEmojis = ['💕', '❤️', '💗', '💖', '💝', '💘', '🥰', '😍'];
+    const blastEmojisCount = 50;
+
+    async function sendEmojiBlasts() {
+      emojiBlastBtn.disabled = true;
+      emojiBlastBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 發送中...';
+
+      try {
+        // Send 9 emoji blasts with slight delays
+        const promises = Array.from({ length: blastEmojisCount }, (_, index) => {
+          const emoji = blastEmojis[Math.floor(Math.random() * blastEmojis.length)];
+          return new Promise(resolve => {
+            setTimeout(async () => {
+              await push(ref(db, 'emojiBlasts'), {
+                e: emoji,
+                t: Date.now()
+              });
+              resolve();
+            }, index * 100); // 100ms delay between each
+          });
+        });
+
+        await Promise.all(promises);
+        showToast('已發送 50 個 Emoji 祝福！🎉');
+      } catch (error) {
+        console.error('Error sending emoji blasts:', error);
+        showToast('發送失敗', 'error');
+      } finally {
+        emojiBlastBtn.disabled = false;
+        emojiBlastBtn.innerHTML = '<span class="material-symbols-outlined">celebration</span> 發送 50 個 Emoji';
+      }
+    }
+
+    emojiBlastBtn.addEventListener('click', sendEmojiBlasts);
 
     // ============================================
     // Render Blessings
