@@ -1214,7 +1214,7 @@
       <button type="button" class="camera-btn-control close" id="closeCameraBtn">
         <span class="material-symbols-outlined">close</span>
       </button>
-      <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
+      <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" style="display: none;"></canvas>
       <div class="camera-controls">
         <button type="button" class="camera-btn-control switch" id="switchCameraBtn">
@@ -1472,7 +1472,7 @@
       uploadArea.classList.remove('dragover');
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) {
-        handleFileSelect(file);
+        handlePhotoSelect(file);
       }
     });
 
@@ -1635,6 +1635,12 @@
       const videoWidth = cameraVideo.videoWidth;
       const videoHeight = cameraVideo.videoHeight;
       
+      // Check if video is ready
+      if (!videoWidth || !videoHeight) {
+        showToast('相機尚未準備好，請稍候', 'warning');
+        return;
+      }
+      
       // Set canvas size to match video
       cameraCanvas.width = videoWidth;
       cameraCanvas.height = videoHeight;
@@ -1653,7 +1659,7 @@
           });
           
           // Use the same handler as file upload
-          handleFileSelect(file);
+          handlePhotoSelect(file);
           
           // Stop camera and close modal
           stopCamera();
@@ -1681,7 +1687,7 @@
     });
     
     // Prevent closing when clicking on container
-    document.querySelector('.camera-container').addEventListener('click', (e) => {
+    cameraModal.querySelector('.camera-container').addEventListener('click', (e) => {
       e.stopPropagation();
     });
 
@@ -1839,7 +1845,7 @@
     });
     
     // Prevent closing when clicking on container
-    document.querySelector('#videoRecordModal .camera-container').addEventListener('click', (e) => {
+    videoRecordModal.querySelector('.camera-container').addEventListener('click', (e) => {
       e.stopPropagation();
     });
 
