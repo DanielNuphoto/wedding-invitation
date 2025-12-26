@@ -447,6 +447,87 @@
       display: flex;
     }
 
+    /* Confirmation Modal */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .confirm-modal.show {
+      display: flex;
+    }
+
+    .confirm-dialog {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 24px 24px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .confirm-dialog .confirm-icon {
+      margin-bottom: 12px;
+    }
+
+    .confirm-dialog .confirm-icon .material-symbols-outlined {
+      font-size: 56px;
+      color: #a07878;
+    }
+
+    .confirm-dialog .confirm-message {
+      font-size: 16px;
+      color: #4a3f3f;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .confirm-dialog .confirm-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .confirm-dialog .confirm-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .confirm-dialog .confirm-btn.cancel {
+      background: #f0ebeb;
+      color: #7a6a6a;
+    }
+
+    .confirm-dialog .confirm-btn.cancel:hover {
+      background: #e5dede;
+    }
+
+    .confirm-dialog .confirm-btn.ok {
+      background: linear-gradient(135deg, #c89696, #a07878);
+      color: #fff;
+    }
+
+    .confirm-dialog .confirm-btn.ok:hover {
+      background: linear-gradient(135deg, #d4a5a5, #b08888);
+    }
+
     .camera-container {
       width: 100%;
       max-width: 640px;
@@ -1115,7 +1196,7 @@
     <div class="form-card" id="formCard">
       <form id="blessingForm">
         <div class="form-group">
-          <label for="name">您的稱呼(建議不超過 7 個字) *</label>
+          <label for="name">您的暱稱(建議不超過 7 個字) *</label>
           <input type="text" id="name" name="name" placeholder="例如：顏小緣" required maxlength="50">
           <div class="char-counter"><span id="nameCount">0</span>/50</div>
         </div>
@@ -1205,7 +1286,7 @@
         <!-- Video Tab Content -->
         <div class="tab-content" id="videoContent">
           <div class="form-group photo-upload">
-            <label>選擇影片(無聲) *</label>
+            <label>選擇影片(不會公開在祝福牆上播放聲音) *</label>
             <div class="photo-upload-options">
               <div class="photo-upload-area" id="videoUploadArea">
                 <div class="material-symbols-outlined icon">videocam</div>
@@ -1280,6 +1361,19 @@
     <div class="bounce-hint" id="bounceHint">
       <span class="arrow">↑</span>
       <div class="hint-text">請按我</div>
+    </div>
+  </div>
+
+  <!-- Video Sound Confirmation Modal -->
+  <div class="confirm-modal" id="videoSoundModal">
+    <div class="confirm-dialog">
+      <div class="confirm-icon"><span class="material-symbols-outlined">volume_off</span></div>
+      <div class="confirm-message">不會公開在祝福牆上播放聲音喔～</div>
+      <div class="confirm-message">(但後台聽得到聲音)</div>
+      <div class="confirm-buttons">
+        <button type="button" class="confirm-btn cancel" id="videoSoundCancel">取消</button>
+        <button type="button" class="confirm-btn ok" id="videoSoundOk">開始錄影</button>
+      </div>
     </div>
   </div>
 
@@ -1940,7 +2034,30 @@
       }
     }
 
-    videoRecordBtn.addEventListener('click', () => startVideoRecording());
+    // Video sound confirmation modal
+    const videoSoundModal = document.getElementById('videoSoundModal');
+    const videoSoundCancel = document.getElementById('videoSoundCancel');
+    const videoSoundOk = document.getElementById('videoSoundOk');
+
+    videoRecordBtn.addEventListener('click', () => {
+      videoSoundModal.classList.add('show');
+    });
+
+    videoSoundCancel.addEventListener('click', () => {
+      videoSoundModal.classList.remove('show');
+    });
+
+    videoSoundOk.addEventListener('click', () => {
+      videoSoundModal.classList.remove('show');
+      startVideoRecording();
+    });
+
+    // Close modal when clicking outside
+    videoSoundModal.addEventListener('click', (e) => {
+      if (e.target === videoSoundModal) {
+        videoSoundModal.classList.remove('show');
+      }
+    });
     closeVideoRecordBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       stopVideoRecording();
@@ -1973,7 +2090,7 @@
 
       // Validation
       if (!name) {
-        showToast('請填寫您的稱呼', 'error');
+        showToast('請填寫您的暱稱', 'error');
         return;
       }
 
