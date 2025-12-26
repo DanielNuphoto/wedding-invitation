@@ -615,9 +615,8 @@
     /* Floating Emoji Bar - Fixed at right edge */
     .emoji-float-bar {
       position: fixed;
-      bottom: 50%;
-      right: 0;
-      transform: translateY(50%);
+      top: 20px;
+      right: 20px;
       z-index: 100;
       display: flex;
       flex-direction: row;
@@ -628,15 +627,16 @@
     .emoji-toggle-btn {
       width: 56px;
       height: 56px;
-      border-radius: 28px 0 0 28px;
+      border-radius: 28px;
+      color: #e7c3c3;
       background: linear-gradient(135deg, #e85d75, #d64161);
-      border: 3px solid #fff;
-      border-right: none;
+      border: 2px solid #dcafaf;
+      padding: 0;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
+      font-size: 28px;
       box-shadow: 
         -4px 4px 15px rgba(214, 65, 97, 0.4),
         -2px 8px 30px rgba(0, 0, 0, 0.2);
@@ -657,8 +657,12 @@
 
     .emoji-toggle-btn .close-icon {
       display: none;
-      color: #fff;
-      font-size: 26px;
+      color: #e7c3c3;
+      font-size: 28px;
+    }
+
+    .emoji-float-bar .emoji-toggle-btn .heart-icon {
+      display: block;
     }
 
     .emoji-float-bar.open .emoji-toggle-btn .heart-icon {
@@ -672,7 +676,7 @@
     /* Bounce animation for attention */
     @keyframes emojiBounce {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+      50% { transform: scale(1.5); }
     }
 
     .emoji-toggle-btn.bouncing {
@@ -687,7 +691,7 @@
     .emoji-toggle-btn .cooldown-overlay {
       position: absolute;
       inset: 0;
-      border-radius: 28px 0 0 28px;
+      border-radius: 28px;
       background: rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
@@ -710,7 +714,8 @@
 
     .emoji-buttons-panel {
       position: absolute;
-      right: 60px;
+      right: 80px;
+      top: 0;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -774,19 +779,8 @@
     }
 
     @media (max-width: 480px) {
-      .emoji-float-bar {
-        bottom: 40%;
-        transform: translateY(50%);
-      }
-
-      .emoji-toggle-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 22px;
-      }
-
       .emoji-buttons-panel {
-        right: 54px;
+        right: 74px;
         gap: 6px;
         padding: 10px;
       }
@@ -794,12 +788,6 @@
       .emoji-btn {
         width: 36px;
         height: 36px;
-        font-size: 20px;
-      }
-
-      .emoji-toggle-btn {
-        width: 40px;
-        height: 40px;
         font-size: 20px;
       }
     }
@@ -1203,7 +1191,7 @@
       </div>
     </div>
     <button type="button" class="emoji-toggle-btn" id="emojiToggleBtn">
-      <span class="heart-icon">💕</span>
+      <span class="material-symbols-outlined heart-icon">diversity_1</span>
       <span class="material-symbols-outlined close-icon">close</span>
       <span class="cooldown-overlay" id="cooldownOverlay">8</span>
     </button>
