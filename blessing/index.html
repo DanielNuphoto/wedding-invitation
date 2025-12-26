@@ -1626,6 +1626,7 @@
       previewVideo.addEventListener('loadedmetadata', function checkDuration() {
         const duration = previewVideo.duration;
         const maxDuration = 8; // 8 seconds to match display time
+        console.log(duration);
         
         if (duration > maxDuration) {
           showToast(`影片長度不能超過 ${maxDuration} 秒`, 'error');
