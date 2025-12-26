@@ -1626,7 +1626,7 @@
       // Check video duration when metadata is loaded
       previewVideo.addEventListener('loadedmetadata', function checkDuration() {
         let duration = previewVideo.duration;
-        const maxDuration = 8; // 8 seconds to match display time
+        const maxDuration = 9; // 8.x seconds to match display time
         
         // On some Android devices, MediaRecorder doesn't set proper duration metadata
         // Use our tracked recording duration as fallback
