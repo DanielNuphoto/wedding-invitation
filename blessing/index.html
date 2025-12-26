@@ -180,17 +180,36 @@
       font-weight: 500;
     }
 
-    .preview-message {
+    .preview-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 10px 16px;
       border-radius: 8px;
-      font-size: 15px;
-      color: #fff;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       background: linear-gradient(135deg, rgba(200, 150, 150, 0.88), rgba(180, 130, 130, 0.88));
       transition: background 0.3s ease;
       min-height: 24px;
-      display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .preview-sender {
+      background: rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .preview-message {
+      font-size: 15px;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
     }
 
     /* Tabs */
@@ -1141,7 +1160,10 @@
             </div>
             <div class="color-preview" id="colorPreview">
               <div class="preview-label">預覽：</div>
-              <div class="preview-message" id="previewMessage">您的祝福將以此顏色顯示</div>
+              <div class="preview-content">
+                <span class="preview-sender" id="previewSender">您的名字</span>
+                <span class="preview-message" id="previewMessage">您的祝福將以此顏色顯示</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1360,6 +1382,8 @@
     const messageCount = document.getElementById('messageCount');
     const colorPicker = document.getElementById('colorPicker');
     const colorOptions = document.querySelectorAll('.color-option');
+    const previewContent = document.querySelector('.preview-content');
+    const previewSender = document.getElementById('previewSender');
     const previewMessage = document.getElementById('previewMessage');
     const cameraBtn = document.getElementById('cameraBtn');
     const cameraModal = document.getElementById('cameraModal');
@@ -1415,14 +1439,32 @@
       }
     }
 
-    nameInput.addEventListener('input', () => updateCounter(nameInput, nameCount, MAX_NAME_LENGTH));
-    messageInput.addEventListener('input', () => updateCounter(messageInput, messageCount, MAX_MESSAGE_LENGTH));
+    // Update preview text to show what user is typing
+    const NAME_PLACEHOLDER = '您的名字';
+    const MESSAGE_PLACEHOLDER = '您的祝福將以此顏色顯示';
+    
+    function updatePreviewText() {
+      const name = nameInput.value.trim();
+      const text = messageInput.value.trim();
+      previewSender.textContent = name || NAME_PLACEHOLDER;
+      previewMessage.textContent = text || MESSAGE_PLACEHOLDER;
+    }
+
+    nameInput.addEventListener('input', () => {
+      updateCounter(nameInput, nameCount, MAX_NAME_LENGTH);
+      updatePreviewText();
+    });
+    
+    messageInput.addEventListener('input', () => {
+      updateCounter(messageInput, messageCount, MAX_MESSAGE_LENGTH);
+      updatePreviewText();
+    });
 
     // ============================================
     // Color Picker
     // ============================================
     function updateColorPreview(color) {
-      if (!previewMessage) return;
+      if (!previewContent) return;
       
       // Convert hex to rgba with opacity for gradient
       const hex = color.replace('#', '');
@@ -1432,7 +1474,7 @@
       const r2 = Math.max(0, Math.min(255, r - 20));
       const g2 = Math.max(0, Math.min(255, g - 20));
       const b2 = Math.max(0, Math.min(255, b - 20));
-      previewMessage.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.88), rgba(${r2}, ${g2}, ${b2}, 0.88))`;
+      previewContent.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.88), rgba(${r2}, ${g2}, ${b2}, 0.88))`;
     }
 
     colorOptions.forEach(option => {
@@ -1470,6 +1512,7 @@
       if (currentTab === 'text') {
         messageInput.value = '';
         messageCount.textContent = '0';
+        updatePreviewText();
       } else if (currentTab === 'photo') {
         clearPhoto();
         stopCamera(); // Stop camera if switching away from photo tab
@@ -2015,6 +2058,9 @@
       form.reset();
       selectedFile = null;
       currentTab = 'text';
+      
+      // Reset preview text
+      updatePreviewText();
       
       // Reset UI
       photoPreview.classList.remove('show');
