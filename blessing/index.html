@@ -1197,7 +1197,7 @@
         <!-- Video Tab Content -->
         <div class="tab-content" id="videoContent">
           <div class="form-group photo-upload">
-            <label>選擇影片 *</label>
+            <label>選擇影片(無聲) *</label>
             <div class="photo-upload-options">
               <div class="photo-upload-area" id="videoUploadArea">
                 <div class="material-symbols-outlined icon">videocam</div>
@@ -1408,6 +1408,7 @@
     let recordedChunks = [];
     let recordingStartTime = null;
     let recordingTimerInterval = null;
+    let lastRecordedDuration = null; // Store duration for Android devices with broken metadata
     let currentFacingMode = 'environment'; // 'environment' (back) or 'user' (front)
     let currentVideoFacingMode = 'environment';
 
@@ -1624,9 +1625,18 @@
       
       // Check video duration when metadata is loaded
       previewVideo.addEventListener('loadedmetadata', function checkDuration() {
-        const duration = previewVideo.duration;
+        let duration = previewVideo.duration;
         const maxDuration = 8; // 8 seconds to match display time
-        console.log(duration);
+        
+        // On some Android devices, MediaRecorder doesn't set proper duration metadata
+        // Use our tracked recording duration as fallback
+        if (!isFinite(duration) && lastRecordedDuration !== null) {
+          console.log('Using tracked duration (metadata was Infinity):', lastRecordedDuration);
+          duration = lastRecordedDuration;
+        }
+        
+        // Reset the stored duration after use
+        lastRecordedDuration = null;
         
         if (duration > maxDuration) {
           showToast(`影片長度不能超過 ${maxDuration} 秒`, 'error');
@@ -1908,6 +1918,11 @@
     }
 
     function stopRecording() {
+      // Calculate and store duration before stopping (for Android devices with broken metadata)
+      if (recordingStartTime) {
+        lastRecordedDuration = (Date.now() - recordingStartTime) / 1000;
+      }
+      
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
       }
