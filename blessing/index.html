@@ -184,18 +184,21 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 16px;
+      padding: 10px 0 10px 16px;
       border-radius: 8px;
       background: linear-gradient(135deg, rgba(200, 150, 150, 0.88), rgba(180, 130, 130, 0.88));
       transition: background 0.3s ease;
       min-height: 24px;
-      flex-wrap: wrap;
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
     }
 
     .preview-sender {
+      flex-shrink: 0;
       background: rgba(255, 255, 255, 0.25);
       padding: 4px 12px;
-      border-radius: 15px;
+      border-radius: 8px;
       font-size: 13px;
       font-weight: 600;
       color: #fff;
@@ -204,12 +207,16 @@
     }
 
     .preview-message {
+      flex-shrink: 0;
       font-size: 15px;
       color: #fff;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-      flex: 1;
-      min-width: 0;
-      word-break: break-word;
+      white-space: nowrap;
+    }
+
+    .preview-spacer {
+      flex-shrink: 0;
+      width: 4px;
     }
 
     /* Tabs */
@@ -1108,8 +1115,8 @@
     <div class="form-card" id="formCard">
       <form id="blessingForm">
         <div class="form-group">
-          <label for="name">您的稱呼 *</label>
-          <input type="text" id="name" name="name" placeholder="例如：王小明" required maxlength="50">
+          <label for="name">您的稱呼(建議不超過 7 個字) *</label>
+          <input type="text" id="name" name="name" placeholder="例如：顏小緣" required maxlength="50">
           <div class="char-counter"><span id="nameCount">0</span>/50</div>
         </div>
 
@@ -1161,8 +1168,9 @@
             <div class="color-preview" id="colorPreview">
               <div class="preview-label">預覽：</div>
               <div class="preview-content">
-                <span class="preview-sender" id="previewSender">您的名字</span>
+                <span class="preview-sender" id="previewSender">顏小緣</span>
                 <span class="preview-message" id="previewMessage">您的祝福將以此顏色顯示</span>
+                <span class="preview-spacer"></span>
               </div>
             </div>
           </div>
@@ -1441,7 +1449,7 @@
     }
 
     // Update preview text to show what user is typing
-    const NAME_PLACEHOLDER = '您的名字';
+    const NAME_PLACEHOLDER = '顏小緣';
     const MESSAGE_PLACEHOLDER = '您的祝福將以此顏色顯示';
     
     function updatePreviewText() {
