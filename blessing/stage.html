@@ -422,6 +422,30 @@
       will-change: transform, opacity;
     }
 
+    .emoji-blast-sender {
+      position: absolute;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, rgba(220, 190, 140, 0.95), rgba(200, 165, 115, 0.95));
+      padding: 8px 18px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      z-index: 150; /* Above controls and QR */
+      animation: senderFadeInOut 3s ease-out forwards;
+    }
+
+    @keyframes senderFadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.8); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+      70% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+    }
+
     /* Settings Panel */
     .settings-toggle {
       position: fixed;
@@ -1335,9 +1359,21 @@
     // ============================================
     // Emoji Blast Feature - Tornado/Fountain Effect
     // ============================================
-    function createEmojiFountain(emoji, originX) {
+    function createEmojiFountain(emoji, originX, senderName) {
       const blastCount = 18 + Math.floor(Math.random() * 8); // 18-25 emojis per blast
       const duration = 2500; // Animation duration in ms
+      
+      // Create sender name tag at the bottom of the fountain
+      if (senderName) {
+        const senderTag = document.createElement('div');
+        senderTag.className = 'emoji-blast-sender';
+        senderTag.textContent = senderName;
+        senderTag.style.left = originX + 'px';
+        emojiBlastContainer.appendChild(senderTag);
+        
+        // Remove after animation
+        setTimeout(() => senderTag.remove(), 3000);
+      }
       
       for (let i = 0; i < blastCount; i++) {
         // Stagger emoji creation for burst effect
@@ -1443,7 +1479,7 @@
       // Display the next blast
       const blastItem = emojiBlastQueue.shift();
       if (blastItem) {
-        displayEmojiBlast(blastItem.emoji, blastItem.key);
+        displayEmojiBlast(blastItem.emoji, blastItem.key, blastItem.senderName);
         lastBlastTime = Date.now();
         
         // Immediately try to display more if we have capacity
@@ -1454,12 +1490,12 @@
     }
 
     // Display a single emoji blast and delete from Firebase
-    function displayEmojiBlast(emoji, key) {
+    function displayEmojiBlast(emoji, key, senderName) {
       activeBlastsCount++;
       
       // Random origin point at the bottom of the screen
       const originX = 100 + Math.random() * (window.innerWidth - 200);
-      createEmojiFountain(emoji, originX);
+      createEmojiFountain(emoji, originX, senderName);
       
       // Delete from Firebase after triggering animation
       remove(ref(db, `emojiBlasts/${key}`)).catch(err => {
@@ -1479,12 +1515,14 @@
     onChildAdded(emojiBlastsRef, (snapshot) => {
       const blastData = snapshot.val();
       const emoji = blastData?.e;
+      const senderName = blastData?.n; // Sender name from submission
       if (emoji) {
         // Add to queue if not exceeding max length
         if (emojiBlastQueue.length < MAX_QUEUE_LENGTH) {
           emojiBlastQueue.push({
             emoji: emoji,
-            key: snapshot.key
+            key: snapshot.key,
+            senderName: senderName
           });
           
           // Try to display immediately

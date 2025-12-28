@@ -61,6 +61,153 @@
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     }
 
+    .form-card.hidden {
+      display: none;
+    }
+
+    /* Name Step Card */
+    .name-step-card {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .name-step-card.hidden {
+      display: none;
+    }
+
+    .name-step-card .step-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #4a3f3f;
+      margin-bottom: 8px;
+    }
+
+    .name-step-card .step-subtitle {
+      font-size: 14px;
+      color: #7a6a6a;
+      margin-bottom: 24px;
+    }
+
+    .name-step-card .name-input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .name-step-card .name-input-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a3f3f;
+      margin-bottom: 8px;
+    }
+
+    .name-step-card .name-input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0d5d5;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .name-step-card .name-input-group input:focus {
+      outline: none;
+      border-color: #c89696;
+      box-shadow: 0 0 0 3px rgba(200, 150, 150, 0.2);
+    }
+
+    .name-step-card .char-counter {
+      text-align: right;
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .name-step-card .char-counter.warning {
+      color: #e6a23c;
+    }
+
+    .name-step-card .char-counter.limit {
+      color: #f56c6c;
+    }
+
+    .name-step-card .name-submit-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, #c89696, #a07878);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .name-step-card .name-submit-btn:hover {
+      background: linear-gradient(135deg, #d4a5a5, #b08888);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(200, 150, 150, 0.4);
+    }
+
+    .name-step-card .name-submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Current user display & change name button */
+    .current-user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f5f5;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .current-user-bar .user-info {
+      display: grid;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #4a3f3f;
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .current-user-bar .user-name {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+      color: #a07878; 
+    }
+
+    .current-user-bar .change-name-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #a07878;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .current-user-bar .change-name-btn:hover {
+      background: rgba(160, 120, 120, 0.1);
+      text-decoration: underline;
+    }
+
     .form-group {
       margin-bottom: 20px;
     }
@@ -724,6 +871,13 @@
       position: fixed;
       top: 20px;
       right: 20px;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .emoji-float-bar.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
       z-index: 100;
       display: flex;
       flex-direction: row;
@@ -1193,13 +1347,32 @@
       <p>留下溫暖的話語，與我們分享這份喜悅</p>
     </div>
 
-    <div class="form-card" id="formCard">
+    <!-- Name Step Card (shown first if no name in localStorage) -->
+    <div class="name-step-card" id="nameStepCard">
+      <div class="step-title">歡迎！請先輸入您的暱稱</div>
+      <div class="step-subtitle">這個暱稱會顯示在您的祝福旁邊</div>
+      <div class="name-input-group">
+        <label for="nameStepInput">您的暱稱 (建議不超過 7 個字)</label>
+        <input type="text" id="nameStepInput" placeholder="例如：顏小緣" maxlength="50">
+        <div class="char-counter"><span id="nameStepCount">0</span>/10</div>
+      </div>
+      <button type="button" class="name-submit-btn" id="nameSubmitBtn" disabled>確認並繼續</button>
+    </div>
+
+    <!-- Main Form Card (shown after name is set) -->
+    <div class="form-card hidden" id="formCard">
       <form id="blessingForm">
-        <div class="form-group">
-          <label for="name">您的暱稱(建議不超過 7 個字) *</label>
-          <input type="text" id="name" name="name" placeholder="例如：顏小緣" required maxlength="50">
-          <div class="char-counter"><span id="nameCount">0</span>/50</div>
+        <!-- Current User Bar -->
+        <div class="current-user-bar">
+          <div class="user-info">
+            <span>暱稱：</span>
+            <span class="user-name" id="displayUserName"></span>
+          </div>
+          <button type="button" class="change-name-btn" id="changeNameBtn">更改暱稱</button>
         </div>
+
+        <!-- Hidden name input for form submission -->
+        <input type="hidden" id="name" name="name">
 
         <!-- Tabs -->
         <div class="tabs">
@@ -1458,8 +1631,8 @@
     // ============================================
     // Validation Constants
     // ============================================
-    const MAX_NAME_LENGTH = 50;
-    const MAX_MESSAGE_LENGTH = 500;
+    const MAX_NAME_LENGTH = 10;
+    const MAX_MESSAGE_LENGTH = 100;
 
     // ============================================
     // DOM Elements
@@ -1487,9 +1660,8 @@
     const anotherBtn = document.getElementById('anotherBtn');
     const privateCheckbox = document.getElementById('privateCheckbox');
     const toast = document.getElementById('toast');
-    const nameInput = document.getElementById('name');
+    const nameInput = document.getElementById('name'); // Hidden input for form submission
     const messageInput = document.getElementById('message');
-    const nameCount = document.getElementById('nameCount');
     const messageCount = document.getElementById('messageCount');
     const colorPicker = document.getElementById('colorPicker');
     const colorOptions = document.querySelectorAll('.color-option');
@@ -1512,6 +1684,98 @@
     const closeVideoRecordBtn = document.getElementById('closeVideoRecordBtn');
     const switchVideoCameraBtn = document.getElementById('switchVideoCameraBtn');
     const recordingTimer = document.getElementById('recordingTimer');
+
+    // Name step elements
+    const nameStepCard = document.getElementById('nameStepCard');
+    const nameStepInput = document.getElementById('nameStepInput');
+    const nameStepCount = document.getElementById('nameStepCount');
+    const nameSubmitBtn = document.getElementById('nameSubmitBtn');
+    const displayUserName = document.getElementById('displayUserName');
+    const changeNameBtn = document.getElementById('changeNameBtn');
+
+    // ============================================
+    // Name Step Logic (localStorage)
+    // ============================================
+    const STORAGE_KEY_NAME = 'blessing_user_name';
+    let storedUserName = localStorage.getItem(STORAGE_KEY_NAME) || '';
+
+    function initializeNameStep() {
+      if (storedUserName) {
+        // Name exists, show main form
+        showMainForm();
+      } else {
+        // No name, show name step
+        showNameStep();
+      }
+    }
+
+    function showNameStep() {
+      nameStepCard.classList.remove('hidden');
+      formCard.classList.add('hidden');
+      nameStepInput.value = storedUserName;
+      updateNameSubmitBtn();
+      nameStepInput.focus();
+      // Hide emoji bar in name step
+      document.getElementById('emojiFloatBar')?.classList.add('hidden');
+      document.getElementById('bounceHint')?.classList.add('hidden');
+    }
+
+    function showMainForm() {
+      nameStepCard.classList.add('hidden');
+      formCard.classList.remove('hidden');
+      // Update displays
+      displayUserName.textContent = storedUserName;
+      nameInput.value = storedUserName;
+      previewSender.textContent = storedUserName;
+      // Show emoji bar in main form
+      document.getElementById('emojiFloatBar')?.classList.remove('hidden');
+      document.getElementById('bounceHint')?.classList.remove('hidden');
+    }
+
+    function updateNameSubmitBtn() {
+      const name = nameStepInput.value.trim();
+      const len = nameStepInput.value.length;
+      
+      // Update counter
+      nameStepCount.textContent = len;
+      const counterParent = nameStepCount.parentElement;
+      counterParent.classList.remove('warning', 'limit');
+      if (len >= MAX_NAME_LENGTH) {
+        counterParent.classList.add('limit');
+      } else if (len >= MAX_NAME_LENGTH * 0.8) {
+        counterParent.classList.add('warning');
+      }
+      
+      // Update button state
+      nameSubmitBtn.disabled = name.length === 0 || len > MAX_NAME_LENGTH;
+    }
+
+    nameStepInput.addEventListener('input', updateNameSubmitBtn);
+
+    nameStepInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !nameSubmitBtn.disabled) {
+        e.preventDefault();
+        submitName();
+      }
+    });
+
+    nameSubmitBtn.addEventListener('click', submitName);
+
+    function submitName() {
+      const name = nameStepInput.value.trim();
+      if (!name) return;
+      
+      storedUserName = name;
+      localStorage.setItem(STORAGE_KEY_NAME, storedUserName);
+      showMainForm();
+    }
+
+    changeNameBtn.addEventListener('click', () => {
+      showNameStep();
+    });
+
+    // Initialize on page load
+    initializeNameStep();
 
     let cameraStream = null;
     let videoRecordStream = null;
@@ -1556,16 +1820,13 @@
     const MESSAGE_PLACEHOLDER = '您的祝福將以此顏色顯示';
     
     function updatePreviewText() {
-      const name = nameInput.value.trim();
       const text = messageInput.value.trim();
-      previewSender.textContent = name || NAME_PLACEHOLDER;
+      previewSender.textContent = storedUserName || NAME_PLACEHOLDER;
       previewMessage.textContent = text || MESSAGE_PLACEHOLDER;
     }
 
-    nameInput.addEventListener('input', () => {
-      updateCounter(nameInput, nameCount, MAX_NAME_LENGTH);
-      updatePreviewText();
-    });
+    // Name input is now hidden and set from localStorage
+    // No need for nameInput event listener
     
     messageInput.addEventListener('input', () => {
       updateCounter(messageInput, messageCount, MAX_MESSAGE_LENGTH);
@@ -2093,21 +2354,11 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const name = nameInput.value.trim();
+      const name = storedUserName; // Use stored name
       const message = messageInput.value.trim();
       const isPrivate = privateCheckbox.checked;
 
-      // Validation
-      if (!name) {
-        showToast('請填寫您的暱稱', 'error');
-        return;
-      }
-
-      if (name.length > MAX_NAME_LENGTH) {
-        showToast(`稱呼不能超過 ${MAX_NAME_LENGTH} 個字`, 'error');
-        return;
-      }
-
+      // Validation (name is guaranteed by name step)
       if (currentTab === 'text') {
         if (!message) {
           showToast('請填寫祝福話語', 'error');
@@ -2233,7 +2484,6 @@
       
       // Reset counters
       messageCount.textContent = '0';
-      nameCount.textContent = '0';
       
       // Reset color to first option
       selectedColor = '#a8b5a0';
@@ -2326,9 +2576,10 @@
         setTimeout(() => btn.classList.remove('popping'), 300);
         
         try {
-          // Push emoji blast event to Firebase (minimal data)
+          // Push emoji blast event to Firebase with sender name
           await push(ref(db, 'emojiBlasts'), {
-            e: emoji,  // short key for minimal data
+            e: emoji,  // emoji
+            n: storedUserName, // sender name
             t: Date.now()
           });
           
