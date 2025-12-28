@@ -314,6 +314,64 @@
       cursor: not-allowed;
     }
 
+    .testing-btn {
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .testing-btn:hover {
+      background: rgba(255, 193, 7, 0.3);
+    }
+
+    .testing-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toggle-testing-btn {
+      background: rgba(33, 150, 243, 0.2);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: #64b5f6;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-testing-btn:hover {
+      background: rgba(33, 150, 243, 0.3);
+    }
+
+    .toggle-testing-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toggle-testing-btn.is-hidden {
+      background: rgba(255, 152, 0, 0.2);
+      border-color: rgba(255, 152, 0, 0.3);
+      color: #ffb74d;
+    }
+
+    .toggle-testing-btn.is-hidden:hover {
+      background: rgba(255, 152, 0, 0.3);
+    }
+
     /* Storage Bar */
     .storage-bar {
       display: flex;
@@ -467,6 +525,40 @@
       font-size: 18px;
       font-weight: 600;
       color: #fff;
+    }
+
+    .testing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 20px;
+      color: #ffc107;
+    }
+
+    .testing-badge .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    .private-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(255, 152, 0, 0.2);
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      border-radius: 20px;
+      color: #ffb74d;
+    }
+
+    .private-badge .material-symbols-outlined {
+      font-size: 14px;
     }
 
     .blessing-time {
@@ -822,6 +914,14 @@
         <span class="material-symbols-outlined">delete_sweep</span>
         全部刪除
       </button>
+      <button class="testing-btn" id="markTestingBtn">
+        <span class="material-symbols-outlined">label</span>
+        標記為測試資料
+      </button>
+      <button class="toggle-testing-btn" id="toggleTestingBtn">
+        <span class="material-symbols-outlined">visibility</span>
+        隱藏測試資料
+      </button>
     </div>
 
     <div class="storage-bar" id="storageBar">
@@ -874,7 +974,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, remove, query, orderByChild, push } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onValue, remove, query, orderByChild, push, update, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
     import { getStorage, ref as storageRef, deleteObject, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
 
     // ============================================
@@ -1438,6 +1538,119 @@
     emojiBlastBtn.addEventListener('click', sendEmojiBlasts);
 
     // ============================================
+    // Testing Data Management
+    // ============================================
+    const markTestingBtn = document.getElementById('markTestingBtn');
+    const toggleTestingBtn = document.getElementById('toggleTestingBtn');
+    let testingDataHidden = false;
+
+    // Mark all current data as testing
+    async function markAllAsTesting() {
+      if (!confirm('確定要將目前所有資料標記為測試資料嗎？')) return;
+      
+      markTestingBtn.disabled = true;
+      markTestingBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 處理中...';
+
+      try {
+        const updates = {};
+        
+        // Mark all blessings as testing
+        for (const blessing of allBlessings) {
+          updates[`blessings/${blessing.id}/testing`] = true;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await update(ref(db), updates);
+          showToast(`已標記 ${allBlessings.length} 筆資料為測試資料`);
+        } else {
+          showToast('沒有資料需要標記');
+        }
+      } catch (error) {
+        console.error('Error marking data as testing:', error);
+        showToast('標記失敗', 'error');
+      } finally {
+        markTestingBtn.disabled = false;
+        markTestingBtn.innerHTML = '<span class="material-symbols-outlined">label</span> 標記為測試資料';
+      }
+    }
+
+    // Toggle visibility of all testing data
+    async function toggleTestingDataVisibility() {
+      toggleTestingBtn.disabled = true;
+      const newHiddenState = !testingDataHidden;
+      const actionText = newHiddenState ? '隱藏' : '顯示';
+      toggleTestingBtn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span> 處理中...`;
+
+      try {
+        // Get all blessings with testing = true
+        const snapshot = await get(ref(db, 'blessings'));
+        const updates = {};
+        let count = 0;
+
+        if (snapshot.exists()) {
+          snapshot.forEach((child) => {
+            const data = child.val();
+            if (data.testing === true) {
+              updates[`blessings/${child.key}/private`] = newHiddenState;
+              count++;
+            }
+          });
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await update(ref(db), updates);
+          testingDataHidden = newHiddenState;
+          updateToggleButton();
+          showToast(`已${actionText} ${count} 筆測試資料`);
+        } else {
+          showToast('沒有測試資料');
+        }
+      } catch (error) {
+        console.error('Error toggling testing data:', error);
+        showToast('操作失敗', 'error');
+      } finally {
+        toggleTestingBtn.disabled = false;
+        updateToggleButton();
+      }
+    }
+
+    function updateToggleButton() {
+      if (testingDataHidden) {
+        toggleTestingBtn.innerHTML = '<span class="material-symbols-outlined">visibility_off</span> 顯示測試資料';
+        toggleTestingBtn.classList.add('is-hidden');
+      } else {
+        toggleTestingBtn.innerHTML = '<span class="material-symbols-outlined">visibility</span> 隱藏測試資料';
+        toggleTestingBtn.classList.remove('is-hidden');
+      }
+    }
+
+    // Check initial state of testing data visibility
+    async function checkTestingDataState() {
+      try {
+        const snapshot = await get(ref(db, 'blessings'));
+        if (snapshot.exists()) {
+          let hasHiddenTesting = false;
+          snapshot.forEach((child) => {
+            const data = child.val();
+            if (data.testing === true && data.private === true) {
+              hasHiddenTesting = true;
+            }
+          });
+          testingDataHidden = hasHiddenTesting;
+          updateToggleButton();
+        }
+      } catch (error) {
+        console.error('Error checking testing data state:', error);
+      }
+    }
+
+    markTestingBtn.addEventListener('click', markAllAsTesting);
+    toggleTestingBtn.addEventListener('click', toggleTestingDataVisibility);
+
+    // Check state on load
+    checkTestingDataState();
+
+    // ============================================
     // Render Blessings
     // ============================================
     function formatTime(timestamp) {
@@ -1477,6 +1690,8 @@
           <div class="blessing-content">
             <div class="blessing-header">
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
+              ${blessing.testing ? '<span class="testing-badge"><span class="material-symbols-outlined">science</span>測試</span>' : ''}
+              ${blessing.private ? '<span class="private-badge"><span class="material-symbols-outlined">visibility_off</span>隱藏</span>' : ''}
               <span class="blessing-time">${formatTime(blessing.timestamp)}</span>
             </div>
             ${blessing.message ? `
