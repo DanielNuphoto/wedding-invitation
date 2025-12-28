@@ -453,6 +453,109 @@
       font-size: 18px;
     }
 
+    /* Memory Panel */
+    .memory-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 30px;
+      background: rgba(156, 39, 176, 0.08);
+      border-bottom: 1px solid rgba(156, 39, 176, 0.15);
+      flex-wrap: wrap;
+    }
+
+    .memory-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .memory-info .material-symbols-outlined {
+      font-size: 18px;
+      color: #ba68c8;
+    }
+
+    .memory-stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .memory-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .memory-stat .label {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .memory-stat .value {
+      font-weight: 600;
+      color: #ba68c8;
+    }
+
+    .memory-btn {
+      background: rgba(156, 39, 176, 0.2);
+      border: 1px solid rgba(156, 39, 176, 0.3);
+      color: #ba68c8;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .memory-btn:hover {
+      background: rgba(156, 39, 176, 0.3);
+    }
+
+    .memory-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .memory-btn.danger {
+      background: rgba(255, 107, 107, 0.15);
+      border-color: rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+    }
+
+    .memory-btn.danger:hover {
+      background: rgba(255, 107, 107, 0.25);
+    }
+
+    .memory-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    .memory-status {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-left: auto;
+    }
+
+    .memory-status.online {
+      color: #4caf50;
+    }
+
+    .memory-status.offline {
+      color: #ff6b6b;
+    }
+
     /* Blessings List */
     .blessings-list {
       padding: 0 30px 30px;
@@ -937,6 +1040,44 @@
         <span class="material-symbols-outlined">auto_delete</span>
         清理舊照片
       </button>
+    </div>
+
+    <div class="memory-bar" id="memoryBar">
+      <div class="memory-info">
+        <span class="material-symbols-outlined">memory</span>
+        <span>舞台記憶體</span>
+      </div>
+      <div class="memory-stats" id="memoryStats">
+        <div class="memory-stat">
+          <span class="label">圖片快取:</span>
+          <span class="value" id="imgCacheCount">-</span>
+        </div>
+        <div class="memory-stat">
+          <span class="label">影片快取:</span>
+          <span class="value" id="vidCacheCount">-</span>
+        </div>
+        <div class="memory-stat">
+          <span class="label">祝福儲存:</span>
+          <span class="value" id="blessingsStoredCount">-</span>
+        </div>
+        <div class="memory-stat">
+          <span class="label">Emoji 隊列:</span>
+          <span class="value" id="emojiQueueCount">-</span>
+        </div>
+        <div class="memory-stat" id="jsHeapStat" style="display: none;">
+          <span class="label">JS Heap:</span>
+          <span class="value" id="jsHeapCount">-</span>
+        </div>
+      </div>
+      <button class="memory-btn" id="refreshMemoryBtn" title="重新整理記憶體狀態">
+        <span class="material-symbols-outlined">refresh</span>
+        刷新
+      </button>
+      <button class="memory-btn danger" id="clearCachesBtn" title="清除舞台快取">
+        <span class="material-symbols-outlined">delete_forever</span>
+        清除快取
+      </button>
+      <span class="memory-status" id="memoryStatus">等待連線...</span>
     </div>
 
     <div class="blessings-list" id="blessingsList">
@@ -1649,6 +1790,115 @@
 
     // Check state on load
     checkTestingDataState();
+
+    // ============================================
+    // Memory Management (Stage Communication)
+    // ============================================
+    const refreshMemoryBtn = document.getElementById('refreshMemoryBtn');
+    const clearCachesBtn = document.getElementById('clearCachesBtn');
+    const memoryStatus = document.getElementById('memoryStatus');
+    const imgCacheCount = document.getElementById('imgCacheCount');
+    const vidCacheCount = document.getElementById('vidCacheCount');
+    const blessingsStoredCount = document.getElementById('blessingsStoredCount');
+    const emojiQueueCount = document.getElementById('emojiQueueCount');
+    const jsHeapStat = document.getElementById('jsHeapStat');
+    const jsHeapCount = document.getElementById('jsHeapCount');
+
+    // Listen for memory stats from stage
+    const memoryStatsRef = ref(db, 'stageMemoryStats');
+    onValue(memoryStatsRef, (snapshot) => {
+      console.log('[Admin] Memory stats received:', snapshot.exists(), snapshot.val());
+      if (snapshot.exists()) {
+        const stats = snapshot.val();
+        imgCacheCount.textContent = `${stats.imageCacheSize || 0}/${stats.imageCacheMax || '-'}`;
+        vidCacheCount.textContent = `${stats.videoCacheSize || 0}/${stats.videoCacheMax || '-'}`;
+        blessingsStoredCount.textContent = `${(stats.textBlessingsCount || 0) + (stats.mediaBlessingsCount || 0)}/${stats.blessingsMax || '-'}`;
+        emojiQueueCount.textContent = `${stats.emojiBlastQueue || 0}`;
+        
+        // Show JS Heap if available
+        if (stats.jsHeapUsed !== undefined) {
+          jsHeapStat.style.display = 'flex';
+          jsHeapCount.textContent = `${stats.jsHeapUsed} / ${stats.jsHeapTotal} / ${stats.jsHeapLimit} MB`;
+        } else {
+          jsHeapStat.style.display = 'none';
+        }
+        
+        // Update status with last update time
+        const lastUpdate = stats.timestamp ? new Date(stats.timestamp) : null;
+        if (lastUpdate) {
+          const secondsAgo = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
+          if (secondsAgo < 60) {
+            memoryStatus.textContent = `${secondsAgo} 秒前更新`;
+            memoryStatus.className = 'memory-status online';
+          } else if (secondsAgo < 300) {
+            memoryStatus.textContent = `${Math.floor(secondsAgo / 60)} 分鐘前更新`;
+            memoryStatus.className = 'memory-status online';
+          } else {
+            memoryStatus.textContent = '舞台可能已離線';
+            memoryStatus.className = 'memory-status offline';
+          }
+        }
+      } else {
+        memoryStatus.textContent = '等待舞台連線...';
+        memoryStatus.className = 'memory-status';
+      }
+    }, (error) => {
+      console.error('[Admin] Memory stats listener error:', error);
+      memoryStatus.textContent = '讀取錯誤';
+      memoryStatus.className = 'memory-status offline';
+    });
+
+    // Send command to stage
+    async function sendStageCommand(command) {
+      try {
+        await push(ref(db, 'stageCommands'), {
+          command: command,
+          timestamp: Date.now()
+        });
+        return true;
+      } catch (error) {
+        console.error('Error sending stage command:', error);
+        return false;
+      }
+    }
+
+    // Refresh memory stats
+    refreshMemoryBtn.addEventListener('click', async () => {
+      refreshMemoryBtn.disabled = true;
+      refreshMemoryBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 請求中...';
+      
+      const success = await sendStageCommand('refreshMemoryStats');
+      
+      setTimeout(() => {
+        refreshMemoryBtn.disabled = false;
+        refreshMemoryBtn.innerHTML = '<span class="material-symbols-outlined">refresh</span> 刷新';
+        if (success) {
+          showToast('已發送刷新請求');
+        } else {
+          showToast('發送失敗', 'error');
+        }
+      }, 1000);
+    });
+
+    // Clear caches
+    clearCachesBtn.addEventListener('click', async () => {
+      if (!confirm('確定要清除舞台的所有快取嗎？這可能會導致短暫的載入延遲。')) return;
+      
+      clearCachesBtn.disabled = true;
+      clearCachesBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 清除中...';
+      
+      const success = await sendStageCommand('clearCaches');
+      
+      setTimeout(() => {
+        clearCachesBtn.disabled = false;
+        clearCachesBtn.innerHTML = '<span class="material-symbols-outlined">delete_forever</span> 清除快取';
+        if (success) {
+          showToast('已發送清除請求');
+        } else {
+          showToast('發送失敗', 'error');
+        }
+      }, 1000);
+    });
 
     // ============================================
     // Render Blessings

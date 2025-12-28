@@ -785,7 +785,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, onChildAdded, onChildRemoved, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved, remove, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
@@ -826,8 +826,95 @@
     let laneLastUsed = Array(DANMAKU_LANES).fill(0);
     let lastUsedLane = -1; // Track the last lane used to prevent adjacent same lane
 
-    // Preloaded images cache
-    const preloadedImages = new Map();
+    // ============================================
+    // LRU Cache Implementation (Memory Management)
+    // ============================================
+    const MAX_IMAGE_CACHE_SIZE = 100; // Max cached images
+    const MAX_VIDEO_CACHE_SIZE = 20; // Max cached videos (videos are memory-heavy)
+    const MAX_BLESSINGS_STORED = 200; // Max blessings to keep for recycling
+
+    class LRUCache {
+      constructor(maxSize, onEvict = null) {
+        this.maxSize = maxSize;
+        this.cache = new Map();
+        this.onEvict = onEvict; // Callback when item is evicted
+      }
+
+      has(key) {
+        return this.cache.has(key);
+      }
+
+      get(key) {
+        if (!this.cache.has(key)) return undefined;
+        // Move to end (most recently used)
+        const value = this.cache.get(key);
+        this.cache.delete(key);
+        this.cache.set(key, value);
+        return value;
+      }
+
+      set(key, value) {
+        // If key exists, delete it first to update position
+        if (this.cache.has(key)) {
+          this.cache.delete(key);
+        }
+        // Evict oldest if at capacity
+        while (this.cache.size >= this.maxSize) {
+          const oldestKey = this.cache.keys().next().value;
+          const oldestValue = this.cache.get(oldestKey);
+          this.cache.delete(oldestKey);
+          // Call eviction callback for cleanup
+          if (this.onEvict) {
+            this.onEvict(oldestKey, oldestValue);
+          }
+        }
+        this.cache.set(key, value);
+      }
+
+      delete(key) {
+        if (this.cache.has(key)) {
+          const value = this.cache.get(key);
+          this.cache.delete(key);
+          if (this.onEvict) {
+            this.onEvict(key, value);
+          }
+        }
+      }
+
+      get size() {
+        return this.cache.size;
+      }
+
+      clear() {
+        // Evict all items properly
+        for (const [key, value] of this.cache) {
+          if (this.onEvict) {
+            this.onEvict(key, value);
+          }
+        }
+        this.cache.clear();
+      }
+    }
+
+    // Cleanup function for video elements
+    function cleanupVideoElement(url, videoData) {
+      if (videoData && videoData.element) {
+        const video = videoData.element;
+        video.pause();
+        video.removeAttribute('src');
+        video.load(); // Reset the video element
+        console.log(`[Memory] Evicted video from cache: ${url.substring(0, 50)}...`);
+      }
+    }
+
+    // Cleanup function for image elements (less critical but good practice)
+    function cleanupImageElement(url, img) {
+      // Images don't need explicit cleanup, but we log for debugging
+      console.log(`[Memory] Evicted image from cache: ${url.substring(0, 50)}...`);
+    }
+
+    // Preloaded images cache with LRU eviction
+    const preloadedImages = new LRUCache(MAX_IMAGE_CACHE_SIZE, cleanupImageElement);
 
     // ============================================
     // Background Media Management
@@ -958,8 +1045,8 @@
     // Initialize backgrounds
     updateBgHalf('left');
     updateBgHalf('right');
-    // Preloaded videos cache
-    const preloadedVideos = new Map();
+    // Preloaded videos cache with LRU eviction and cleanup
+    const preloadedVideos = new LRUCache(MAX_VIDEO_CACHE_SIZE, cleanupVideoElement);
 
     // ============================================
     // DOM Elements
@@ -1109,12 +1196,21 @@
       }, DANMAKU_DURATION + 500);
     }
 
+    // Helper to add blessing while maintaining max size
+    function addBlessingWithLimit(array, blessing, maxSize) {
+      array.push(blessing);
+      // Remove oldest entries if exceeding limit
+      while (array.length > maxSize) {
+        array.shift();
+      }
+    }
+
     function showNextDanmaku() {
       if (!isPlaying) return;
       
       if (textQueue.length > 0) {
         const blessing = textQueue.shift();
-        textBlessings.push(blessing);
+        addBlessingWithLimit(textBlessings, blessing, MAX_BLESSINGS_STORED);
         createDanmaku(blessing);
         waitingScreen.classList.add('hidden');
       } else if (textBlessings.length > 0) {
@@ -1454,7 +1550,7 @@
 
       if (mediaQueue.length > 0) {
         const blessing = mediaQueue.shift();
-        mediaBlessings.push(blessing);
+        addBlessingWithLimit(mediaBlessings, blessing, MAX_BLESSINGS_STORED);
         
         // Preload next in queue while showing this one
         if (mediaQueue.length > 0) {
@@ -1775,6 +1871,107 @@
       div.textContent = text || '';
       return div.innerHTML;
     }
+
+    // ============================================
+    // Memory Management Utilities
+    // ============================================
+    // Get memory stats object
+    function getMemoryStats() {
+      const stats = {
+        imageCacheSize: preloadedImages.size,
+        imageCacheMax: MAX_IMAGE_CACHE_SIZE,
+        videoCacheSize: preloadedVideos.size,
+        videoCacheMax: MAX_VIDEO_CACHE_SIZE,
+        textBlessingsCount: textBlessings.length,
+        mediaBlessingsCount: mediaBlessings.length,
+        blessingsMax: MAX_BLESSINGS_STORED,
+        textQueueLength: textQueue.length,
+        mediaQueueLength: mediaQueue.length,
+        activeMedia: activeMedia.length,
+        activeDanmaku: activeDanmakuIds.size,
+        emojiBlastQueue: emojiBlastQueue.length,
+        activeBlasts: activeBlastsCount,
+        timestamp: Date.now()
+      };
+      
+      // Add JS Heap info if available (Chrome only)
+      if (performance.memory) {
+        stats.jsHeapUsed = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024 * 10) / 10; // MB
+        stats.jsHeapTotal = Math.round(performance.memory.totalJSHeapSize / 1024 / 1024 * 10) / 10; // MB
+        stats.jsHeapLimit = Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024); // MB
+      }
+      
+      return stats;
+    }
+
+    // Push memory stats to Firebase for admin panel
+    async function pushMemoryStatsToFirebase() {
+      try {
+        await set(ref(db, 'stageMemoryStats'), getMemoryStats());
+        console.log('[Memory] Stats pushed to Firebase');
+      } catch (error) {
+        console.error('[Memory] Failed to push stats:', error);
+      }
+    }
+
+    // Expose memory stats for debugging (call from console: window.memoryStats())
+    window.memoryStats = function() {
+      const stats = getMemoryStats();
+      console.table(stats);
+      
+      // Try to get JS heap size if available
+      if (performance.memory) {
+        console.log('JS Heap:', {
+          used: (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2) + ' MB',
+          total: (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2) + ' MB',
+          limit: (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2) + ' MB'
+        });
+      }
+      
+      return stats;
+    };
+
+    // Manual cache clear (for emergency memory issues)
+    window.clearCaches = function() {
+      preloadedImages.clear();
+      preloadedVideos.clear();
+      console.log('[Memory] All caches cleared');
+      pushMemoryStatsToFirebase(); // Update stats after clearing
+    };
+
+    // Listen for commands from admin panel
+    const stageCommandsRef = ref(db, 'stageCommands');
+    onChildAdded(stageCommandsRef, (snapshot) => {
+      const commandData = snapshot.val();
+      const command = commandData?.command;
+      const timestamp = commandData?.timestamp || 0;
+      
+      // Only process recent commands (within last 30 seconds)
+      if (Date.now() - timestamp > 30000) {
+        remove(ref(db, `stageCommands/${snapshot.key}`)).catch(() => {});
+        return;
+      }
+      
+      console.log('[Memory] Received command:', command);
+      
+      if (command === 'refreshMemoryStats') {
+        pushMemoryStatsToFirebase();
+      } else if (command === 'clearCaches') {
+        window.clearCaches();
+      }
+      
+      // Delete processed command
+      remove(ref(db, `stageCommands/${snapshot.key}`)).catch(() => {});
+    });
+
+    // Periodic memory logging to console (every 5 minutes)
+    setInterval(() => {
+      const imgCache = preloadedImages.size;
+      const vidCache = preloadedVideos.size;
+      const txtBless = textBlessings.length;
+      const mediaBless = mediaBlessings.length;
+      console.log(`[Memory] Caches: img=${imgCache}/${MAX_IMAGE_CACHE_SIZE}, vid=${vidCache}/${MAX_VIDEO_CACHE_SIZE}, textBlessings=${txtBless}, mediaBlessings=${mediaBless}`);
+    }, 5 * 60 * 1000);
 
     // ============================================
     // Settings Panel
