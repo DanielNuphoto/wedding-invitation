@@ -12,6 +12,7 @@
     :root {
       --text-scale: 1;
       --photo-scale: 1;
+      --emoji-sender-scale: 1;
     }
 
     * {
@@ -35,6 +36,47 @@
       color: #fff;
     }
 
+    /* Split Background Sections */
+    .bg-split-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bg-half {
+      width: 50%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bg-media-wrapper {
+      position: absolute;
+      border-radius: 24px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+    }
+
+    .bg-media-wrapper.active {
+      opacity: 1;
+    }
+
+    .bg-half-media {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     /* Decorative background */
     .bg-decoration {
       position: fixed;
@@ -44,7 +86,7 @@
       height: 100%;
       pointer-events: none;
       overflow: hidden;
-      z-index: 0;
+      z-index: 2;
     }
 
     .bg-decoration::before {
@@ -424,12 +466,12 @@
 
     .emoji-blast-sender {
       position: absolute;
-      bottom: 20px;
+      bottom: calc(var(--emoji-sender-scale, 1) * 20px);
       transform: translateX(-50%);
       background: linear-gradient(135deg, rgba(220, 190, 140, 0.95), rgba(200, 165, 115, 0.95));
-      padding: 8px 18px;
-      border-radius: 25px;
-      font-size: 16px;
+      padding: calc(var(--emoji-sender-scale, 1) * 8px) calc(var(--emoji-sender-scale, 1) * 18px);
+      border-radius: calc(var(--emoji-sender-scale, 1) * 25px);
+      font-size: calc(var(--emoji-sender-scale, 1) * 16px);
       font-weight: 600;
       color: #fff;
       white-space: nowrap;
@@ -638,6 +680,12 @@
   </style>
 </head>
 <body>
+  <!-- Split Background -->
+  <div class="bg-split-container">
+    <div class="bg-half" id="bgLeft"></div>
+    <div class="bg-half" id="bgRight"></div>
+  </div>
+
   <div class="bg-decoration"></div>
 
   <header class="header">
@@ -719,6 +767,20 @@
         <button class="preset-btn" data-target="photoScale" data-value="130">大</button>
       </div>
     </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>Emoji 發送者標籤大小</span>
+        <span class="setting-value" id="emojiSenderScaleValue">100%</span>
+      </div>
+      <input type="range" class="setting-slider" id="emojiSenderScaleSlider" 
+             min="50" max="200" value="100" step="10">
+      <div class="setting-presets">
+        <button class="preset-btn" data-target="emojiSenderScale" data-value="70">小</button>
+        <button class="preset-btn active" data-target="emojiSenderScale" data-value="100">中</button>
+        <button class="preset-btn" data-target="emojiSenderScale" data-value="150">大</button>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -756,7 +818,7 @@
     const DANMAKU_INTERVAL = 3000; // New danmaku every 3 seconds
     const DANMAKU_DURATION = 12000; // Time to cross screen (12 seconds)
     const MEDIA_DISPLAY_TIME = 8000; // Photos and videos stay for 8 seconds
-    const MEDIA_INTERVAL = 5000; // New media every 5 seconds
+    const MEDIA_INTERVAL = 8000; // New media every 8 seconds
     const MAX_MEDIA_ON_SCREEN = 2;
     const DANMAKU_LANES = 6; // Number of vertical lanes
 
@@ -766,6 +828,136 @@
 
     // Preloaded images cache
     const preloadedImages = new Map();
+
+    // ============================================
+    // Background Media Management
+    // ============================================
+    const bgLeft = document.getElementById('bgLeft');
+    const bgRight = document.getElementById('bgRight');
+    
+    // Background media files sorted numerically by filename
+    const bgMediaFiles = [
+      '1.jpg', '2.jpg', '3.jpg', '4.png', '5.jpg', '6.JPG', '7.jpg', '8.jpg', '9.jpg',
+      '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg', '15.jpg', '16.jpg', '17.jpg', '18.jpg', '19.jpg',
+      '20.jpeg', '21.jpg', '22.jpg', '23.jpg', '24.jpg', '25.jpg', '26.jpg', '27.jpg', '28.jpg', '29.mp4',
+      '30.jpg', '31.jpg', '32.jpg', '33.jpg', '34.jpeg', '35.jpg', '36.jpeg', '37.jpg', '38.jpg', '39.jpg',
+      '40.mp4', '41.jpg', '42.jpg'
+    ];
+    
+    let bgLeftIndex = 0;
+    let bgRightIndex = 1;
+    
+    function isVideo(filename) {
+      return filename.endsWith('.mp4') || filename.endsWith('.webm') || filename.endsWith('.mov');
+    }
+    
+    function createBgMediaElement(filename, containerWidth, containerHeight) {
+      return new Promise((resolve) => {
+        const path = `./background/${filename}`;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bg-media-wrapper';
+        
+        // Available space (90% of container)
+        const maxWidth = containerWidth * 0.9;
+        const maxHeight = containerHeight * 0.9;
+        
+        if (isVideo(filename)) {
+          const video = document.createElement('video');
+          video.src = path;
+          video.className = 'bg-half-media';
+          video.muted = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.autoplay = true;
+          
+          video.addEventListener('loadedmetadata', () => {
+            const naturalWidth = video.videoWidth || 1920;
+            const naturalHeight = video.videoHeight || 1080;
+            const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
+            wrapper.style.width = (naturalWidth * scale) + 'px';
+            wrapper.style.height = (naturalHeight * scale) + 'px';
+            wrapper.appendChild(video);
+            resolve(wrapper);
+          }, { once: true });
+          
+          // Fallback if metadata doesn't load
+          setTimeout(() => {
+            if (!wrapper.contains(video)) {
+              wrapper.style.width = maxWidth + 'px';
+              wrapper.style.height = maxHeight + 'px';
+              wrapper.appendChild(video);
+              resolve(wrapper);
+            }
+          }, 2000);
+        } else {
+          const img = document.createElement('img');
+          img.src = path;
+          img.className = 'bg-half-media';
+          
+          img.addEventListener('load', () => {
+            const naturalWidth = img.naturalWidth;
+            const naturalHeight = img.naturalHeight;
+            const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
+            wrapper.style.width = (naturalWidth * scale) + 'px';
+            wrapper.style.height = (naturalHeight * scale) + 'px';
+            wrapper.appendChild(img);
+            resolve(wrapper);
+          }, { once: true });
+          
+          img.addEventListener('error', () => {
+            wrapper.style.width = maxWidth + 'px';
+            wrapper.style.height = maxHeight + 'px';
+            wrapper.appendChild(img);
+            resolve(wrapper);
+          }, { once: true });
+        }
+      });
+    }
+    
+    async function updateBgHalf(side) {
+      const container = side === 'left' ? bgLeft : bgRight;
+      const index = side === 'left' ? bgLeftIndex : bgRightIndex;
+      const filename = bgMediaFiles[index];
+      
+      // Get container dimensions
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+      
+      // Create new media element with calculated size
+      const newMedia = await createBgMediaElement(filename, containerWidth, containerHeight);
+      container.appendChild(newMedia);
+      
+      // Trigger transition after a small delay
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          newMedia.classList.add('active');
+        });
+      });
+      
+      // Remove old media after transition
+      const oldMedia = container.querySelector('.bg-media-wrapper.active:not(:last-child)');
+      if (oldMedia) {
+        oldMedia.classList.remove('active');
+        setTimeout(() => oldMedia.remove(), 1000);
+      }
+      
+      // Advance index for next time (recycle)
+      if (side === 'left') {
+        bgLeftIndex = (bgLeftIndex + 2) % bgMediaFiles.length;
+      } else {
+        bgRightIndex = (bgRightIndex + 2) % bgMediaFiles.length;
+      }
+    }
+    
+    // Called when a media card exits on a specific side
+    function onMediaCardExit(position) {
+      // position 0 = left, 1 = right
+      updateBgHalf(position === 0 ? 'left' : 'right');
+    }
+    
+    // Initialize backgrounds
+    updateBgHalf('left');
+    updateBgHalf('right');
     // Preloaded videos cache
     const preloadedVideos = new Map();
 
@@ -1237,6 +1429,9 @@
           }
         }
         
+        // Update background on the corresponding side when card exits
+        onMediaCardExit(position);
+        
         // Apply scale for fade-out, preserving existing rotation
         const currentTransform = card.style.transform || 'rotate(0deg)';
         card.style.transform = currentTransform + ' scale(0.85)';
@@ -1590,16 +1785,21 @@
     const textScaleValue = document.getElementById('textScaleValue');
     const photoScaleSlider = document.getElementById('photoScaleSlider');
     const photoScaleValue = document.getElementById('photoScaleValue');
+    const emojiSenderScaleSlider = document.getElementById('emojiSenderScaleSlider');
+    const emojiSenderScaleValue = document.getElementById('emojiSenderScaleValue');
     const presetBtns = document.querySelectorAll('.preset-btn');
 
     // Load saved settings
     const savedTextScale = localStorage.getItem('stageTextScale') || '100';
     const savedPhotoScale = localStorage.getItem('stagePhotoScale') || '100';
+    const savedEmojiSenderScale = localStorage.getItem('stageEmojiSenderScale') || '100';
 
     textScaleSlider.value = savedTextScale;
     photoScaleSlider.value = savedPhotoScale;
+    emojiSenderScaleSlider.value = savedEmojiSenderScale;
     updateScale('text', savedTextScale);
     updateScale('photo', savedPhotoScale);
+    updateScale('emojiSender', savedEmojiSenderScale);
 
     // Toggle panel
     settingsToggle.addEventListener('click', () => {
@@ -1623,11 +1823,16 @@
         textScaleValue.textContent = value + '%';
         localStorage.setItem('stageTextScale', value);
         updatePresetButtons('textScale', value);
-      } else {
+      } else if (type === 'photo') {
         document.documentElement.style.setProperty('--photo-scale', scale);
         photoScaleValue.textContent = value + '%';
         localStorage.setItem('stagePhotoScale', value);
         updatePresetButtons('photoScale', value);
+      } else if (type === 'emojiSender') {
+        document.documentElement.style.setProperty('--emoji-sender-scale', scale);
+        emojiSenderScaleValue.textContent = value + '%';
+        localStorage.setItem('stageEmojiSenderScale', value);
+        updatePresetButtons('emojiSenderScale', value);
       }
     }
 
@@ -1649,6 +1854,10 @@
       updateScale('photo', e.target.value);
     });
 
+    emojiSenderScaleSlider.addEventListener('input', (e) => {
+      updateScale('emojiSender', e.target.value);
+    });
+
     // Preset button events
     presetBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1658,9 +1867,12 @@
         if (target === 'textScale') {
           textScaleSlider.value = value;
           updateScale('text', value);
-        } else {
+        } else if (target === 'photoScale') {
           photoScaleSlider.value = value;
           updateScale('photo', value);
+        } else if (target === 'emojiSenderScale') {
+          emojiSenderScaleSlider.value = value;
+          updateScale('emojiSender', value);
         }
       });
     });
