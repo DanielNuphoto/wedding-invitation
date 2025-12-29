@@ -556,6 +556,38 @@
       color: #ff6b6b;
     }
 
+    /* Role-based visibility */
+    body.role-operator .admin-only {
+      display: none !important;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 20px;
+      margin-left: 10px;
+    }
+
+    .role-badge.admin {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #81c784;
+    }
+
+    .role-badge.operator {
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+    }
+
+    .role-badge .material-symbols-outlined {
+      font-size: 14px;
+    }
+
     /* Blessings List */
     .blessings-list {
       padding: 0 30px 30px;
@@ -1008,6 +1040,10 @@
         祝福牆管理
       </h1>
       <div class="header-actions">
+        <span class="role-badge" id="roleBadge" style="display: none;">
+          <span class="material-symbols-outlined">shield_person</span>
+          <span id="roleText">-</span>
+        </span>
         <div class="stats-badge">
           共 <span id="totalCount">0</span> 則祝福
         </div>
@@ -1032,29 +1068,29 @@
         <span class="material-symbols-outlined">refresh</span>
         重新載入
       </button>
-      <button class="test-data-btn" id="testDataBtn">
+      <button class="test-data-btn admin-only" id="testDataBtn">
         <span class="material-symbols-outlined">science</span>
         加入測試資料
       </button>
-      <button class="test-data-btn" id="emojiBlastBtn" style="background: rgba(233, 93, 117, 0.2); border-color: rgba(233, 93, 117, 0.3); color: #f48fb1;">
+      <button class="test-data-btn admin-only" id="emojiBlastBtn" style="background: rgba(233, 93, 117, 0.2); border-color: rgba(233, 93, 117, 0.3); color: #f48fb1;">
         <span class="material-symbols-outlined">celebration</span>
         發送 50 個 Emoji
       </button>
-      <button class="delete-all-btn" id="deleteAllBtn">
+      <button class="delete-all-btn admin-only" id="deleteAllBtn">
         <span class="material-symbols-outlined">delete_sweep</span>
         全部刪除
       </button>
-      <button class="testing-btn" id="markTestingBtn">
+      <button class="testing-btn admin-only" id="markTestingBtn">
         <span class="material-symbols-outlined">label</span>
         標記為測試資料
       </button>
-      <button class="toggle-testing-btn" id="toggleTestingBtn">
+      <button class="toggle-testing-btn admin-only" id="toggleTestingBtn">
         <span class="material-symbols-outlined">visibility</span>
         隱藏測試資料
       </button>
     </div>
 
-    <div class="storage-bar" id="storageBar">
+    <div class="storage-bar admin-only" id="storageBar">
       <div class="storage-info">
         <span class="material-symbols-outlined">cloud</span>
         <span>儲存空間：<strong id="storageUsed">0 MB</strong> / 5 GB</span>
@@ -1223,18 +1259,54 @@
     // Login/Logout with Firebase Auth
     // ============================================
     
+    // Role badge elements
+    const roleBadge = document.getElementById('roleBadge');
+    const roleText = document.getElementById('roleText');
+    let currentUserRole = 'operator'; // Default role
+
     // Listen for auth state changes
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         // User is signed in
         loginScreen.classList.add('hidden');
         adminPanel.classList.add('show');
         loginError.classList.remove('show');
+        
+        // Get user's role from custom claims
+        try {
+          const idTokenResult = await user.getIdTokenResult();
+          currentUserRole = idTokenResult.claims.role || 'operator';
+          console.log('[Auth] User role:', currentUserRole);
+          
+          // Update role badge
+          roleBadge.style.display = 'inline-flex';
+          if (currentUserRole === 'admin') {
+            roleText.textContent = '管理員';
+            roleBadge.className = 'role-badge admin';
+            document.body.classList.remove('role-operator');
+          } else {
+            roleText.textContent = '操作員';
+            roleBadge.className = 'role-badge operator';
+            document.body.classList.add('role-operator');
+          }
+        } catch (error) {
+          console.error('[Auth] Error getting user claims:', error);
+          // Default to operator on error
+          currentUserRole = 'operator';
+          roleText.textContent = '操作員';
+          roleBadge.className = 'role-badge operator';
+          roleBadge.style.display = 'inline-flex';
+          document.body.classList.add('role-operator');
+        }
+        
         loadBlessings();
       } else {
         // User is signed out
         loginScreen.classList.remove('hidden');
         adminPanel.classList.remove('show');
+        roleBadge.style.display = 'none';
+        document.body.classList.remove('role-operator');
+        currentUserRole = 'operator';
       }
     });
 
