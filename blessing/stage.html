@@ -1886,6 +1886,32 @@
     setTimeout(startDisplayLoops, 2000);
 
     // ============================================
+    // Page Visibility Handling
+    // ============================================
+    // Pause display loops when tab is hidden to prevent pile-up
+    let wasPlayingBeforeHidden = true;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        // Tab is now hidden - pause everything
+        console.log('[Visibility] Tab hidden - pausing display loops');
+        wasPlayingBeforeHidden = isPlaying;
+        if (isPlaying) {
+          stopDisplayLoops();
+        }
+      } else {
+        // Tab is now visible - resume if it was playing before
+        console.log('[Visibility] Tab visible - resuming display loops');
+        if (wasPlayingBeforeHidden && isPlaying) {
+          // Small delay to let any pending animations settle
+          setTimeout(() => {
+            startDisplayLoops();
+          }, 500);
+        }
+      }
+    });
+
+    // ============================================
     // Controls
     // ============================================
     pauseBtn.addEventListener('click', () => {
