@@ -664,6 +664,33 @@
       font-size: 14px;
     }
 
+    .displayed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 20px;
+      color: #81c784;
+    }
+
+    .displayed-badge .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    .display-times {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    .display-times span {
+      margin-right: 12px;
+    }
+
     .blessing-time {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.5);
@@ -1942,8 +1969,15 @@
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
               ${blessing.testing ? '<span class="testing-badge"><span class="material-symbols-outlined">science</span>測試</span>' : ''}
               ${blessing.private ? '<span class="private-badge"><span class="material-symbols-outlined">visibility_off</span>隱藏</span>' : ''}
+              ${blessing.displayed ? '<span class="displayed-badge"><span class="material-symbols-outlined">visibility</span>已顯示</span>' : ''}
               <span class="blessing-time">${formatTime(blessing.timestamp)}</span>
             </div>
+            ${blessing.displayed ? `
+            <div class="display-times">
+              <span>首次顯示: ${blessing.firstDisplayedAt ? formatTime(blessing.firstDisplayedAt) : '-'}</span>
+              <span>最後顯示: ${blessing.lastDisplayedAt ? formatTime(blessing.lastDisplayedAt) : '-'}</span>
+            </div>
+            ` : ''}
             ${blessing.message ? `
             <div class="blessing-message">
               ${escapeHtml(blessing.message)}

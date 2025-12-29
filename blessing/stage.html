@@ -785,7 +785,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, onChildAdded, onChildRemoved, remove, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved, remove, set, update } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
@@ -821,6 +821,29 @@
     const MEDIA_INTERVAL = 8000; // New media every 8 seconds
     const MAX_MEDIA_ON_SCREEN = 2;
     const DANMAKU_LANES = 6; // Number of vertical lanes
+
+    // ============================================
+    // Display Tracking
+    // ============================================
+    // Update display timestamps for a blessing
+    async function updateDisplayTimestamps(blessingId, isFirstDisplay) {
+      const now = Date.now();
+      const updates = {
+        displayed: true,
+        lastDisplayedAt: now
+      };
+      
+      // Only set firstDisplayedAt on first display
+      if (isFirstDisplay) {
+        updates.firstDisplayedAt = now;
+      }
+      
+      try {
+        await update(ref(db, `blessings/${blessingId}`), updates);
+      } catch (err) {
+        console.warn('[Display] Failed to update display timestamps:', err);
+      }
+    }
 
     // Track lane usage for danmaku
     let laneLastUsed = Array(DANMAKU_LANES).fill(0);
@@ -1134,6 +1157,11 @@
       // Track this danmaku as active
       activeDanmakuIds.add(blessing.id);
       
+      // Update display timestamps in Firebase
+      const isFirstDisplay = !blessing.displayed;
+      updateDisplayTimestamps(blessing.id, isFirstDisplay);
+      blessing.displayed = true; // Mark locally too
+      
       const lane = getAvailableLane();
       
       // Calculate available height (container height minus top/bottom padding)
@@ -1390,6 +1418,11 @@
         return false;
       }
 
+      // Update display timestamps in Firebase
+      const isFirstDisplay = !blessing.displayed;
+      updateDisplayTimestamps(blessing.id, isFirstDisplay);
+      blessing.displayed = true; // Mark locally too
+
       const isPhoto = blessing.photoURL !== undefined;
       const isVideo = blessing.videoURL !== undefined;
 
@@ -1593,20 +1626,31 @@
         // Check if already exists
         if (!mediaBlessings.some(b => b.id === blessing.id) && 
             !mediaQueue.some(b => b.id === blessing.id)) {
-          // Preload media immediately when added to queue
+          // Preload media immediately
           if (blessing.photoURL) {
             preloadImage(blessing.photoURL).catch(() => {});
           } else if (blessing.videoURL) {
             preloadVideo(blessing.videoURL).catch(() => {});
           }
-          mediaQueue.push(blessing);
+          
+          // If already displayed, put in recycle pool; otherwise put in queue
+          if (blessing.displayed) {
+            addBlessingWithLimit(mediaBlessings, blessing, MAX_BLESSINGS_STORED);
+          } else {
+            mediaQueue.push(blessing);
+          }
           photoCountEl.textContent = mediaBlessings.length + mediaQueue.length;
         }
       } else if (blessing.message) {
         // Check if already exists
         if (!textBlessings.some(b => b.id === blessing.id) &&
             !textQueue.some(b => b.id === blessing.id)) {
-          textQueue.push(blessing);
+          // If already displayed, put in recycle pool; otherwise put in queue
+          if (blessing.displayed) {
+            addBlessingWithLimit(textBlessings, blessing, MAX_BLESSINGS_STORED);
+          } else {
+            textQueue.push(blessing);
+          }
           textCountEl.textContent = textBlessings.length + textQueue.length;
         }
       }
