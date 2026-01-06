@@ -979,6 +979,23 @@
       opacity: 0.9;
     }
 
+    .awards-summary-img {
+      position: fixed;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .awards-summary-img-left {
+      max-height: 40vh;
+      left: 0;
+    }
+
+    .awards-summary-img-right {
+      max-height: 50vh;
+      right: 0;
+    }
+
     /* Awards Navigation */
     .awards-nav {
       position: absolute;
@@ -1212,6 +1229,8 @@
         <!-- Dynamic content will be inserted here -->
       </div>
       <div class="awards-summary-subtitle">請上台領獎！</div>
+      <img src="adwards/left.png" class="awards-summary-img awards-summary-img-left" alt="">
+      <img src="adwards/right.png" class="awards-summary-img awards-summary-img-right" alt="">
     </div>
     
     <!-- Navigation -->
