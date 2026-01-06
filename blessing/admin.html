@@ -662,6 +662,17 @@
       color: #fff;
     }
 
+    .guest-number-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: rgba(232, 224, 208, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #d4c4a8;
+    }
+
     .testing-badge {
       display: inline-flex;
       align-items: center;
@@ -1543,7 +1554,8 @@
           const query = searchQuery.toLowerCase();
           const nameMatch = b.name?.toLowerCase().includes(query);
           const messageMatch = b.message?.toLowerCase().includes(query);
-          if (!nameMatch && !messageMatch) return false;
+          const guestNumberMatch = b.guestNumber?.toLowerCase().includes(query);
+          if (!nameMatch && !messageMatch && !guestNumberMatch) return false;
         }
         
         return true;
@@ -1680,8 +1692,11 @@
           try {
             // Randomly select a color from available Morandi colors
             const randomColor = morandiColors[Math.floor(Math.random() * morandiColors.length)];
+            // Random guest number between 1 and 50
+            const randomGuestNumber = Math.floor(Math.random() * 50) + 1;
             await push(ref(db, 'blessings'), {
               name: blessing.name,
+              guestNumber: randomGuestNumber,
               message: blessing.message,
               timestamp: Date.now() - Math.random() * 86400000, // Random time in last 24h
               type: 'text',
@@ -1707,8 +1722,11 @@
             await uploadBytes(imageRef, blob);
             const photoURL = await getDownloadURL(imageRef);
             
+            // Random guest number between 1 and 50
+            const randomGuestNumber = Math.floor(Math.random() * 50) + 1;
             await push(ref(db, 'blessings'), {
               name: `測試用戶${i + 1}`,
+              guestNumber: randomGuestNumber,
               message: '',
               timestamp: Date.now() - Math.random() * 86400000,
               type: 'photo',
@@ -2038,6 +2056,7 @@
           ` : ''}
           <div class="blessing-content">
             <div class="blessing-header">
+              ${blessing.guestNumber ? `<span class="guest-number-badge">${escapeHtml(blessing.guestNumber)}</span>` : ''}
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
               ${blessing.testing ? '<span class="testing-badge"><span class="material-symbols-outlined">science</span>測試</span>' : ''}
               ${blessing.private ? '<span class="private-badge"><span class="material-symbols-outlined">visibility_off</span>隱藏</span>' : ''}

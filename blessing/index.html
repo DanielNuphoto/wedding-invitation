@@ -1349,10 +1349,14 @@
 
     <!-- Name Step Card (shown first if no name in localStorage) -->
     <div class="name-step-card" id="nameStepCard">
-      <div class="step-title">歡迎！請先輸入您的暱稱</div>
-      <div class="step-subtitle">這個暱稱會顯示在您的祝福旁邊</div>
+      <div class="step-title">歡迎！請先輸入您的資訊</div>
+      <div class="step-subtitle">暱稱會顯示在您的祝福旁邊</div>
       <div class="name-input-group">
-        <label for="nameStepInput">您的暱稱 (建議不超過 7 個字)</label>
+        <label for="guestNumberInput">抽獎編號 *</label>
+        <input type="number" id="guestNumberInput" placeholder="例如：12" min="1">
+      </div>
+      <div class="name-input-group">
+        <label for="nameStepInput">您的暱稱 (建議不超過 7 個字) *</label>
         <input type="text" id="nameStepInput" placeholder="例如：顏小緣" maxlength="50">
         <div class="char-counter"><span id="nameStepCount">0</span>/10</div>
       </div>
@@ -1365,10 +1369,10 @@
         <!-- Current User Bar -->
         <div class="current-user-bar">
           <div class="user-info">
-            <span>暱稱：</span>
+            <span id="displayGuestNumber" style="background: #e8e0d0; color: #7a6a5a; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 12px;"></span>
             <span class="user-name" id="displayUserName"></span>
           </div>
-          <button type="button" class="change-name-btn" id="changeNameBtn">更改暱稱</button>
+          <button type="button" class="change-name-btn" id="changeNameBtn">更改資訊</button>
         </div>
 
         <!-- Hidden name input for form submission -->
@@ -1697,14 +1701,18 @@
     // Name Step Logic (localStorage)
     // ============================================
     const STORAGE_KEY_NAME = 'blessing_user_name';
+    const STORAGE_KEY_NUMBER = 'blessing_guest_number';
     let storedUserName = localStorage.getItem(STORAGE_KEY_NAME) || '';
+    let storedGuestNumber = parseInt(localStorage.getItem(STORAGE_KEY_NUMBER), 10) || null;
+    const guestNumberInput = document.getElementById('guestNumberInput');
+    const displayGuestNumber = document.getElementById('displayGuestNumber');
 
     function initializeNameStep() {
-      if (storedUserName) {
-        // Name exists, show main form
+      if (storedUserName && storedGuestNumber) {
+        // Both name and guest number exist, show main form
         showMainForm();
       } else {
-        // No name, show name step
+        // Missing info, show name step
         showNameStep();
       }
     }
@@ -1712,9 +1720,15 @@
     function showNameStep() {
       nameStepCard.classList.remove('hidden');
       formCard.classList.add('hidden');
+      guestNumberInput.value = storedGuestNumber !== null ? storedGuestNumber : '';
       nameStepInput.value = storedUserName;
       updateNameSubmitBtn();
-      nameStepInput.focus();
+      // Focus on empty field or first field
+      if (storedGuestNumber === null) {
+        guestNumberInput.focus();
+      } else {
+        nameStepInput.focus();
+      }
       // Hide emoji bar in name step
       document.getElementById('emojiFloatBar')?.classList.add('hidden');
       document.getElementById('bounceHint')?.classList.add('hidden');
@@ -1724,6 +1738,7 @@
       nameStepCard.classList.add('hidden');
       formCard.classList.remove('hidden');
       // Update displays
+      displayGuestNumber.textContent = storedGuestNumber;
       displayUserName.textContent = storedUserName;
       nameInput.value = storedUserName;
       previewSender.textContent = storedUserName;
@@ -1734,6 +1749,7 @@
 
     function updateNameSubmitBtn() {
       const name = nameStepInput.value.trim();
+      const guestNum = parseInt(guestNumberInput.value.trim(), 10);
       const len = nameStepInput.value.length;
       
       // Update counter
@@ -1746,10 +1762,11 @@
         counterParent.classList.add('warning');
       }
       
-      // Update button state
-      nameSubmitBtn.disabled = name.length === 0 || len > MAX_NAME_LENGTH;
+      // Update button state - require both valid guest number and name
+      nameSubmitBtn.disabled = isNaN(guestNum) || name.length === 0 || len > MAX_NAME_LENGTH;
     }
 
+    guestNumberInput.addEventListener('input', updateNameSubmitBtn);
     nameStepInput.addEventListener('input', updateNameSubmitBtn);
 
     nameStepInput.addEventListener('keydown', (e) => {
@@ -1763,10 +1780,13 @@
 
     function submitName() {
       const name = nameStepInput.value.trim();
-      if (!name) return;
+      const guestNum = parseInt(guestNumberInput.value.trim(), 10);
+      if (!name || isNaN(guestNum)) return;
       
       storedUserName = name;
+      storedGuestNumber = guestNum;
       localStorage.setItem(STORAGE_KEY_NAME, storedUserName);
+      localStorage.setItem(STORAGE_KEY_NUMBER, storedGuestNumber.toString());
       showMainForm();
     }
 
@@ -2410,6 +2430,7 @@
         // Build blessing data
         const blessingData = {
           name: name,
+          guestNumber: storedGuestNumber,
           message: currentTab === 'text' ? message : '',
           timestamp: Date.now(),
           type: currentTab // 'text', 'photo', or 'video'
@@ -2576,10 +2597,11 @@
         setTimeout(() => btn.classList.remove('popping'), 300);
         
         try {
-          // Push emoji blast event to Firebase with sender name
+          // Push emoji blast event to Firebase with sender info
           await push(ref(db, 'emojiBlasts'), {
             e: emoji,  // emoji
             n: storedUserName, // sender name
+            g: storedGuestNumber, // guest number
             t: Date.now()
           });
           
