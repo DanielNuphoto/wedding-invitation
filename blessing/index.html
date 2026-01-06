@@ -2461,7 +2461,7 @@
         await push(ref(db, 'blessings'), blessingData);
 
         // Show success
-        formCard.style.display = 'none';
+        formCard.classList.add('hidden');
         successCard.classList.add('show');
 
       } catch (error) {
@@ -2514,7 +2514,7 @@
       
       // Show form
       successCard.classList.remove('show');
-      formCard.style.display = 'block';
+      formCard.classList.remove('hidden');
     });
 
     // ============================================
