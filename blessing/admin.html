@@ -1245,6 +1245,10 @@
         <span class="material-symbols-outlined">delete_sweep</span>
         全部刪除
       </button>
+      <button class="delete-all-btn admin-only" id="deleteAllIncludingTestingBtn" style="background: rgba(183, 28, 28, 0.2); border-color: rgba(183, 28, 28, 0.4);">
+        <span class="material-symbols-outlined">delete_forever</span>
+        全部刪除(含測試)
+      </button>
       <button class="testing-btn admin-only" id="markTestingBtn">
         <span class="material-symbols-outlined">label</span>
         標記為測試資料
@@ -1309,7 +1313,7 @@
     </div>
 
     <!-- Awards Section -->
-    <div class="awards-bar" id="awardsBar">
+    <div class="awards-bar admin-only" id="awardsBar">
       <div class="awards-header">
         <span class="material-symbols-outlined">emoji_events</span>
         抽獎得獎者
@@ -1446,6 +1450,7 @@
     const refreshBtn = document.getElementById('refreshBtn');
     const testDataBtn = document.getElementById('testDataBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
+    const deleteAllIncludingTestingBtn = document.getElementById('deleteAllIncludingTestingBtn');
     const blessingsList = document.getElementById('blessingsList');
     const loadingState = document.getElementById('loadingState');
     const totalCount = document.getElementById('totalCount');
@@ -2586,30 +2591,51 @@
     }
 
     // ============================================
-    // Delete All Blessings
+    // Delete All Blessings (Excluding Testing)
     // ============================================
+    let isDeleteAllIncludingTestingMode = false;
+    
     deleteAllBtn.addEventListener('click', () => {
+      const nonTestingBlessings = allBlessings.filter(b => !b.testing);
+      if (nonTestingBlessings.length === 0) {
+        showToast('沒有可刪除的祝福（測試資料除外）', 'error');
+        return;
+      }
+      
+      isDeleteAllMode = true;
+      isDeleteAllIncludingTestingMode = false;
+      confirmMessage.textContent = `確定要刪除 ${nonTestingBlessings.length} 則祝福嗎？（不含測試資料）此操作無法復原！`;
+      confirmDialog.classList.add('show');
+    });
+
+    deleteAllIncludingTestingBtn.addEventListener('click', () => {
       if (allBlessings.length === 0) {
         showToast('沒有可刪除的祝福', 'error');
         return;
       }
       
       isDeleteAllMode = true;
-      confirmMessage.textContent = `確定要刪除全部 ${allBlessings.length} 則祝福嗎？此操作無法復原！`;
+      isDeleteAllIncludingTestingMode = true;
+      confirmMessage.textContent = `確定要刪除全部 ${allBlessings.length} 則祝福（包含測試資料）嗎？此操作無法復原！`;
       confirmDialog.classList.add('show');
     });
 
     async function deleteAllBlessings() {
-      deleteAllBtn.disabled = true;
-      deleteAllBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 刪除中...';
+      const targetBtn = isDeleteAllIncludingTestingMode ? deleteAllIncludingTestingBtn : deleteAllBtn;
+      targetBtn.disabled = true;
+      targetBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> 刪除中...';
+      
+      // Filter blessings based on mode
+      const blessingsToDelete = isDeleteAllIncludingTestingMode 
+        ? allBlessings 
+        : allBlessings.filter(b => !b.testing);
       
       let successCount = 0;
       let failCount = 0;
-      const totalToDelete = allBlessings.length;
 
       try {
-        // Delete all blessings and their photos
-        for (const blessing of allBlessings) {
+        // Delete blessings and their photos
+        for (const blessing of blessingsToDelete) {
           try {
             // Delete from database
             await remove(ref(db, `blessings/${blessing.id}`));
@@ -2629,7 +2655,7 @@
         }
 
         if (failCount === 0) {
-          showToast(`已刪除全部 ${successCount} 則祝福`, 'success');
+          showToast(`已刪除 ${successCount} 則祝福`, 'success');
         } else {
           showToast(`已刪除 ${successCount} 則，${failCount} 則失敗`, 'error');
         }
@@ -2640,6 +2666,8 @@
       } finally {
         deleteAllBtn.disabled = false;
         deleteAllBtn.innerHTML = '<span class="material-symbols-outlined">delete_sweep</span> 全部刪除';
+        deleteAllIncludingTestingBtn.disabled = false;
+        deleteAllIncludingTestingBtn.innerHTML = '<span class="material-symbols-outlined">delete_forever</span> 全部刪除(含測試)';
       }
     }
 
