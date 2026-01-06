@@ -489,36 +489,7 @@
     }
 
     /* Settings Panel */
-    .settings-toggle {
-      position: fixed;
-      bottom: 30px;
-      left: 140px;
-      width: 45px;
-      height: 45px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      z-index: 200;
-    }
-
-    .settings-toggle:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: scale(1.05);
-    }
-
-    .settings-toggle .material-symbols-outlined {
-      font-size: 26px;
-      transition: transform 0.3s ease;
-    }
-
-    .settings-toggle.active .material-symbols-outlined {
+    #settingsToggle.active .material-symbols-outlined {
       transform: rotate(90deg);
     }
 
@@ -669,13 +640,403 @@
         width: 280px;
         left: 10px;
       }
+    }
 
-      .settings-toggle {
-        left: 120px;
-        bottom: 25px;
-        width: 40px;
-        height: 40px;
+    /* Awards Overlay */
+    .awards-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .awards-overlay.show {
+      display: flex;
+    }
+
+    .awards-close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .awards-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Award Card */
+    .award-card {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 183, 77, 0.1));
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      border-radius: 24px;
+      padding: 60px 80px;
+      text-align: center;
+      max-width: 700px;
+      display: none;
+      animation: awardEnter 0.8s ease-out forwards;
+    }
+
+    .award-card.show {
+      display: block;
+    }
+
+    .award-card.media-award.show {
+      display: flex;
+    }
+
+    @keyframes awardEnter {
+      0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(50px);
       }
+      60% {
+        transform: scale(1.05) translateY(-10px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .award-card .award-title {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 20px;
+    }
+
+    .award-card .award-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .award-card .award-number {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd700, #ffb347);
+      color: #1a1a2e;
+      font-size: 64px;
+      font-weight: 800;
+      padding: 10px 40px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      text-shadow: none;
+    }
+
+    .award-card .award-name {
+      font-size: 48px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .award-card .award-preview {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .award-card .award-preview img,
+    .award-card .award-preview video {
+      max-width: 300px;
+      max-height: 200px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    /* Media Award Card - side by side layout */
+    .award-card.media-award {
+      align-items: center;
+      gap: 60px;
+      padding: 50px 60px;
+      max-width: 1100px;
+    }
+
+    .award-card.media-award .award-info {
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .award-card.media-award .award-media {
+      flex-shrink: 0;
+    }
+
+    .award-card.media-award .award-media img,
+    .award-card.media-award .award-media video {
+      max-width: 550px;
+      max-height: 450px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Lottery Section */
+    .lottery-section {
+      text-align: center;
+      display: none;
+    }
+
+    .lottery-section.show {
+      display: block;
+    }
+
+    .lottery-title {
+      font-size: 48px;
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 40px;
+      text-shadow: 0 2px 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .lottery-display {
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 24px;
+      padding: 60px 100px;
+      margin-bottom: 40px;
+      min-width: 400px;
+    }
+
+    .lottery-number {
+      font-size: 120px;
+      font-weight: 800;
+      color: #ffd700;
+      text-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+      font-family: 'Courier New', monospace;
+      transition: all 0.1s ease;
+    }
+
+    .lottery-number.rolling {
+      animation: numberRoll 0.1s infinite;
+    }
+
+    @keyframes numberRoll {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .lottery-name {
+      font-size: 48px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .lottery-name.show {
+      opacity: 1;
+    }
+
+    .lottery-blessing {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 15px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .lottery-blessing.show {
+      opacity: 1;
+    }
+
+    .lottery-blessing img,
+    .lottery-blessing video {
+      max-width: 250px;
+      max-height: 180px;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    /* Lottery with media - side by side layout */
+    .lottery-display.has-media {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+      padding: 40px 60px;
+    }
+
+    .lottery-display.has-media .lottery-info {
+      text-align: center;
+    }
+
+    .lottery-display.has-media .lottery-media {
+      flex-shrink: 0;
+    }
+
+    .lottery-display.has-media .lottery-media img,
+    .lottery-display.has-media .lottery-media video {
+      max-width: 500px;
+      max-height: 420px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .lottery-btn {
+      background: linear-gradient(135deg, #ffd700, #ffb347);
+      border: none;
+      color: #1a1a2e;
+      font-size: 28px;
+      font-weight: 700;
+      padding: 20px 60px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .lottery-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 40px rgba(255, 215, 0, 0.4);
+    }
+
+    .lottery-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Awards Navigation */
+    .awards-nav {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .awards-nav-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .awards-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .awards-nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Confetti effect container */
+    .confetti-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1001;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall 3s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 2000;
+      max-width: 400px;
+      text-align: center;
+      line-height: 1.5;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.warning {
+      background: rgba(255, 152, 0, 0.9);
+    }
+
+    .toast.error {
+      background: rgba(244, 67, 54, 0.9);
+    }
+
+    /* Start Awards Button */
+    .awards-start-btn {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 183, 77, 0.2));
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      color: #ffd700;
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .awards-start-btn:hover {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 183, 77, 0.3));
+    }
+
+    .awards-start-btn .material-symbols-outlined {
+      font-size: 22px;
     }
   </style>
 </head>
@@ -727,13 +1088,59 @@
     <button class="control-btn" id="fullscreenBtn" title="全螢幕">
       <span class="material-symbols-outlined">fullscreen</span>
     </button>
+    <button class="control-btn" id="settingsToggle" title="顯示設定">
+      <span class="material-symbols-outlined">tune</span>
+    </button>
+    <button class="awards-start-btn" id="awardsStartBtn" title="開始抽獎">
+      <span class="material-symbols-outlined">emoji_events</span>
+    </button>
+  </div>
+
+  <!-- Awards Overlay -->
+  <div class="awards-overlay" id="awardsOverlay">
+    <button class="awards-close-btn" id="awardsCloseBtn">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    
+    <div class="confetti-container" id="confettiContainer"></div>
+    
+    <!-- Award Cards (hidden by default, shown one by one) -->
+    <div class="award-card" id="awardCard">
+      <div class="award-title" id="awardTitle">新郎精選 - 文字祝福</div>
+      <div class="award-icon">🏆</div>
+      <div class="award-number" id="awardNumber">-</div>
+      <div class="award-name" id="awardName">-</div>
+      <div class="award-preview" id="awardPreview"></div>
+    </div>
+    
+    <!-- Lottery Section -->
+    <div class="lottery-section" id="lotterySection">
+      <div class="lottery-title">🎲 幸運抽獎 🎲</div>
+      <div class="lottery-display" id="lotteryDisplay">
+        <div class="lottery-info" id="lotteryInfo">
+          <div class="lottery-number" id="lotteryNumber">?</div>
+          <div class="lottery-name" id="lotteryName"></div>
+          <div class="lottery-blessing" id="lotteryBlessing"></div>
+        </div>
+        <div class="lottery-media" id="lotteryMedia"></div>
+      </div>
+      <button class="lottery-btn" id="lotteryBtn">開始抽獎</button>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="awards-nav">
+      <button class="awards-nav-btn" id="awardsPrevBtn" disabled>
+        <span class="material-symbols-outlined">arrow_back</span>
+        上一位
+      </button>
+      <button class="awards-nav-btn" id="awardsNextBtn">
+        下一位
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
   </div>
 
   <!-- Settings Panel -->
-  <button class="settings-toggle" id="settingsToggle" title="顯示設定">
-    <span class="material-symbols-outlined">tune</span>
-  </button>
-
   <div class="settings-panel" id="settingsPanel">
     <h3>
       <span class="material-symbols-outlined">settings</span>
@@ -783,9 +1190,12 @@
     </div>
   </div>
 
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getDatabase, ref, onChildAdded, onChildRemoved, remove, set, update } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+    import { getDatabase, ref, onChildAdded, onChildRemoved, remove, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDD-klcHuiIXBY9f4rjuDR-7aDyKrXICv0",
@@ -2143,6 +2553,360 @@
         }
       });
     });
+
+    // ============================================
+    // Toast Notification
+    // ============================================
+    const toast = document.getElementById('toast');
+    let toastTimeout;
+    
+    function showToast(message, type = '', duration = 4000) {
+      toast.textContent = message;
+      toast.className = 'toast show' + (type ? ` ${type}` : '');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
+    // ============================================
+    // Awards Session
+    // ============================================
+    const awardsStartBtn = document.getElementById('awardsStartBtn');
+    const awardsOverlay = document.getElementById('awardsOverlay');
+    const awardsCloseBtn = document.getElementById('awardsCloseBtn');
+    const confettiContainer = document.getElementById('confettiContainer');
+    const awardCard = document.getElementById('awardCard');
+    const awardTitle = document.getElementById('awardTitle');
+    const awardNumber = document.getElementById('awardNumber');
+    const awardName = document.getElementById('awardName');
+    const awardPreview = document.getElementById('awardPreview');
+    const lotterySection = document.getElementById('lotterySection');
+    const lotteryNumber = document.getElementById('lotteryNumber');
+    const lotteryNameEl = document.getElementById('lotteryName');
+    const lotteryBlessing = document.getElementById('lotteryBlessing');
+    const lotteryDisplay = document.getElementById('lotteryDisplay');
+    const lotteryMedia = document.getElementById('lotteryMedia');
+    const lotteryBtn = document.getElementById('lotteryBtn');
+    const awardsPrevBtn = document.getElementById('awardsPrevBtn');
+    const awardsNextBtn = document.getElementById('awardsNextBtn');
+
+    let awardsData = {
+      bridegroomText: null,
+      bridegroomMedia: null,
+      brideText: null,
+      brideMedia: null
+    };
+    let currentAwardIndex = 0;
+    let awardSteps = []; // Will be: ['bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia', 'lottery1', 'lottery2']
+    let lotteryWinners = [];
+    let isLotteryRolling = false;
+
+    // Load awards data from Firebase
+    const awardsRef = ref(db, 'awards');
+    onValue(awardsRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      awardsData = {
+        bridegroomText: data.bridegroomText || null,
+        bridegroomMedia: data.bridegroomMedia || null,
+        brideText: data.brideText || null,
+        brideMedia: data.brideMedia || null
+      };
+    });
+
+    // Start awards session
+    awardsStartBtn.addEventListener('click', () => {
+      // Check if all 4 awards are assigned
+      const missing = [];
+      if (!awardsData.bridegroomText) missing.push('新郎精選-文字');
+      if (!awardsData.bridegroomMedia) missing.push('新郎精選-照片');
+      if (!awardsData.brideText) missing.push('新娘精選-文字');
+      if (!awardsData.brideMedia) missing.push('新娘精選-照片');
+
+      if (missing.length > 0) {
+        showToast('尚未設定完所有得獎者：' + missing.join('、') + '，請先在後台設定', 'warning', 5000);
+        return;
+      }
+
+      // Reset state
+      currentAwardIndex = 0;
+      awardSteps = ['bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia', 'lottery1', 'lottery2'];
+      lotteryWinners = [];
+      
+      // Show overlay
+      awardsOverlay.classList.add('show');
+      
+      // Show first award
+      showAwardStep(0);
+    });
+
+    // Close awards
+    awardsCloseBtn.addEventListener('click', () => {
+      awardsOverlay.classList.remove('show');
+      awardCard.classList.remove('show');
+      lotterySection.classList.remove('show');
+    });
+
+    // Navigation
+    awardsPrevBtn.addEventListener('click', () => {
+      if (currentAwardIndex > 0) {
+        currentAwardIndex--;
+        showAwardStep(currentAwardIndex);
+      }
+    });
+
+    awardsNextBtn.addEventListener('click', () => {
+      if (currentAwardIndex < awardSteps.length - 1) {
+        currentAwardIndex++;
+        showAwardStep(currentAwardIndex);
+      }
+    });
+
+    function showAwardStep(index) {
+      currentAwardIndex = index;
+      const step = awardSteps[index];
+      
+      // Update nav buttons
+      awardsPrevBtn.disabled = index === 0;
+      awardsNextBtn.disabled = index === awardSteps.length - 1;
+      
+      // Hide all
+      awardCard.classList.remove('show');
+      lotterySection.classList.remove('show');
+      
+      if (step === 'lottery1' || step === 'lottery2') {
+        // Show lottery
+        setTimeout(() => {
+          lotterySection.classList.add('show');
+          lotteryNumber.textContent = '?';
+          lotteryNumber.classList.remove('rolling');
+          lotteryNameEl.textContent = '';
+          lotteryNameEl.classList.remove('show');
+          lotteryBlessing.innerHTML = '';
+          lotteryBlessing.classList.remove('show');
+          lotteryMedia.innerHTML = '';
+          lotteryDisplay.classList.remove('has-media');
+          
+          // Check if this lottery has already been drawn
+          const lotteryIndex = step === 'lottery1' ? 0 : 1;
+          if (lotteryWinners[lotteryIndex]) {
+            // Already drawn, show result
+            const winner = lotteryWinners[lotteryIndex];
+            lotteryNumber.textContent = winner.guestNumber || '-';
+            lotteryNameEl.textContent = winner.name;
+            lotteryNameEl.classList.add('show');
+            
+            // Show blessing content - use side-by-side for media
+            const hasMedia = winner.photoURL || winner.videoURL;
+            if (hasMedia) {
+              lotteryDisplay.classList.add('has-media');
+              if (winner.photoURL) {
+                lotteryMedia.innerHTML = `<img src="${winner.photoURL}" alt="Photo">`;
+              } else {
+                lotteryMedia.innerHTML = `<video src="${winner.videoURL}" controls autoplay muted></video>`;
+              }
+            } else if (winner.message) {
+              lotteryBlessing.innerHTML = escapeHtml(winner.message);
+              lotteryBlessing.classList.add('show');
+            }
+            
+            lotteryBtn.disabled = true;
+            lotteryBtn.textContent = '已抽出';
+          } else {
+            lotteryBtn.disabled = false;
+            lotteryBtn.textContent = step === 'lottery1' ? '抽出第一位' : '抽出第二位';
+          }
+        }, 100);
+      } else {
+        // Show award card
+        const awardId = awardsData[step];
+        // Search in all blessing arrays
+        let blessing = [...textBlessings, ...mediaBlessings, ...textQueue, ...mediaQueue].find(b => b.id === awardId);
+        
+        // If not found locally, fetch from Firebase
+        if (!blessing && awardId) {
+          get(ref(db, `blessings/${awardId}`)).then(snapshot => {
+            if (snapshot.exists()) {
+              const fetchedBlessing = { id: awardId, ...snapshot.val() };
+              displayAwardCard(step, fetchedBlessing);
+            }
+          }).catch(err => console.error('Error fetching blessing:', err));
+          return;
+        }
+        
+        if (blessing) {
+          displayAwardCard(step, blessing);
+        }
+      }
+    }
+    
+    function displayAwardCard(step, blessing) {
+      // Set title based on step
+      const titles = {
+        bridegroomText: '🤵 新郎精選 - 文字祝福',
+        bridegroomMedia: '🤵 新郎精選 - 照片/影片',
+        brideText: '👰 新娘精選 - 文字祝福',
+        brideMedia: '👰 新娘精選 - 照片/影片'
+      };
+      
+      const isMedia = blessing.photoURL || blessing.videoURL;
+      
+      // Use different layout for media vs text
+      if (isMedia) {
+        awardCard.classList.add('media-award');
+        awardCard.innerHTML = `
+          <div class="award-info">
+            <div class="award-title">${titles[step] || '得獎者'}</div>
+            <div class="award-icon">🏆</div>
+            <div class="award-number">${blessing.guestNumber || '-'}</div>
+            <div class="award-name">${escapeHtml(blessing.name)}</div>
+          </div>
+          <div class="award-media">
+            ${blessing.photoURL 
+              ? `<img src="${blessing.photoURL}" alt="Photo">`
+              : `<video src="${blessing.videoURL}" loop autoplay muted></video>`
+            }
+          </div>
+        `;
+      } else {
+        awardCard.classList.remove('media-award');
+        awardCard.innerHTML = `
+          <div class="award-title">${titles[step] || '得獎者'}</div>
+          <div class="award-icon">🏆</div>
+          <div class="award-number">${blessing.guestNumber || '-'}</div>
+          <div class="award-name">${escapeHtml(blessing.name)}</div>
+          <div class="award-preview">${blessing.message ? escapeHtml(blessing.message) : ''}</div>
+        `;
+      }
+      
+      setTimeout(() => {
+        awardCard.classList.add('show');
+        triggerConfetti();
+      }, 100);
+    }
+
+    // Lottery functionality
+    lotteryBtn.addEventListener('click', () => {
+      if (isLotteryRolling) return;
+      
+      // Get all eligible blessings (non-hidden, not already an award, not already a lottery winner)
+      const excludeIds = [
+        awardsData.bridegroomText,
+        awardsData.bridegroomMedia,
+        awardsData.brideText,
+        awardsData.brideMedia,
+        ...lotteryWinners.map(w => w.id)
+      ].filter(Boolean);
+      
+      const allEligible = [...textBlessings, ...mediaBlessings].filter(b => 
+        !b.private && !excludeIds.includes(b.id) && b.guestNumber
+      );
+      
+      if (allEligible.length === 0) {
+        showToast('沒有符合資格的祝福可以抽獎！', 'warning');
+        return;
+      }
+      
+      isLotteryRolling = true;
+      lotteryBtn.disabled = true;
+      lotteryBtn.textContent = '抽獎中...';
+      lotteryNumber.classList.add('rolling');
+      lotteryNameEl.classList.remove('show');
+      lotteryBlessing.classList.remove('show');
+      lotteryBlessing.innerHTML = '';
+      
+      // Rolling animation
+      let rollCount = 0;
+      const maxRolls = 30;
+      const rollInterval = setInterval(() => {
+        const randomBlessing = allEligible[Math.floor(Math.random() * allEligible.length)];
+        lotteryNumber.textContent = randomBlessing.guestNumber;
+        rollCount++;
+        
+        if (rollCount >= maxRolls) {
+          clearInterval(rollInterval);
+          
+          // Final selection
+          const winner = allEligible[Math.floor(Math.random() * allEligible.length)];
+          lotteryWinners.push(winner);
+          
+          lotteryNumber.classList.remove('rolling');
+          lotteryNumber.textContent = winner.guestNumber || '-';
+          
+          setTimeout(() => {
+            lotteryNameEl.textContent = winner.name;
+            lotteryNameEl.classList.add('show');
+            
+            // Show blessing content - use side-by-side for media
+            const hasMedia = winner.photoURL || winner.videoURL;
+            if (hasMedia) {
+              lotteryDisplay.classList.add('has-media');
+              lotteryBlessing.innerHTML = '';
+              if (winner.photoURL) {
+                lotteryMedia.innerHTML = `<img src="${winner.photoURL}" alt="Photo">`;
+              } else {
+                lotteryMedia.innerHTML = `<video src="${winner.videoURL}" controls autoplay muted></video>`;
+              }
+            } else if (winner.message) {
+              lotteryDisplay.classList.remove('has-media');
+              lotteryMedia.innerHTML = '';
+              lotteryBlessing.innerHTML = escapeHtml(winner.message);
+              lotteryBlessing.classList.add('show');
+            }
+            
+            triggerConfetti();
+            
+            isLotteryRolling = false;
+            lotteryBtn.textContent = '已抽出';
+          }, 500);
+        }
+      }, 100);
+    });
+
+    // Confetti effect
+    function triggerConfetti() {
+      const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#ff9ff3', '#54a0ff'];
+      
+      for (let i = 0; i < 100; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+          confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+          confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+          
+          // Random shapes
+          if (Math.random() > 0.5) {
+            confetti.style.borderRadius = '50%';
+          } else {
+            confetti.style.width = '8px';
+            confetti.style.height = '16px';
+          }
+          
+          confettiContainer.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), 4000);
+        }, i * 20);
+      }
+    }
+
+    // Helper to get all blessings for lottery (need to combine queues and pools)
+    function getAllBlessingsForLottery() {
+      const all = [];
+      const seenIds = new Set();
+      
+      [...textBlessings, ...mediaBlessings, ...textQueue, ...mediaQueue].forEach(b => {
+        if (!seenIds.has(b.id)) {
+          seenIds.add(b.id);
+          all.push(b);
+        }
+      });
+      
+      return all;
+    }
   </script>
 </body>
 </html>

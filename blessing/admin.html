@@ -1000,6 +1000,160 @@
       background: rgba(244, 67, 54, 0.9);
     }
 
+    /* Awards Section */
+    .awards-bar {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 183, 77, 0.1));
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 0 30px 20px;
+    }
+
+    .awards-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      color: #ffd54f;
+      font-weight: 600;
+    }
+
+    .awards-header .material-symbols-outlined {
+      font-size: 24px;
+    }
+
+    .awards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .award-slot {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 80px;
+    }
+
+    .award-slot.filled {
+      border-style: solid;
+      border-color: rgba(255, 215, 0, 0.4);
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    .award-slot-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 8px;
+    }
+
+    .award-slot-header .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    .award-slot-content {
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .award-slot-content .award-number {
+      display: inline-block;
+      background: rgba(255, 215, 0, 0.3);
+      color: #ffd54f;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .award-slot-content .award-name {
+      font-weight: 500;
+    }
+
+    .award-slot-content .award-preview {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .award-slot .empty-text {
+      color: rgba(255, 255, 255, 0.4);
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    .award-slot .clear-award-btn {
+      background: rgba(255, 107, 107, 0.2);
+      border: none;
+      color: #ff6b6b;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .award-slot .clear-award-btn:hover {
+      background: rgba(255, 107, 107, 0.3);
+    }
+
+    /* Award badge on blessing cards */
+    .award-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 183, 77, 0.2));
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      border-radius: 20px;
+      color: #ffd54f;
+    }
+
+    .award-badge .material-symbols-outlined {
+      font-size: 14px;
+    }
+
+    /* Award selection buttons */
+    .award-btn {
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      color: #ffd54f;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .award-btn:hover {
+      background: rgba(255, 215, 0, 0.25);
+    }
+
+    .award-btn .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    .award-btn.selected {
+      background: rgba(255, 215, 0, 0.3);
+      border-color: rgba(255, 215, 0, 0.5);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .header {
@@ -1154,6 +1308,52 @@
       <span class="memory-status" id="memoryStatus">等待連線...</span>
     </div>
 
+    <!-- Awards Section -->
+    <div class="awards-bar" id="awardsBar">
+      <div class="awards-header">
+        <span class="material-symbols-outlined">emoji_events</span>
+        抽獎得獎者
+      </div>
+      <div class="awards-grid">
+        <div class="award-slot" id="awardSlotBridegroomText" data-award="bridegroomText">
+          <div class="award-slot-header">
+            <span class="material-symbols-outlined">man</span>
+            新郎精選 - 文字
+          </div>
+          <div class="award-slot-content">
+            <span class="empty-text">尚未選擇</span>
+          </div>
+        </div>
+        <div class="award-slot" id="awardSlotBridegroomMedia" data-award="bridegroomMedia">
+          <div class="award-slot-header">
+            <span class="material-symbols-outlined">man</span>
+            新郎精選 - 照片/影片
+          </div>
+          <div class="award-slot-content">
+            <span class="empty-text">尚未選擇</span>
+          </div>
+        </div>
+        <div class="award-slot" id="awardSlotBrideText" data-award="brideText">
+          <div class="award-slot-header">
+            <span class="material-symbols-outlined">woman</span>
+            新娘精選 - 文字
+          </div>
+          <div class="award-slot-content">
+            <span class="empty-text">尚未選擇</span>
+          </div>
+        </div>
+        <div class="award-slot" id="awardSlotBrideMedia" data-award="brideMedia">
+          <div class="award-slot-header">
+            <span class="material-symbols-outlined">woman</span>
+            新娘精選 - 照片/影片
+          </div>
+          <div class="award-slot-content">
+            <span class="empty-text">尚未選擇</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="blessings-list" id="blessingsList">
       <div class="loading-state" id="loadingState">
         <div class="loading-spinner"></div>
@@ -1217,6 +1417,14 @@
     let filteredBlessings = [];
     let photoFilterActive = false;
     let textFilterActive = false;
+    
+    // Awards state
+    let awards = {
+      bridegroomText: null,
+      bridegroomMedia: null,
+      brideText: null,
+      brideMedia: null
+    };
     let searchQuery = '';
     let pendingDeleteId = null;
     let pendingDeletePhotoURL = null;
@@ -1411,7 +1619,121 @@
         showToast('載入失敗', 'error');
         loadingState.style.display = 'none';
       });
+      
+      // Load awards
+      loadAwards();
     }
+    
+    // ============================================
+    // Awards Management
+    // ============================================
+    function loadAwards() {
+      const awardsRef = ref(db, 'awards');
+      onValue(awardsRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        awards = {
+          bridegroomText: data.bridegroomText || null,
+          bridegroomMedia: data.bridegroomMedia || null,
+          brideText: data.brideText || null,
+          brideMedia: data.brideMedia || null
+        };
+        updateAwardsDisplay();
+        // Re-render blessings to update award badges
+        if (filteredBlessings.length > 0) {
+          renderBlessings();
+        }
+      });
+    }
+    
+    function updateAwardsDisplay() {
+      const slots = ['bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia'];
+      
+      slots.forEach(slotKey => {
+        const slotEl = document.getElementById(`awardSlot${slotKey.charAt(0).toUpperCase() + slotKey.slice(1)}`);
+        if (!slotEl) return;
+        
+        const contentEl = slotEl.querySelector('.award-slot-content');
+        const awardId = awards[slotKey];
+        
+        if (awardId) {
+          const blessing = allBlessings.find(b => b.id === awardId);
+          if (blessing) {
+            slotEl.classList.add('filled');
+            contentEl.innerHTML = `
+              <span class="award-number">${blessing.guestNumber || '-'}</span>
+              <span class="award-name">${escapeHtml(blessing.name)}</span>
+              <div class="award-preview">${blessing.message ? escapeHtml(blessing.message.substring(0, 30)) + (blessing.message.length > 30 ? '...' : '') : (blessing.photoURL ? '📷 照片' : blessing.videoURL ? '🎬 影片' : '')}</div>
+              <button class="clear-award-btn" onclick="window.clearAward('${slotKey}')">
+                <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+                取消選擇
+              </button>
+            `;
+          } else {
+            // Blessing was deleted, clear the award
+            clearAward(slotKey);
+          }
+        } else {
+          slotEl.classList.remove('filled');
+          contentEl.innerHTML = '<span class="empty-text">尚未選擇</span>';
+        }
+      });
+    }
+    
+    async function setAward(slotKey, blessingId) {
+      try {
+        await update(ref(db, 'awards'), { [slotKey]: blessingId });
+        showToast('已設定得獎者', 'success');
+      } catch (error) {
+        console.error('Error setting award:', error);
+        showToast('設定失敗', 'error');
+      }
+    }
+    
+    async function clearAward(slotKey) {
+      try {
+        await update(ref(db, 'awards'), { [slotKey]: null });
+        showToast('已取消得獎者', 'success');
+      } catch (error) {
+        console.error('Error clearing award:', error);
+        showToast('取消失敗', 'error');
+      }
+    }
+    
+    window.clearAward = clearAward;
+    
+    // Get award type for a blessing
+    function getAwardType(blessingId) {
+      if (awards.bridegroomText === blessingId) return '新郎精選-文字';
+      if (awards.bridegroomMedia === blessingId) return '新郎精選-照片';
+      if (awards.brideText === blessingId) return '新娘精選-文字';
+      if (awards.brideMedia === blessingId) return '新娘精選-照片';
+      return null;
+    }
+    
+    // Check if blessing is already an award
+    function isAward(blessingId) {
+      return Object.values(awards).includes(blessingId);
+    }
+    
+    // Award selection handler
+    window.selectAward = function(index, slotKey) {
+      const blessing = filteredBlessings[index];
+      if (!blessing) return;
+      
+      // Check if blessing is hidden
+      if (blessing.private) {
+        showToast('隱藏的祝福不能設為得獎者', 'error');
+        return;
+      }
+      
+      // Check if already selected for another award
+      if (isAward(blessing.id) && awards[slotKey] !== blessing.id) {
+        showToast('此祝福已被選為其他獎項', 'error');
+        return;
+      }
+      
+      setAward(slotKey, blessing.id);
+    };
 
     // ============================================
     // Storage Display
@@ -2042,7 +2364,13 @@
         return;
       }
 
-      blessingsList.innerHTML = filteredBlessings.map((blessing, index) => `
+      blessingsList.innerHTML = filteredBlessings.map((blessing, index) => {
+        const awardType = getAwardType(blessing.id);
+        const isText = blessing.type === 'text';
+        const isMedia = blessing.photoURL || blessing.videoURL;
+        const canBeAwarded = !blessing.private; // Only non-hidden blessings can be awards
+        
+        return `
         <div class="blessing-item" data-id="${blessing.id}" data-index="${index}">
           ${blessing.photoURL ? `
           <div class="blessing-photo">
@@ -2056,8 +2384,9 @@
           ` : ''}
           <div class="blessing-content">
             <div class="blessing-header">
-              ${blessing.guestNumber ? `<span class="guest-number-badge">${escapeHtml(blessing.guestNumber)}</span>` : ''}
+              ${blessing.guestNumber ? `<span class="guest-number-badge">${escapeHtml(String(blessing.guestNumber))}</span>` : ''}
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
+              ${awardType ? `<span class="award-badge"><span class="material-symbols-outlined">emoji_events</span>${awardType}</span>` : ''}
               ${blessing.testing ? '<span class="testing-badge"><span class="material-symbols-outlined">science</span>測試</span>' : ''}
               ${blessing.private ? '<span class="private-badge"><span class="material-symbols-outlined">visibility_off</span>隱藏</span>' : ''}
               ${blessing.displayed ? '<span class="displayed-badge"><span class="material-symbols-outlined">visibility</span>已顯示</span>' : ''}
@@ -2085,10 +2414,30 @@
                 <span class="material-symbols-outlined">delete</span>
                 刪除
               </button>
+              ${canBeAwarded && isText ? `
+              <button class="award-btn ${awards.bridegroomText === blessing.id ? 'selected' : ''}" onclick="window.selectAward(${index}, 'bridegroomText')">
+                <span class="material-symbols-outlined">man</span>
+                新郎精選
+              </button>
+              <button class="award-btn ${awards.brideText === blessing.id ? 'selected' : ''}" onclick="window.selectAward(${index}, 'brideText')">
+                <span class="material-symbols-outlined">woman</span>
+                新娘精選
+              </button>
+              ` : ''}
+              ${canBeAwarded && isMedia ? `
+              <button class="award-btn ${awards.bridegroomMedia === blessing.id ? 'selected' : ''}" onclick="window.selectAward(${index}, 'bridegroomMedia')">
+                <span class="material-symbols-outlined">man</span>
+                新郎精選
+              </button>
+              <button class="award-btn ${awards.brideMedia === blessing.id ? 'selected' : ''}" onclick="window.selectAward(${index}, 'brideMedia')">
+                <span class="material-symbols-outlined">woman</span>
+                新娘精選
+              </button>
+              ` : ''}
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
 
     function escapeHtml(text) {
