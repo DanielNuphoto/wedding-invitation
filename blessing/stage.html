@@ -919,6 +919,66 @@
       transform: none;
     }
 
+    /* Awards Summary Section */
+    .awards-summary {
+      text-align: center;
+      display: none;
+      max-width: 900px;
+      width: 90%;
+    }
+
+    .awards-summary.show {
+      display: block;
+    }
+
+    .awards-summary-title {
+      font-size: 42px;
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 40px;
+      text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .awards-summary-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .awards-summary-item {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .awards-summary-item .item-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+
+    .awards-summary-item .item-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 4px;
+    }
+
+    .awards-summary-item .item-name {
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .awards-summary-subtitle {
+      font-size: 28px;
+      color: #fff;
+      margin-top: 30px;
+      opacity: 0.9;
+    }
+
     /* Awards Navigation */
     .awards-nav {
       position: absolute;
@@ -1143,6 +1203,15 @@
         <div class="lottery-media" id="lotteryMedia"></div>
       </div>
       <button class="lottery-btn" id="lotteryBtn">開始抽獎</button>
+    </div>
+    
+    <!-- Summary Section -->
+    <div class="awards-summary" id="awardsSummary">
+      <div class="awards-summary-title">🎉 恭喜以下獎項得主 🎉</div>
+      <div class="awards-summary-list" id="awardsSummaryList">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+      <div class="awards-summary-subtitle">請上台領獎！</div>
     </div>
     
     <!-- Navigation -->
@@ -2606,6 +2675,8 @@
     const lotteryBlessing = document.getElementById('lotteryBlessing');
     const lotteryDisplay = document.getElementById('lotteryDisplay');
     const lotteryMedia = document.getElementById('lotteryMedia');
+    const awardsSummary = document.getElementById('awardsSummary');
+    const awardsSummaryList = document.getElementById('awardsSummaryList');
     const lotteryBtn = document.getElementById('lotteryBtn');
     const awardsPrevBtn = document.getElementById('awardsPrevBtn');
     const awardsNextBtn = document.getElementById('awardsNextBtn');
@@ -2650,7 +2721,7 @@
 
       // Reset state
       currentAwardIndex = 0;
-      awardSteps = ['lottery1', 'lottery2', 'lottery3', 'lottery4', 'lottery5', 'bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia'];
+      awardSteps = ['lottery1', 'lottery2', 'lottery3', 'lottery4', 'lottery5', 'bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia', 'summary'];
       lotteryWinners = [];
       
       // Start background music
@@ -2671,6 +2742,7 @@
       awardsOverlay.classList.remove('show');
       awardCard.classList.remove('show');
       lotterySection.classList.remove('show');
+      awardsSummary.classList.remove('show');
       
       // Stop background music
       if (awardsBgm) {
@@ -2697,6 +2769,7 @@
         awardsOverlay.classList.remove('show');
         awardCard.classList.remove('show');
         lotterySection.classList.remove('show');
+        awardsSummary.classList.remove('show');
         
         // Stop background music
         if (awardsBgm) {
@@ -2727,8 +2800,56 @@
       // Hide all
       awardCard.classList.remove('show');
       lotterySection.classList.remove('show');
+      awardsSummary.classList.remove('show');
       
-      if (step.startsWith('lottery')) {
+      if (step === 'summary') {
+        // Show summary of all winners
+        updateNextButton(true);
+        
+        setTimeout(() => {
+          // Build summary list
+          let summaryHTML = '';
+          
+          // Add lottery winners
+          lotteryWinners.forEach((winner, i) => {
+            summaryHTML += `
+              <div class="awards-summary-item">
+                <div class="item-label">🎲 幸運抽獎 ${i + 1}</div>
+                <div class="item-number">${winner.guestNumber || '-'}</div>
+                <div class="item-name">${escapeHtml(winner.name)}</div>
+              </div>
+            `;
+          });
+          
+          // Add chosen awards
+          const chosenLabels = {
+            bridegroomText: '🤵 新郎精選文字',
+            bridegroomMedia: '🤵 新郎精選媒體',
+            brideText: '👰 新娘精選文字',
+            brideMedia: '👰 新娘精選媒體'
+          };
+          
+          ['bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia'].forEach(key => {
+            const awardId = awardsData[key];
+            if (awardId) {
+              const blessing = [...textBlessings, ...mediaBlessings, ...textQueue, ...mediaQueue].find(b => b.id === awardId);
+              if (blessing) {
+                summaryHTML += `
+                  <div class="awards-summary-item">
+                    <div class="item-label">${chosenLabels[key]}</div>
+                    <div class="item-number">${blessing.guestNumber || '-'}</div>
+                    <div class="item-name">${escapeHtml(blessing.name)}</div>
+                  </div>
+                `;
+              }
+            }
+          });
+          
+          awardsSummaryList.innerHTML = summaryHTML;
+          awardsSummary.classList.add('show');
+          triggerConfetti();
+        }, 100);
+      } else if (step.startsWith('lottery')) {
         // Show lottery
         const lotteryIndex = parseInt(step.replace('lottery', '')) - 1;
         const lotteryLabels = ['第一位', '第二位', '第三位', '第四位', '第五位'];
