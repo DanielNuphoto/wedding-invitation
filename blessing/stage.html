@@ -940,10 +940,12 @@
     }
 
     .awards-summary-list {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
       gap: 20px;
+      flex-wrap: wrap;
       margin-bottom: 30px;
+      justify-content: center;
+      align-items: center;
     }
 
     .awards-summary-item {
@@ -952,6 +954,7 @@
       border-radius: 16px;
       padding: 20px;
       backdrop-filter: blur(10px);
+      width: 45%;
     }
 
     .awards-summary-item .item-label {
@@ -994,6 +997,146 @@
     .awards-summary-img-right {
       max-height: 50vh;
       right: 0;
+    }
+
+    /* Choice Intro Section */
+    .choice-intro-section {
+      text-align: center;
+      display: none;
+    }
+
+    .choice-intro-section.show {
+      display: block;
+    }
+
+    .choice-intro-title {
+      font-size: 56px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 30px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .choice-intro-subtitle {
+      font-size: 48px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 50px;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    /* Choice Reveal Section */
+    .choice-reveal-section {
+      text-align: center;
+      display: none;
+      position: relative;
+    }
+
+    .choice-reveal-section.show {
+      display: block;
+    }
+
+    .choice-reveal-title {
+      font-size: 72px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffd700, #fff5a0, #ffd700, #ffb347, #ffd700);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+      animation: revealZoom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both, shimmer 3s ease-in-out infinite;
+      margin: 30px 0;
+    }
+
+    .choice-reveal-sparkles {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      font-size: 48px;
+    }
+
+    .choice-reveal-sparkles span {
+      animation: sparkle 1.5s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    .choice-reveal-sparkles span:nth-child(1) { animation-delay: 0s; }
+    .choice-reveal-sparkles span:nth-child(2) { animation-delay: 0.15s; }
+    .choice-reveal-sparkles span:nth-child(3) { animation-delay: 0.3s; }
+    .choice-reveal-sparkles span:nth-child(4) { animation-delay: 0.45s; }
+    .choice-reveal-sparkles span:nth-child(5) { animation-delay: 0.6s; }
+
+    .choice-reveal-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: glowPulse 2s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes revealZoom {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) rotateX(90deg);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.1) rotateX(0deg);
+      }
+      100% {
+        transform: scale(1) rotateX(0deg);
+      }
+    }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+      50% { 
+        transform: scale(1.4) rotate(20deg);
+        opacity: 0.7;
+      }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { 
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      50% { 
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
     /* Awards Navigation */
@@ -1222,9 +1365,38 @@
       <button class="lottery-btn" id="lotteryBtn">開始抽獎</button>
     </div>
     
-    <!-- Summary Section -->
+    <!-- Lottery Summary Section (after 5 draws) -->
+    <div class="awards-summary" id="lotterySummarySection">
+      <div class="awards-summary-title">🎲 幸運抽獎得主 🎲</div>
+      <div class="awards-summary-list" id="lotterySummaryList">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+      <div class="awards-summary-subtitle">請上台領獎！</div>
+      <img src="adwards/left.png" class="awards-summary-img awards-summary-img-left" alt="">
+      <img src="adwards/right.png" class="awards-summary-img awards-summary-img-right" alt="">
+    </div>
+    
+    <!-- Choice Intro Section -->
+    <div class="choice-intro-section" id="choiceIntroSection">
+      <div class="choice-intro-title">你以為已經結束了嗎？</div>
+      <div class="choice-intro-subtitle">其實還有...</div>
+    </div>
+    
+    <!-- Choice Reveal Section -->
+    <div class="choice-reveal-section" id="choiceRevealSection">
+      <div class="choice-reveal-sparkles">
+        <span>✨</span><span>✨</span><span>✨</span><span>✨</span><span>✨</span>
+      </div>
+      <div class="choice-reveal-title">新郎新娘精選獎</div>
+      <div class="choice-reveal-sparkles">
+        <span>✨</span><span>✨</span><span>✨</span><span>✨</span><span>✨</span>
+      </div>
+      <div class="choice-reveal-glow"></div>
+    </div>
+    
+    <!-- Final Summary Section (bride and groom's choice only) -->
     <div class="awards-summary" id="awardsSummary">
-      <div class="awards-summary-title">🎉 恭喜以下獎項得主 🎉</div>
+      <div class="awards-summary-title">🎉 新郎新娘精選獎得主 🎉</div>
       <div class="awards-summary-list" id="awardsSummaryList">
         <!-- Dynamic content will be inserted here -->
       </div>
@@ -1237,10 +1409,10 @@
     <div class="awards-nav">
       <button class="awards-nav-btn" id="awardsPrevBtn" disabled>
         <span class="material-symbols-outlined">arrow_back</span>
-        上一位
+        上一步
       </button>
       <button class="awards-nav-btn primary" id="awardsNextBtn">
-        下一位
+        下一步
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
     </div>
@@ -2725,23 +2897,45 @@
     });
 
     // Start awards session
-    awardsStartBtn.addEventListener('click', () => {
-      // Check if all 4 awards are assigned
-      const missing = [];
-      if (!awardsData.bridegroomText) missing.push('新郎精選-文字');
-      if (!awardsData.bridegroomMedia) missing.push('新郎精選-照片');
-      if (!awardsData.brideText) missing.push('新娘精選-文字');
-      if (!awardsData.brideMedia) missing.push('新娘精選-照片');
+    awardsStartBtn.addEventListener('click', (e) => {
+      // Debug mode: Ctrl (Windows) or Cmd (Mac) + click to skip lottery steps
+      const isDebugMode = e.ctrlKey || e.metaKey;
+      
+      if (!isDebugMode) {
+        // Check if all 4 awards are assigned (only in normal mode)
+        const missing = [];
+        if (!awardsData.bridegroomText) missing.push('新郎精選-文字');
+        if (!awardsData.bridegroomMedia) missing.push('新郎精選-照片');
+        if (!awardsData.brideText) missing.push('新娘精選-文字');
+        if (!awardsData.brideMedia) missing.push('新娘精選-照片');
 
-      if (missing.length > 0) {
-        showToast('尚未設定完所有得獎者：' + missing.join('、') + '，請先在後台設定', 'warning', 5000);
-        return;
+        if (missing.length > 0) {
+          showToast('尚未設定完所有得獎者：' + missing.join('、') + '，請先在後台設定', 'warning', 5000);
+          return;
+        }
       }
 
       // Reset state
-      currentAwardIndex = 0;
-      awardSteps = ['lottery1', 'lottery2', 'lottery3', 'lottery4', 'lottery5', 'bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia', 'summary'];
-      lotteryWinners = [];
+      awardSteps = ['lottery1', 'lottery2', 'lottery3', 'lottery4', 'lottery5', 'lotterySummary', 'choiceIntro', 'choiceReveal', 'bridegroomText', 'bridegroomMedia', 'brideText', 'brideMedia', 'summary'];
+      
+      if (isDebugMode) {
+        // Debug mode: skip lottery steps and use dummy data
+        console.log('🔧 Debug mode: Skipping lottery steps');
+        showToast('🔧 Debug 模式：跳過抽獎步驟', 'info', 2000);
+        
+        lotteryWinners = [
+          { id: 'debug1', guestNumber: 88, name: '測試者一', message: '恭喜新人！' },
+          { id: 'debug2', guestNumber: 66, name: '測試者二', message: '百年好合！' },
+          { id: 'debug3', guestNumber: 77, name: '測試者三', message: '早生貴子！' },
+          { id: 'debug4', guestNumber: 99, name: '測試者四', message: '永浴愛河！' },
+          { id: 'debug5', guestNumber: 55, name: '測試者五', message: '幸福美滿！' }
+        ];
+        currentAwardIndex = awardSteps.indexOf('lotterySummary');
+      } else {
+        // Normal mode
+        currentAwardIndex = 0;
+        lotteryWinners = [];
+      }
       
       // Start background music
       awardsBgm = new Audio('music/bgm.mp3');
@@ -2752,9 +2946,14 @@
       // Show overlay
       awardsOverlay.classList.add('show');
       
-      // Show first award
-      showAwardStep(0);
+      // Show first award (or lotterySummary in debug mode)
+      showAwardStep(currentAwardIndex);
     });
+
+    const lotterySummarySection = document.getElementById('lotterySummarySection');
+    const lotterySummaryList = document.getElementById('lotterySummaryList');
+    const choiceIntroSection = document.getElementById('choiceIntroSection');
+    const choiceRevealSection = document.getElementById('choiceRevealSection');
 
     // Close awards
     awardsCloseBtn.addEventListener('click', () => {
@@ -2762,6 +2961,9 @@
       awardCard.classList.remove('show');
       lotterySection.classList.remove('show');
       awardsSummary.classList.remove('show');
+      lotterySummarySection.classList.remove('show');
+      choiceIntroSection.classList.remove('show');
+      choiceRevealSection.classList.remove('show');
       
       // Stop background music
       if (awardsBgm) {
@@ -2789,6 +2991,9 @@
         awardCard.classList.remove('show');
         lotterySection.classList.remove('show');
         awardsSummary.classList.remove('show');
+        lotterySummarySection.classList.remove('show');
+        choiceIntroSection.classList.remove('show');
+        choiceRevealSection.classList.remove('show');
         
         // Stop background music
         if (awardsBgm) {
@@ -2805,7 +3010,7 @@
         awardsNextBtn.innerHTML = '結束 <span class="material-symbols-outlined">close</span>';
       } else {
         awardsNextBtn.disabled = false;
-        awardsNextBtn.innerHTML = '下一位 <span class="material-symbols-outlined">arrow_forward</span>';
+        awardsNextBtn.innerHTML = '下一步 <span class="material-symbols-outlined">arrow_forward</span>';
       }
     }
 
@@ -2820,16 +3025,16 @@
       awardCard.classList.remove('show');
       lotterySection.classList.remove('show');
       awardsSummary.classList.remove('show');
+      lotterySummarySection.classList.remove('show');
+      choiceIntroSection.classList.remove('show');
+      choiceRevealSection.classList.remove('show');
       
-      if (step === 'summary') {
-        // Show summary of all winners
-        updateNextButton(true);
+      if (step === 'lotterySummary') {
+        // Show lottery summary (5 lottery winners)
+        updateNextButton(false);
         
         setTimeout(() => {
-          // Build summary list
           let summaryHTML = '';
-          
-          // Add lottery winners
           lotteryWinners.forEach((winner, i) => {
             summaryHTML += `
               <div class="awards-summary-item">
@@ -2839,8 +3044,33 @@
               </div>
             `;
           });
+          lotterySummaryList.innerHTML = summaryHTML;
+          lotterySummarySection.classList.add('show');
+          triggerConfetti();
+        }, 100);
+      } else if (step === 'choiceIntro') {
+        // Show choice intro
+        updateNextButton(false);
+        
+        setTimeout(() => {
+          choiceIntroSection.classList.add('show');
+        }, 100);
+      } else if (step === 'choiceReveal') {
+        // Show choice reveal with visual effects
+        updateNextButton(false);
+        
+        setTimeout(() => {
+          choiceRevealSection.classList.add('show');
+          triggerConfetti();
+        }, 100);
+      } else if (step === 'summary') {
+        // Show summary of bride and groom's choice only
+        updateNextButton(true);
+        
+        setTimeout(() => {
+          let summaryHTML = '';
           
-          // Add chosen awards
+          // Only add chosen awards (no lottery winners)
           const chosenLabels = {
             bridegroomText: '🤵 新郎精選文字',
             bridegroomMedia: '🤵 新郎精選媒體',
@@ -2915,7 +3145,7 @@
             lotteryBtn.disabled = false;
             lotteryBtn.textContent = `抽出${lotteryLabels[lotteryIndex]}`;
             awardsNextBtn.disabled = true;
-            awardsNextBtn.innerHTML = '下一位 <span class="material-symbols-outlined">arrow_forward</span>';
+            awardsNextBtn.innerHTML = '下一步 <span class="material-symbols-outlined">arrow_forward</span>';
           }
         }, 100);
       } else {
