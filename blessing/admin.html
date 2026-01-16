@@ -1731,6 +1731,12 @@
         return;
       }
       
+      // Check if guestNumber is in valid range (20-145)
+      if (!blessing.guestNumber || blessing.guestNumber < 20 || blessing.guestNumber > 145) {
+        showToast('抽獎編號須在 20-145 範圍內才能設為得獎者', 'error');
+        return;
+      }
+      
       // Check if already selected for another award
       if (isAward(blessing.id) && awards[slotKey] !== blessing.id) {
         showToast('此祝福已被選為其他獎項', 'error');
@@ -2373,7 +2379,7 @@
         const awardType = getAwardType(blessing.id);
         const isText = blessing.type === 'text';
         const isMedia = blessing.photoURL || blessing.videoURL;
-        const canBeAwarded = !blessing.private; // Only non-hidden blessings can be awards
+        const canBeAwarded = !blessing.private && blessing.guestNumber >= 20 && blessing.guestNumber <= 145; // Only non-hidden blessings with guestNumber 20-145 can be awards
         
         return `
         <div class="blessing-item" data-id="${blessing.id}" data-index="${index}">

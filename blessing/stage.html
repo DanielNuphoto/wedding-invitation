@@ -3232,7 +3232,7 @@
       ].filter(Boolean);
       
       const allEligible = [...textBlessings, ...mediaBlessings].filter(b => 
-        !b.private && !excludeIds.includes(b.id) && b.guestNumber
+        !b.private && !excludeIds.includes(b.id) && b.guestNumber && b.guestNumber >= 20 && b.guestNumber <= 145
       );
       
       if (allEligible.length === 0) {

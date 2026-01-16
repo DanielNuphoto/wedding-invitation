@@ -1362,7 +1362,7 @@
       <div class="step-subtitle">暱稱會顯示在您的祝福旁邊</div>
       <div class="name-input-group">
         <label for="guestNumberInput">抽獎編號 *</label>
-        <input type="number" id="guestNumberInput" placeholder="例如：12" min="20" max="145">
+        <input type="number" id="guestNumberInput" placeholder="例如：12" min="1">
       </div>
       <div class="name-input-group">
         <label for="nameStepInput">您的暱稱 (建議不超過 7 個字) *</label>
@@ -1774,7 +1774,7 @@
       }
       
       // Update button state - require both valid guest number and name
-      nameSubmitBtn.disabled = isNaN(guestNum) || guestNum < 20 || guestNum > 145 || name.length === 0 || len > MAX_NAME_LENGTH;
+      nameSubmitBtn.disabled = isNaN(guestNum) || guestNum < 1 || name.length === 0 || len > MAX_NAME_LENGTH;
     }
 
     guestNumberInput.addEventListener('input', updateNameSubmitBtn);
@@ -1792,7 +1792,7 @@
     function submitName() {
       const name = nameStepInput.value.trim();
       const guestNum = parseInt(guestNumberInput.value.trim(), 10);
-      if (!name || isNaN(guestNum) || guestNum < 20 || guestNum > 145) return;
+      if (!name || isNaN(guestNum) || guestNum < 1) return;
       
       storedUserName = name;
       storedGuestNumber = guestNum;
