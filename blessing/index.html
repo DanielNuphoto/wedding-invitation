@@ -2488,25 +2488,30 @@
     // Reset Form for Another Blessing
     // ============================================
     anotherBtn.addEventListener('click', () => {
+      // Keep the current tab selection
+      const savedTab = currentTab;
+      
       form.reset();
       selectedFile = null;
-      currentTab = 'text';
+      currentTab = savedTab; // Restore the saved tab
       
       // Reset preview text
       updatePreviewText();
       
-      // Reset UI
+      // Reset UI (file previews and upload areas)
       photoPreview.classList.remove('show');
       videoPreview.classList.remove('show');
       uploadArea.style.display = 'block';
       videoUploadArea.style.display = 'block';
-      textTab.classList.add('active');
-      photoTab.classList.remove('active');
-      videoTab.classList.remove('active');
-      textContent.classList.add('active');
-      photoContent.classList.remove('active');
-      videoContent.classList.remove('active');
       privateCheckbox.checked = false;
+      
+      // Restore tab UI based on saved selection
+      textTab.classList.toggle('active', savedTab === 'text');
+      photoTab.classList.toggle('active', savedTab === 'photo');
+      videoTab.classList.toggle('active', savedTab === 'video');
+      textContent.classList.toggle('active', savedTab === 'text');
+      photoContent.classList.toggle('active', savedTab === 'photo');
+      videoContent.classList.toggle('active', savedTab === 'video');
       
       // Clean up video preview URL
       if (previewVideo.src) {
