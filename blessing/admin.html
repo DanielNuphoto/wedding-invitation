@@ -673,6 +673,18 @@
       color: #d4c4a8;
     }
 
+    .real-name-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: rgba(100, 180, 100, 0.25);
+      border: 1px solid rgba(100, 180, 100, 0.4);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #8fbc8f;
+    }
+
     .testing-badge {
       display: inline-flex;
       align-items: center;
@@ -1415,6 +1427,37 @@
     const storage = getStorage(app);
 
     // ============================================
+    // Guest Number to Real Name Mapping
+    // ============================================
+    const guestNameMap = {
+      20: '顏政義', 21: '蕭淑華', 22: '朱崇仁', 23: '方慧瑛', 24: '水慶明',
+      25: '張微', 26: '方宏煜', 27: '溫碧燕',
+      28: '鄧兆君', 29: '吳淑芬', 30: '邱麗君', 31: '王惠娟', 32: '張淑珍',
+      33: '陳瑋羚', 34: '張凌鳳', 35: '薛群雅', 36: '林秀霞', 37: '李依霜',
+      38: '邱泗釧', 39: '謝政良', 40: '陳鴻騰', 41: '周銘豐', 42: '雷鳴',
+      43: '陳益弘', 44: '蔡明勇', 45: '高義正', 46: '汪鳳玉', 47: '洪崑旻',
+      48: '羅景遠', 49: '蔡裕盛', 50: '胡佳媜', 51: '劉亭妤', 52: '范祐恩',
+      53: '張慶宇', 54: '魏道弘', 55: '蕭登鴻', 56: '顏廷諭', 57: '邱郁婷',
+      58: '顏靖宇', 59: '水翊菱', 60: '顏美婷', 61: '余美英', 62: '蘭品樺',
+      63: '馬鐸瑋', 64: '江文平', 65: '黃紹維', 66: '黃仲偉', 67: '尤怡方',
+      68: '曾昱明', 69: '林宜蓁', 70: '陳禹彤', 71: '李政翰', 72: '邱雯琳',
+      73: '周勁宇', 74: '翁資閔', 75: '康倫愷', 76: '蕭煜彰', 77: '蔡懷珮',
+      78: '邱耘耀', 79: '吳京衞', 80: '蘇美枝', 81: '李偉綸', 82: '陳庭芸',
+      83: '苗振庭', 84: '黃登遠', 85: '王譯梁', 86: '吳承豐', 87: '袁若桐',
+      90: '林佩潁', 91: '盧怡帆', 92: '林謙容', 93: '張家瑭', 94: '張軒瑄',
+      95: '王維君', 96: '白婷瑜', 97: '袁婉庭', 98: '董書妡', 99: '林曉愉',
+      100: '林瑞柏', 101: '楊雨鑫', 102: '郭倢如', 103: '王曉慈', 104: '陳怡文',
+      105: '郭汵佩', 106: '吳佳靜', 107: '林家立', 108: '陳念萱', 109: '沈昱穎',
+      110: '黃承瑩', 111: '曹舒涵', 112: '陳蕙心', 113: '林采葳', 114: '蘇庭君',
+      115: '黃于欣', 116: '莊雪珍', 117: '朱家輝', 118: '蔡雯薪', 119: '蔡琪晃',
+      120: '丁也純', 121: '蔡瑞璋', 122: '朱崇誠', 123: '黃艷芬', 124: '朱麒文',
+      125: '王巧雯', 126: '朱晟郡', 127: '朱俞靜', 128: '陳朝益', 129: '李秋鈴',
+      130: '方宏達', 131: '劉紐約', 132: '方妤珍', 133: '方甫軒', 134: '林以晴',
+      135: '方冠婷', 136: '方宇青', 137: '方泳潔', 138: '方永華', 139: '林靜慧',
+      140: '林文茜', 141: '謝均', 142: '林鈺雯', 143: '張雅筑'
+    };
+
+    // ============================================
     // State
     // ============================================
     let allBlessings = [];
@@ -1887,8 +1930,10 @@
           const query = searchQuery.toLowerCase();
           const nameMatch = b.name?.toLowerCase().includes(query);
           const messageMatch = b.message?.toLowerCase().includes(query);
-          const guestNumberMatch = b.guestNumber?.toLowerCase().includes(query);
-          if (!nameMatch && !messageMatch && !guestNumberMatch) return false;
+          const guestNumberMatch = b.guestNumber?.toString().includes(query);
+          const realName = b.guestNumber ? guestNameMap[b.guestNumber] : null;
+          const realNameMatch = realName?.toLowerCase().includes(query);
+          if (!nameMatch && !messageMatch && !guestNumberMatch && !realNameMatch) return false;
         }
         
         return true;
@@ -2364,6 +2409,9 @@
     }
 
     function renderBlessings() {
+      // Save scroll position before re-rendering (fixes scroll jump on mobile Safari)
+      const scrollY = window.scrollY || window.pageYOffset;
+      
       if (filteredBlessings.length === 0) {
         blessingsList.innerHTML = `
           <div class="empty-state">
@@ -2372,6 +2420,8 @@
             <p>${allBlessings.length === 0 ? '等待賓客送上祝福' : '試試其他搜尋條件'}</p>
           </div>
         `;
+        // Restore scroll position
+        requestAnimationFrame(() => window.scrollTo(0, scrollY));
         return;
       }
 
@@ -2396,6 +2446,7 @@
           <div class="blessing-content">
             <div class="blessing-header">
               ${blessing.guestNumber ? `<span class="guest-number-badge">${escapeHtml(String(blessing.guestNumber))}</span>` : ''}
+              ${blessing.guestNumber && guestNameMap[blessing.guestNumber] ? `<span class="real-name-badge">${escapeHtml(guestNameMap[blessing.guestNumber])}</span>` : ''}
               <span class="blessing-name">${escapeHtml(blessing.name)}</span>
               ${awardType ? `<span class="award-badge"><span class="material-symbols-outlined">emoji_events</span>${awardType}</span>` : ''}
               ${blessing.testing ? '<span class="testing-badge"><span class="material-symbols-outlined">science</span>測試</span>' : ''}
@@ -2449,6 +2500,9 @@
           </div>
         </div>
       `}).join('');
+      
+      // Restore scroll position after rendering (fixes scroll jump on mobile Safari)
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
     }
 
     function escapeHtml(text) {
